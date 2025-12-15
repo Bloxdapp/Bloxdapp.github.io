@@ -5,23 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fishing Game</title>
 <style>
-    body {
-        margin: 0;
-        overflow: hidden;
-        font-family: sans-serif;
-    }
-    #message {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 32px;
-        color: white;
-        text-shadow: 2px 2px 5px black;
-        display: none;
-        pointer-events: none;
-        text-align: center;
-    }
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+#message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    color: white;
+    text-shadow: 2px 2px 5px black;
+    display: none;
+    text-align: center;
+}
+canvas {
+    background: #3399ff;
+    display: block;
+}
 </style>
 </head>
 <body>
@@ -31,6 +34,7 @@
 window.onload = function() {
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
+    const messageDiv = document.getElementById("message");
 
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
@@ -47,21 +51,21 @@ window.onload = function() {
         { x: 500, y: 150, width: 200, height: 100, color: "darkgreen" }
     ];
 
-    // Fishing
-    let fishing = false;
-    let clicks = 0;
-
     // Input
     let keys = {};
     document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
     document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-    canvas.addEventListener("mousedown", () => { if(fishing) clicks++; });
 
-    // Message display
-    const messageDiv = document.getElementById("message");
+    // Fishing
+    let fishing = false;
+    let clicks = 0;
+
+    canvas.addEventListener("mousedown", () => {
+        if (fishing) clicks++;
+    });
 
     function draw() {
-        // Clear
+        // Clear screen (water)
         ctx.fillStyle = "blue";
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -69,11 +73,11 @@ window.onload = function() {
         islands.forEach(isle => {
             ctx.fillStyle = isle.color;
             ctx.fillRect(isle.x, isle.y, isle.width, isle.height);
-            // Decorations: trees
+            // Simple decoration (trees)
             ctx.fillStyle = "darkolivegreen";
-            for(let i=0; i<5; i++){
+            for(let i=0;i<5;i++){
                 ctx.beginPath();
-                ctx.arc(isle.x + 20 + i*30, isle.y + 10, 10, 0, Math.PI*2);
+                ctx.arc(isle.x+20+i*30, isle.y+10, 10, 0, Math.PI*2);
                 ctx.fill();
             }
         });
@@ -90,22 +94,22 @@ window.onload = function() {
     }
 
     function update() {
-        // Player movement
-        let speed = player.inBoat && boat ? 3 : player.speed;
+        let speed = player.inBoat ? 3 : player.speed;
+
         if (keys["arrowleft"]) player.x -= speed;
         if (keys["arrowright"]) player.x += speed;
         if (keys["arrowup"]) player.y -= speed;
         if (keys["arrowdown"]) player.y += speed;
 
-        // Boat movement
-        if (player.inBoat && boat) {
-            boat.x = player.x - 15;
-            boat.y = player.y - 5;
-        }
+        // Keep player inside canvas
+        player.x = Math.max(0, Math.min(WIDTH - player.size, player.x));
+        player.y = Math.max(0, Math.min(HEIGHT - player.size, player.y));
 
-        // Check water (not on island)
-        let onIsland = islands.some(isle => player.x + player.size > isle.x && player.x < isle.x + isle.width &&
-                                             player.y + player.size > isle.y && player.y < isle.y + isle.height);
+        // Check if player is on water
+        let onIsland = islands.some(isle => 
+            player.x + player.size > isle.x && player.x < isle.x + isle.width &&
+            player.y + player.size > isle.y && player.y < isle.y + isle.height
+        );
         let inWater = !onIsland;
 
         // Spawn boat if touching water and no boat yet
@@ -114,17 +118,25 @@ window.onload = function() {
             player.inBoat = true;
         }
 
-        // Fishing
+        // Move boat with player
+        if (player.inBoat && boat) {
+            boat.x = player.x - 15;
+            boat.y = player.y - 5;
+        }
+
+        // Start fishing
         if (keys["f"] && inWater && !fishing) {
             fishing = true;
             clicks = 0;
             messageDiv.style.display = "none";
-            // Wait 5 seconds before fish appears
+
+            // Wait 5 sec before showing fish
             setTimeout(() => {
                 messageDiv.innerText = "You caught a fish! Click 10 times in 5 seconds!";
                 messageDiv.style.display = "block";
-                // End fishing after 5 sec
-                setTimeout(() => {
+
+                // After 5 sec, check clicks
+                let fishingTimeout = setTimeout(() => {
                     if (clicks >= 10) {
                         messageDiv.innerText = "Fish successfully caught!";
                     } else {
@@ -132,6 +144,7 @@ window.onload = function() {
                     }
                     setTimeout(() => { messageDiv.style.display = "none"; fishing=false; }, 2000);
                 }, 5000);
+
             }, 5000);
         }
     }
@@ -147,4 +160,3 @@ window.onload = function() {
 </script>
 </body>
 </html>
-
