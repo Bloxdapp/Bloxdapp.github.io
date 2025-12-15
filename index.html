@@ -7,189 +7,68 @@
 <style>
 body{margin:0;overflow:hidden;background:black;font-family:Arial}
 canvas{display:block}
-
-/* Joystick */
-#joystick{
-  position:fixed;left:20px;bottom:60px;
-  width:120px;height:120px;
-  background:rgba(255,255,255,0.15);
-  border-radius:50%;z-index:10
-}
-#stick{
-  position:absolute;left:40px;top:40px;
-  width:40px;height:40px;
-  background:rgba(255,255,255,0.6);
-  border-radius:50%
-}
-
-/* Jump */
-#jump{
-  position:fixed;right:30px;bottom:80px;
-  width:70px;height:70px;
-  border-radius:50%;
-  border:none;font-size:28px;
-  background:rgba(255,255,255,0.7);
-  z-index:10
-}
-
-/* Hotbar */
-#hotbar{
-  position:fixed;bottom:10px;left:50%;
-  transform:translateX(-50%);
-  display:flex;gap:6px;z-index:10
-}
-.slot{
-  width:42px;height:42px;
-  border:2px solid rgba(255,255,255,0.6)
-}
+#crosshair{position:fixed;left:50%;top:50%;width:16px;height:16px;transform:translate(-50%,-50%);pointer-events:none;z-index:20}
+#crosshair:before,#crosshair:after{content:'';position:absolute;background:white}
+#crosshair:before{left:7px;top:0;width:2px;height:16px}
+#crosshair:after{top:7px;left:0;width:16px;height:2px}
+#joystick{position:fixed;left:20px;bottom:60px;width:120px;height:120px;background:rgba(255,255,255,0.15);border-radius:50%;z-index:10}
+#stick{position:absolute;left:40px;top:40px;width:40px;height:40px;background:rgba(255,255,255,0.6);border-radius:50%}
+#jump{position:fixed;right:30px;bottom:80px;width:70px;height:70px;border-radius:50%;border:none;font-size:28px;background:rgba(255,255,255,0.7);z-index:10}
+#hotbar{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
+.slot{width:42px;height:42px;border:2px solid rgba(255,255,255,0.6)}
 .selected{border:3px solid white}
 </style>
 </head>
-
 <body>
 <div id="joystick"><div id="stick"></div></div>
 <button id="jump">⤒</button>
 <div id="hotbar"></div>
+<div id="crosshair"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 /* ===== BLOCS ===== */
-const colors={
- grass:'#4CAF50',
- stone:'#9E9E9E',
- wood:'#795548',
- sand:'#E0C068',
- water:'#2196F3',
- dirt:'#5D4037',
- brick:'#B71C1C',
- glass:'#B3E5FC',
- gold:'#FFD700'
-};
+const colors={grass:'#4CAF50',stone:'#9E9E9E',wood:'#795548',sand:'#E0C068',water:'#2196F3',dirt:'#5D4037',brick:'#B71C1C',glass:'#B3E5FC',gold:'#FFD700'};
 
 /* ===== INVENTAIRE ===== */
 const inventory=Object.keys(colors);
 let currentBlock=inventory[0];
 const hotbar=document.getElementById('hotbar');
-
-inventory.forEach((b,i)=>{
- const d=document.createElement('div');
- d.className='slot'+(i===0?' selected':'');
- d.style.background=colors[b];
- d.onclick=()=>{
-  document.querySelectorAll('.slot').forEach(x=>x.classList.remove('selected'));
-  d.classList.add('selected');
-  currentBlock=b;
- };
- hotbar.appendChild(d);
-});
+inventory.forEach((b,i)=>{const d=document.createElement('div');d.className='slot'+(i===0?' selected':'');d.style.background=colors[b];d.onclick=()=>{document.querySelectorAll('.slot').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');currentBlock=b};hotbar.appendChild(d)});
 
 /* ===== SCÈNE ===== */
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x87ceeb);
-
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x87ceeb);
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-document.body.appendChild(renderer.domElement);
-
-scene.add(new THREE.AmbientLight(0xffffff,0.7));
-const sun=new THREE.DirectionalLight(0xffffff,0.6);
-sun.position.set(10,20,10);
-scene.add(sun);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);document.body.appendChild(renderer.domElement);
+scene.add(new THREE.AmbientLight(0xffffff,0.7));const sun=new THREE.DirectionalLight(0xffffff,0.6);sun.position.set(10,20,10);scene.add(sun);
 
 /* ===== BLOCS 3D ===== */
 const geo=new THREE.BoxGeometry(1,1,1);
-const mats={};
-inventory.forEach(b=>{
- mats[b]=new THREE.MeshLambertMaterial({
-  color:colors[b],
-  transparent:b==='glass',
-  opacity:b==='glass'?0.5:1
- });
-});
-
-const blocks={};
-const key=(x,y,z)=>`${x},${y},${z}`;
-
-function addBlock(x,y,z,t){
- if(blocks[key(x,y,z)])return;
- const m=new THREE.Mesh(geo,mats[t]);
- m.position.set(x,y,z);
- scene.add(m);
- blocks[key(x,y,z)]=m;
-}
+const mats={};inventory.forEach(b=>mats[b]=new THREE.MeshLambertMaterial({color:colors[b],transparent:b==='glass',opacity:b==='glass'?0.5:1}));
+const blocks={};const key=(x,y,z)=>`${x},${y},${z}`;
+function addBlock(x,y,z,t){if(blocks[key(x,y,z)])return;const m=new THREE.Mesh(geo,mats[t]);m.position.set(x,y,z);scene.add(m);blocks[key(x,y,z)]=m}
+function removeBlock(x,y,z){const k=key(x,y,z);if(blocks[k]){scene.remove(blocks[k]);delete blocks[k]}}
 
 /* ===== MONDE ===== */
-for(let x=-30;x<=30;x++)
- for(let z=-30;z<=30;z++)
-  addBlock(x,0,z,'grass');
+for(let x=-30;x<=30;x++)for(let z=-30;z<=30;z++)addBlock(x,0,z,'grass');
 
 /* ===== JOUEUR ===== */
 const player={pos:new THREE.Vector3(0,2,5),vel:new THREE.Vector3(),onGround:false};
-let yaw=0,pitch=0;
-let move={x:0,z:0};
+let yaw=0,pitch=0;let move={x:0,z:0};
 
 /* ===== JOYSTICK ===== */
-const joy=document.getElementById('joystick');
-const stick=document.getElementById('stick');
-
-joy.ontouchmove=e=>{
- const r=joy.getBoundingClientRect();
- const t=e.touches[0];
- let dx=t.clientX-(r.left+r.width/2);
- let dy=t.clientY-(r.top+r.height/2);
- dx=Math.max(-40,Math.min(40,dx));
- dy=Math.max(-40,Math.min(40,dy));
- stick.style.left=40+dx+'px';
- stick.style.top=40+dy+'px';
- move.x=dx/40;
- move.z=dy/40;
-};
-joy.ontouchend=()=>{
- move={x:0,z:0};
- stick.style.left='40px';
- stick.style.top='40px';
-};
+const joy=document.getElementById('joystick');const stick=document.getElementById('stick');
+joy.ontouchmove=e=>{const r=joy.getBoundingClientRect(),t=e.touches[0];let dx=t.clientX-(r.left+r.width/2),dy=t.clientY-(r.top+r.height/2);dx=Math.max(-40,Math.min(40,dx));dy=Math.max(-40,Math.min(40,dy));stick.style.left=40+dx+'px';stick.style.top=40+dy+'px';move.x=dx/40;move.z=dy/40};
+joy.ontouchend=()=>{move={x:0,z:0};stick.style.left='40px';stick.style.top='40px'};
 
 /* ===== SAUT ===== */
-document.getElementById('jump').ontouchstart=()=>{
- if(player.onGround){
-  player.vel.y=0.25;
-  player.onGround=false;
- }
-};
+document.getElementById('jump').ontouchstart=()=>{if(player.onGround){player.vel.y=0.25;player.onGround=false}};
 
-/* ===== CAMÉRA + PLACER BLOCS ===== */
-const ray=new THREE.Raycaster();
-let look=false,lx=0,ly=0;
-
-window.addEventListener('touchstart',e=>{
- if(e.target===renderer.domElement){
-  look=true;
-  lx=e.touches[0].clientX;
-  ly=e.touches[0].clientY;
- }
-});
-
-window.addEventListener('touchmove',e=>{
- if(!look)return;
- const x=e.touches[0].clientX;
- const y=e.touches[0].clientY;
- yaw-=(x-lx)*0.003;
- pitch-=(y-ly)*0.003;
- pitch=Math.max(-1.2,Math.min(1.2,pitch));
- lx=x;ly=y;
-});
-
-window.addEventListener('touchend',()=>{
- look=false;
- ray.setFromCamera({x:0,y:0},camera);
- const hit=ray.intersectObjects(Object.values(blocks));
- if(hit.length){
-  const p=hit[0].object.position;
-  addBlock(p.x,p.y+1,p.z,currentBlock);
- }
-});
+/* ===== CAMÉRA + BLOCS ===== */
+const ray=new THREE.Raycaster();let look=false;let lx=0,ly=0;
+window.addEventListener('touchstart',e=>{if(e.target===renderer.domElement){look=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY}});
+window.addEventListener('touchmove',e=>{if(!look)return;const x=e.touches[0].clientX,y=e.touches[0].clientY;yaw-=(x-lx)*0.003;pitch-=(y-ly)*0.003;pitch=Math.max(-1.2,Math.min(1.2,pitch));lx=x;ly=y});
+window.addEventListener('touchend',e=>{look=false;ray.setFromCamera({x:0,y:0},camera);const hit=ray.intersectObjects(Object.values(blocks));if(hit.length){const p=hit[0].object.position;addBlock(p.x,p.y+1,p.z,currentBlock)}});
 
 /* ===== BOUCLE ===== */
 function update(){
@@ -197,32 +76,19 @@ function update(){
  player.vel.z=move.z*0.1;
  player.vel.y-=0.01;
  player.pos.add(player.vel);
-
- if(player.pos.y<1.8){
-  player.pos.y=1.8;
-  player.vel.y=0;
-  player.onGround=true;
- }
-
- camera.position.copy(player.pos);
+ // collision simple avec blocs
+ const bx=Math.round(player.pos.x);
+ const bz=Math.round(player.pos.z);
+ const under=blocks[`${bx},${Math.floor(player.pos.y-1)},${bz}`];
+ if(under){player.pos.y=Math.floor(player.pos.y)+1.8;player.vel.y=0;player.onGround=true}else{player.onGround=false}
+player.vel.x=move.x*0.1;player.vel.z=move.z*0.1;player.vel.y-=0.01;player.pos.add(player.vel);if(player.pos.y<1.8){player.pos.y=1.8;player.vel.y=0;player.onGround=true}camera.position.copy(player.pos);
  camera.rotation.order='YXZ';
  camera.rotation.y=yaw;
- camera.rotation.x=pitch;
-}
-
-function loop(){
- update();
- renderer.render(scene,camera);
- requestAnimationFrame(loop);
-}
-loop();
-
-window.onresize=()=>{
- camera.aspect=innerWidth/innerHeight;
- camera.updateProjectionMatrix();
- renderer.setSize(innerWidth,innerHeight);
-};
+ camera.rotation.x=pitch;camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch}
+function loop(){update();renderer.render(scene,camera);requestAnimationFrame(loop)}loop();
+window.onresize=()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)};
 </script>
 </body>
 </html>
+
 
