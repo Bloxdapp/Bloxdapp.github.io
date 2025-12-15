@@ -142,19 +142,43 @@ document.getElementById('jump').ontouchstart=e=>{
  }
 };
 
-/* ===== CAMÉRA ===== */
+/* ===== CAMÉRA + PLACEMENT ===== */
+const ray=new THREE.Raycaster();
 let look=false,lx=0,ly=0;
+
 renderer.domElement.addEventListener('touchstart',e=>{
- look=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;
+ look=true;
+ lx=e.touches[0].clientX;
+ ly=e.touches[0].clientY;
 });
+
 renderer.domElement.addEventListener('touchmove',e=>{
  if(!look)return;
  yaw-=(e.touches[0].clientX-lx)*0.003;
  pitch-=(e.touches[0].clientY-ly)*0.003;
  pitch=Math.max(-1.2,Math.min(1.2,pitch));
- lx=e.touches[0].clientX;ly=e.touches[0].clientY;
+ lx=e.touches[0].clientX;
+ ly=e.touches[0].clientY;
 });
-renderer.domElement.addEventListener('touchend',()=>look=false);
+
+renderer.domElement.addEventListener('touchend',e=>{
+ look=false;
+
+ // toucher la croix (centre écran)
+ const t=e.changedTouches[0];
+ const cx=innerWidth/2;
+ const cy=innerHeight/2;
+
+ if(Math.abs(t.clientX-cx)<35 && Math.abs(t.clientY-cy)<35){
+  ray.setFromCamera({x:0,y:0},camera);
+  const hit=ray.intersectObjects(blocks);
+  if(hit.length){
+   const p=hit[0].object.position;
+   addBlock(p.x,p.y+1,p.z,current);
+  }
+ }
+});
+
 
 /* ===== BOUCLE ===== */
 function loop(){
