@@ -46,6 +46,8 @@ canvas{display:block}
 <script>
 // Scene
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x87ceeb);
+// variables caméra
+let yaw=0, pitch=0; let lookActive=false; let lastX=0,lastY=0;
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);document.body.appendChild(renderer.domElement);
@@ -68,7 +70,8 @@ function addBlock(x,y,z,type){
 }
 function removeBlock(x,y,z){const k=key(x,y,z);if(blocks[k]){scene.remove(blocks[k]);delete blocks[k];}}
 
-for(let x=-10;x<=10;x++)for(let z=-10;z<=10;z++)addBlock(x,0,z,'grass');
+// sol complet vert
+for(let x=-30;x<=30;x++)for(let z=-30;z<=30;z++)addBlock(x,0,z,'grass');(x,0,z,'grass');
 
 // Player
 const player={pos:new THREE.Vector3(0,2,5),vel:new THREE.Vector3(),onGround:false};
@@ -101,8 +104,28 @@ document.querySelectorAll('.slot').forEach(s=>{
 
 // Place / break
 const ray=new THREE.Raycaster();
+// Touch caméra + placer blocs
+window.addEventListener('touchstart',e=>{
+ if(e.target.id==='joystick'||e.target.id==='jump') return;
+ lookActive=true; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+});
+window.addEventListener('touchmove',e=>{
+ if(!lookActive) return;
+ const dx=e.touches[0].clientX-lastX;
+ const dy=e.touches[0].clientY-lastY;
+ lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+ yaw-=dx*0.003; pitch-=dy*0.003;
+ pitch=Math.max(-1.2,Math.min(1.2,pitch));
+});
 window.addEventListener('touchend',e=>{
+ lookActive=false;
  ray.setFromCamera({x:0,y:0},camera);
+ const hit=ray.intersectObjects(Object.values(blocks));
+ if(hit.length){
+  const p=hit[0].object.position;
+  addBlock(p.x,p.y+1,p.z,currentBlock);
+ }
+});
  const hit=ray.intersectObjects(Object.values(blocks));
  if(hit.length){const p=hit[0].object.position;addBlock(p.x,p.y+1,p.z,currentBlock)}
 });
@@ -112,6 +135,9 @@ function update(){
  player.vel.y-=0.01;player.pos.add(player.vel);
  if(player.pos.y<1.8){player.pos.y=1.8;player.vel.y=0;player.onGround=true}
  camera.position.copy(player.pos);
+camera.rotation.order='YXZ';
+camera.rotation.y=yaw;
+camera.rotation.x=pitch;
 }
 function loop(){update();renderer.render(scene,camera);requestAnimationFrame(loop)}
 loop();
@@ -120,5 +146,6 @@ onresize=()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix
 </script>
 </body>
 </html>
+
 
 
