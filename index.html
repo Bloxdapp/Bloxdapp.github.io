@@ -2,161 +2,132 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fishing Game</title>
+<title>3D Fishing Game</title>
 <style>
-body {
-    margin: 0;
-    overflow: hidden;
-    font-family: sans-serif;
-}
-#message {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 28px;
-    color: white;
-    text-shadow: 2px 2px 5px black;
-    display: none;
-    text-align: center;
-}
-canvas {
-    background: #3399ff;
-    display: block;
-}
+  body { margin:0; overflow:hidden; }
+  #message {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    color:white;
+    font-size:24px;
+    display:none;
+    text-align:center;
+    text-shadow:2px 2px 5px black;
+  }
 </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="800" height="600"></canvas>
 <div id="message"></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/PointerLockControls.js"></script>
 <script>
-window.onload = function() {
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const messageDiv = document.getElementById("message");
+let scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb); // sky blue
 
-    const WIDTH = canvas.width;
-    const HEIGHT = canvas.height;
+let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+let renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-    // Player
-    let player = { x: 100, y: 100, size: 30, color: "yellow", speed: 4, inBoat: false };
+// Lighting
+let light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(10,20,10);
+scene.add(light);
 
-    // Boat
-    let boat = null;
+// Ground / islands
+let islands = [];
+function createIsland(x,z,w,h) {
+    let geometry = new THREE.BoxGeometry(w,1,h);
+    let material = new THREE.MeshPhongMaterial({color:0x228B22});
+    let island = new THREE.Mesh(geometry, material);
+    island.position.set(x,0.5,z);
+    scene.add(island);
+    islands.push(island);
+}
+createIsland(-10,-10,10,6);
+createIsland(15,15,12,8);
 
-    // Islands
-    const islands = [
-        { x: 150, y: 400, width: 200, height: 80, color: "green" },
-        { x: 500, y: 150, width: 200, height: 100, color: "darkgreen" }
-    ];
+// Sea
+let waterGeometry = new THREE.BoxGeometry(100,0.5,100);
+let waterMaterial = new THREE.MeshPhongMaterial({color:0x1E90FF});
+let water = new THREE.Mesh(waterGeometry, waterMaterial);
+water.position.set(0,0,0);
+scene.add(water);
 
-    // Input
-    let keys = {};
-    document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-    document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+// Player
+let controls = new THREE.PointerLockControls(camera, document.body);
+document.body.addEventListener('click', ()=>{ controls.lock(); });
+camera.position.set(0,2,10);
 
-    // Fishing
-    let fishing = false;
-    let clicks = 0;
+// Rod
+let rod = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,2), new THREE.MeshBasicMaterial({color:0x8B4513}));
+let rodLaunched = false;
+let rodObj = null;
 
-    canvas.addEventListener("mousedown", () => {
-        if (fishing) clicks++;
-    });
+// Fishing
+let isHolding = false;
+let holdTime = 0;
+let fishing = false;
+let clicks = 0;
+let messageDiv = document.getElementById("message");
+let fishObj = null;
 
-    function draw() {
-        // Clear screen (water)
-        ctx.fillStyle = "blue";
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+window.addEventListener('mousedown', ()=>{ isHolding = true; });
+window.addEventListener('mouseup', ()=>{
+    isHolding = false;
+    if(holdTime >= 2 && !rodLaunched && !fishing){
+        launchRod();
+    }
+    holdTime = 0;
+});
+window.addEventListener('click', ()=>{
+    if(fishing) clicks++;
+});
 
-        // Draw islands
-        islands.forEach(isle => {
-            ctx.fillStyle = isle.color;
-            ctx.fillRect(isle.x, isle.y, isle.width, isle.height);
-            // Simple decoration (trees)
-            ctx.fillStyle = "darkolivegreen";
-            for(let i=0;i<5;i++){
-                ctx.beginPath();
-                ctx.arc(isle.x+20+i*30, isle.y+10, 10, 0, Math.PI*2);
-                ctx.fill();
+function launchRod(){
+    rodLaunched = true;
+    rodObj = rod.clone();
+    rodObj.position.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(2));
+    scene.add(rodObj);
+
+    fishing = true;
+    messageDiv.style.display = 'block';
+    messageDiv.innerText = "Waiting for Clownfish...";
+
+    setTimeout(()=>{ spawnFish(); }, 5000);
+}
+
+function spawnFish(){
+    fishObj = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.5,1), new THREE.MeshBasicMaterial({color:0xFF4500}));
+    fishObj.position.copy(rodObj.position).add(new THREE.Vector3(0,0,-2));
+    scene.add(fishObj);
+
+    messageDiv.innerText = "Clownfish caught! Click 10 times in 5 seconds!";
+    clicks = 0;
+
+    let timer = 0;
+    let interval = setInterval(()=>{
+        timer += 0.1;
+        if(timer>=5){
+            clearInterval(interval);
+            if(clicks>=10){
+                messageDiv.innerText = "Clownfish successfully caught!";
+            } else {
+                messageDiv.innerText = "Clownfish escaped!";
             }
-        });
-
-        // Draw boat
-        if (boat) {
-            ctx.fillStyle = "brown";
-            ctx.fillRect(boat.x, boat.y, 60, 30);
+            setTimeout(()=>{ messageDiv.style.display='none'; fishing=false; rodLaunched=false; scene.remove(fishObj); scene.remove(rodObj); },2000);
         }
+    },100);
+}
 
-        // Draw player
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x, player.y, player.size, player.size);
-    }
-
-    function update() {
-        let speed = player.inBoat ? 3 : player.speed;
-
-        if (keys["arrowleft"]) player.x -= speed;
-        if (keys["arrowright"]) player.x += speed;
-        if (keys["arrowup"]) player.y -= speed;
-        if (keys["arrowdown"]) player.y += speed;
-
-        // Keep player inside canvas
-        player.x = Math.max(0, Math.min(WIDTH - player.size, player.x));
-        player.y = Math.max(0, Math.min(HEIGHT - player.size, player.y));
-
-        // Check if player is on water
-        let onIsland = islands.some(isle => 
-            player.x + player.size > isle.x && player.x < isle.x + isle.width &&
-            player.y + player.size > isle.y && player.y < isle.y + isle.height
-        );
-        let inWater = !onIsland;
-
-        // Spawn boat if touching water and no boat yet
-        if (inWater && !boat) {
-            boat = { x: player.x - 15, y: player.y - 5 };
-            player.inBoat = true;
-        }
-
-        // Move boat with player
-        if (player.inBoat && boat) {
-            boat.x = player.x - 15;
-            boat.y = player.y - 5;
-        }
-
-        // Start fishing
-        if (keys["f"] && inWater && !fishing) {
-            fishing = true;
-            clicks = 0;
-            messageDiv.style.display = "none";
-
-            // Wait 5 sec before showing fish
-            setTimeout(() => {
-                messageDiv.innerText = "You caught a fish! Click 10 times in 5 seconds!";
-                messageDiv.style.display = "block";
-
-                // After 5 sec, check clicks
-                let fishingTimeout = setTimeout(() => {
-                    if (clicks >= 10) {
-                        messageDiv.innerText = "Fish successfully caught!";
-                    } else {
-                        messageDiv.innerText = "Fish escaped!";
-                    }
-                    setTimeout(() => { messageDiv.style.display = "none"; fishing=false; }, 2000);
-                }, 5000);
-
-            }, 5000);
-        }
-    }
-
-    function gameLoop() {
-        update();
-        draw();
-        requestAnimationFrame(gameLoop);
-    }
-
-    gameLoop();
-};
+function animate(){
+    requestAnimationFrame(animate);
+    if(isHolding && !rodLaunched) holdTime += 0.1;
+    renderer.render(scene,camera);
+}
+animate();
 </script>
 </body>
 </html>
