@@ -1,42 +1,46 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Mini Minecraft 3D Mobile – Stable</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta charset="UTF-8" />
+<title>Bloxd‑Style Creative (Browser)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <style>
-body{margin:0;overflow:hidden;background:black;font-family:Arial}
+html,body{margin:0;padding:0;overflow:hidden;background:#000;font-family:Arial}
 canvas{display:block}
-#crosshair{position:fixed;left:50%;top:50%;width:16px;height:16px;transform:translate(-50%,-50%);pointer-events:none;z-index:20}
+/* Crosshair */
+#crosshair{position:fixed;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%);pointer-events:none;z-index:10}
 #crosshair:before,#crosshair:after{content:'';position:absolute;background:white}
-#crosshair:before{left:7px;top:0;width:2px;height:16px}
-#crosshair:after{top:7px;left:0;width:16px;height:2px}
-#joystick{position:fixed;left:20px;bottom:60px;width:120px;height:120px;background:rgba(255,255,255,0.15);border-radius:50%;z-index:10}
-#stick{position:absolute;left:40px;top:40px;width:40px;height:40px;background:rgba(255,255,255,0.6);border-radius:50%}
-#jump{position:fixed;right:30px;bottom:80px;width:70px;height:70px;border-radius:50%;border:none;font-size:28px;background:rgba(255,255,255,0.7);z-index:10}
+#crosshair:before{left:8px;top:0;width:2px;height:18px}
+#crosshair:after{top:8px;left:0;width:18px;height:2px}
+/* Joystick */
+#joy{position:fixed;left:20px;bottom:60px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.15);z-index:10}
+#stick{position:absolute;left:40px;top:40px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.6)}
+/* Jump */
+#jump{position:fixed;right:30px;bottom:80px;width:70px;height:70px;border-radius:50%;border:none;background:rgba(255,255,255,.7);font-size:28px;z-index:10}
+/* Hotbar */
 #hotbar{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
-.slot{width:42px;height:42px;border:2px solid rgba(255,255,255,0.6)}
-.selected{border:3px solid white}
+.slot{width:42px;height:42px;border:2px solid rgba(255,255,255,.6)}
+.selected{border:3px solid #fff}
 </style>
 </head>
 <body>
-<div id="joystick"><div id="stick"></div></div>
+<div id="joy"><div id="stick"></div></div>
 <button id="jump">⤒</button>
 <div id="hotbar"></div>
 <div id="crosshair"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
-// ===== BLOCS =====
-const COLORS={grass:0x4CAF50,stone:0x9E9E9E,wood:0x795548,red:0xF44336,blue:0x2196F3};
-
-// ===== INVENTAIRE =====
+// ================= BLOCKS =================
+const BLOCKS={grass:0x4CAF50,stone:0x9E9E9E,wood:0x795548,sand:0xE0C068,red:0xF44336,blue:0x2196F3};
 let current='grass';
+
+// ================= INVENTORY =================
 const hotbar=document.getElementById('hotbar');
-Object.keys(COLORS).forEach((b,i)=>{
+Object.keys(BLOCKS).forEach((b,i)=>{
  const d=document.createElement('div');
  d.className='slot'+(i===0?' selected':'');
- d.style.background='#'+COLORS[b].toString(16);
+ d.style.background='#'+BLOCKS[b].toString(16);
  d.onclick=()=>{
   document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
   d.classList.add('selected');
@@ -45,22 +49,22 @@ Object.keys(COLORS).forEach((b,i)=>{
  hotbar.appendChild(d);
 });
 
-// ===== SCENE =====
+// ================= SCENE =================
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87ceeb);
 const camera=new THREE.PerspectiveCamera(90,innerWidth/innerHeight,0.1,1000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
-scene.add(new THREE.AmbientLight(0xffffff,0.9));
-const sun=new THREE.DirectionalLight(0xffffff,0.6);
+scene.add(new THREE.AmbientLight(0xffffff,.9));
+const sun=new THREE.DirectionalLight(0xffffff,.6);
 sun.position.set(10,20,10);
 scene.add(sun);
 
-// ===== BLOCS =====
-const geo=new THREE.BoxGeometry(1,1,1,2,2,2);
+// ================= BLOCK WORLD =================
+const geo=new THREE.BoxGeometry(1,1,1);
 const mats={};
-for(let b in COLORS){mats[b]=new THREE.MeshLambertMaterial({color:COLORS[b]});}
+for(const b in BLOCKS){mats[b]=new THREE.MeshLambertMaterial({color:BLOCKS[b]});}
 const blocks=[];
 function addBlock(x,y,z,t){
  const m=new THREE.Mesh(geo,mats[t]);
@@ -68,16 +72,15 @@ function addBlock(x,y,z,t){
  scene.add(m);
  blocks.push(m);
 }
+for(let x=-25;x<=25;x++)for(let z=-25;z<=25;z++)addBlock(x,0,z,'grass');
 
-for(let x=-20;x<=20;x++)for(let z=-20;z<=20;z++)addBlock(x,0,z,'grass');
-
-// ===== JOUEUR =====
+// ================= PLAYER =================
 const player={x:0,y:2,z:5,vy:0,onGround:false};
 let yaw=0,pitch=0;
 let moveForward=0;
 
-// ===== JOYSTICK (INVERSE) =====
-const joy=document.getElementById('joystick');
+// ================= JOYSTICK =================
+const joy=document.getElementById('joy');
 const stick=document.getElementById('stick');
 joy.ontouchmove=e=>{
  const r=joy.getBoundingClientRect();
@@ -85,20 +88,22 @@ joy.ontouchmove=e=>{
  let dy=t.clientY-(r.top+r.height/2);
  dy=Math.max(-40,Math.min(40,dy));
  stick.style.top=40+dy+'px';
- moveForward=dy/40; // SENS INVERSE
+ moveForward=dy/40; // inverted like Bloxd mobile
 };
 joy.ontouchend=()=>{moveForward=0;stick.style.top='40px'};
 
-// ===== SAUT =====
+// ================= JUMP =================
 document.getElementById('jump').ontouchstart=e=>{
  e.preventDefault();
- if(player.onGround){player.vy=0.35;player.onGround=false;}
+ if(player.onGround){player.vy=0.32;player.onGround=false;}
 };
 
-// ===== CAMERA + PLACEMENT =====
+// ================= CAMERA + PLACE BLOCK =================
 const ray=new THREE.Raycaster();
 let look=false,lx=0,ly=0;
-renderer.domElement.addEventListener('touchstart',e=>{look=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY});
+renderer.domElement.addEventListener('touchstart',e=>{
+ look=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;
+});
 renderer.domElement.addEventListener('touchmove',e=>{
  if(!look)return;
  yaw-=(e.touches[0].clientX-lx)*0.003;
@@ -117,29 +122,17 @@ renderer.domElement.addEventListener('touchend',e=>{
  }
 });
 
-// ===== BOUCLE =====
+// ================= LOOP =================
 function loop(){
- // déplacement horizontal
  player.x+=Math.sin(yaw)*moveForward*0.15;
  player.z+=Math.cos(yaw)*moveForward*0.15;
-
- // gravité + saut
  player.vy-=0.02;
  player.y+=player.vy;
-
- // SOL BLOQUÉ (ANTI-CHUTE DÉFINITIVE)
- if(player.y<=1.8){
-  player.y=1.8;
-  player.vy=0;
-  player.onGround=true;
- }
-
- // caméra COLLÉE AU JOUEUR
+ if(player.y<=1.8){player.y=1.8;player.vy=0;player.onGround=true;}else player.onGround=false;
  camera.position.set(player.x,player.y,player.z);
  camera.rotation.order='YXZ';
  camera.rotation.y=yaw;
  camera.rotation.x=pitch;
-
  renderer.render(scene,camera);
  requestAnimationFrame(loop);
 }
@@ -148,4 +141,5 @@ window.onresize=()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectio
 </script>
 </body>
 </html>
+
 
