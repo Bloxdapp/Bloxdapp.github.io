@@ -1,10 +1,170 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Game Site</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Endless Runner</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      background: #222;
+      border: 2px solid #fff;
+    }
+    #hint {
+      position: absolute;
+      bottom: 20px;
+      opacity: 0.7;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-  <h1>My First Game Website</h1>
-  <p>My game will go here 🎮</p>
+  <canvas id="game" width="800" height="300"></canvas>
+  <div id="hint">Press SPACE or click to jump</div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    // Player
+    const player = {
+      x: 80,
+      y: 0,
+      width: 30,
+      height: 30,
+      velocityY: 0,
+      jumpForce: 12,
+      grounded: false
+    };
+
+    const gravity = 0.6;
+    const groundY = canvas.height - 40;
+
+    // Obstacles
+    let obstacles = [];
+    let obstacleTimer = 0;
+
+    let speed = 6;
+    let score = 0;
+    let gameOver = false;
+
+    function resetGame() {
+      obstacles = [];
+      obstacleTimer = 0;
+      speed = 6;
+      score = 0;
+      gameOver = false;
+      player.y = groundY - player.height;
+      player.velocityY = 0;
+      loop();
+    }
+
+    function jump() {
+      if (player.grounded && !gameOver) {
+        player.velocityY = -player.jumpForce;
+        player.grounded = false;
+      }
+      if (gameOver) resetGame();
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space') jump();
+    });
+
+    canvas.addEventListener('click', jump);
+
+    function update() {
+      // Player physics
+      player.velocityY += gravity;
+      player.y += player.velocityY;
+
+      if (player.y + player.height >= groundY) {
+        player.y = groundY - player.height;
+        player.velocityY = 0;
+        player.grounded = true;
+      }
+
+      // Obstacles
+      obstacleTimer++;
+      if (obstacleTimer > 90) {
+        obstacles.push({
+          x: canvas.width,
+          y: groundY - 30,
+          width: 20,
+          height: 30
+        });
+        obstacleTimer = 0;
+      }
+
+      obstacles.forEach(o => o.x -= speed);
+      obstacles = obstacles.filter(o => o.x + o.width > 0);
+
+      // Collision
+      obstacles.forEach(o => {
+        if (
+          player.x < o.x + o.width &&
+          player.x + player.width > o.x &&
+          player.y < o.y + o.height &&
+          player.y + player.height > o.y
+        ) {
+          gameOver = true;
+        }
+      });
+
+      if (!gameOver) {
+        score++;
+        speed += 0.0005;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Ground
+      ctx.fillStyle = '#555';
+      ctx.fillRect(0, groundY, canvas.width, 40);
+
+      // Player
+      ctx.fillStyle = '#4caf50';
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // Obstacles
+      ctx.fillStyle = '#e53935';
+      obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
+
+      // Score
+      ctx.fillStyle = '#fff';
+      ctx.font = '16px Arial';
+      ctx.fillText('Score: ' + score, 10, 20);
+
+      if (gameOver) {
+        ctx.fillStyle = '#fff';
+        ctx.font = '28px Arial';
+        ctx.fillText('GAME OVER', canvas.width / 2 - 90, canvas.height / 2);
+        ctx.font = '14px Arial';
+        ctx.fillText('Press SPACE or click to restart', canvas.width / 2 - 120, canvas.height / 2 + 25);
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      if (!gameOver) requestAnimationFrame(loop);
+    }
+
+    // Start game
+    player.y = groundY - player.height;
+    loop();
+  </script>
 </body>
 </html>
+
