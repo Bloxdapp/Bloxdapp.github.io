@@ -23,60 +23,77 @@ body { margin:0; overflow:hidden; }
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/PointerLockControls.js"></script>
 <script>
-// Scene setup
+// ====== Scene setup ======
 let scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87CEEB); // sky blue
+scene.background = new THREE.Color(0x87CEEB);
+
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Lighting
-let light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(10,20,10);
-scene.add(light);
+scene.add(new THREE.AmbientLight(0x404040));
+let dirLight = new THREE.DirectionalLight(0xffffff,1);
+dirLight.position.set(10,20,10);
+scene.add(dirLight);
 
-// Sea
-let water = new THREE.Mesh(
-  new THREE.BoxGeometry(100,0.5,100),
-  new THREE.MeshPhongMaterial({color:0x1E90FF})
-);
-water.position.set(0,0,0);
-scene.add(water);
+// ====== Player setup ======
+let player = new THREE.Object3D();
+player.add(camera);
+scene.add(player);
+camera.position.set(0,2,0);
 
-// Islands
-let islands = [];
+let controls = new THREE.PointerLockControls(camera, document.body);
+document.body.addEventListener('click',()=>{ controls.lock(); });
+
+// Movement
+let moveForward=false, moveBackward=false, moveLeft=false, moveRight=false;
+document.addEventListener('keydown', e => {
+  if(e.key==='w') moveForward=true;
+  if(e.key==='s') moveBackward=true;
+  if(e.key==='a') moveLeft=true;
+  if(e.key==='d') moveRight=true;
+});
+document.addEventListener('keyup', e => {
+  if(e.key==='w') moveForward=false;
+  if(e.key==='s') moveBackward=false;
+  if(e.key==='a') moveLeft=false;
+  if(e.key==='d') moveRight=false;
+});
+
+// ====== Islands and water ======
 function createIsland(x,z,w,h){
-  let geometry = new THREE.BoxGeometry(w,1,h);
-  let material = new THREE.MeshPhongMaterial({color:0x228B22});
-  let island = new THREE.Mesh(geometry, material);
+  let geo = new THREE.BoxGeometry(w,1,h);
+  let mat = new THREE.MeshPhongMaterial({color:0x228B22});
+  let island = new THREE.Mesh(geo, mat);
   island.position.set(x,0.5,z);
   scene.add(island);
-  islands.push(island);
 }
 createIsland(-10,-10,10,6);
 createIsland(15,15,12,8);
 
-// Player
-let controls = new THREE.PointerLockControls(camera, document.body);
-document.body.addEventListener('click',()=>{ controls.lock(); });
-camera.position.set(0,2,10);
+let water = new THREE.Mesh(
+  new THREE.BoxGeometry(100,0.5,100),
+  new THREE.MeshPhongMaterial({color:0x1E90FF})
+);
+water.position.set(0,0.25,0);
+scene.add(water);
 
-// Fishing
+// ====== Fishing ======
 let rod = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,2), new THREE.MeshBasicMaterial({color:0x8B4513}));
 let rodLaunched=false, rodObj=null;
 let isHolding=false, holdTime=0;
 let fishing=false, clicks=0, fishObj=null;
 let messageDiv=document.getElementById("message");
 
-// Input
-window.addEventListener('mousedown',()=>{ isHolding=true; if(fishing) clicks++; });
-window.addEventListener('mouseup',()=>{
+window.addEventListener('mousedown', ()=>{ isHolding=true; if(fishing) clicks++; });
+window.addEventListener('mouseup', ()=>{
   if(isHolding && holdTime>=2 && !rodLaunched && !fishing) launchRod();
   isHolding=false; holdTime=0;
 });
 
-// Launch rod
+// Launch rod function
 function launchRod(){
   rodLaunched=true;
   rodObj = rod.clone();
@@ -86,7 +103,6 @@ function launchRod(){
   fishing=true;
   messageDiv.style.display='block';
   messageDiv.innerText="Waiting for Clownfish...";
-
   setTimeout(spawnFish,5000);
 }
 
@@ -105,15 +121,42 @@ function spawnFish(){
       clearInterval(interval);
       if(clicks>=10) messageDiv.innerText="Clownfish successfully caught!";
       else messageDiv.innerText="Clownfish escaped!";
-      setTimeout(()=>{ messageDiv.style.display='none'; fishing=false; rodLaunched=false; scene.remove(fishObj); scene.remove(rodObj); },2000);
+      setTimeout(()=>{
+        messageDiv.style.display='none';
+        fishing=false;
+        rodLaunched=false;
+        scene.remove(fishObj);
+        scene.remove(rodObj);
+      },2000);
     }
   },100);
 }
 
-// Animate loop
+// ====== Animation loop ======
+let clock = new THREE.Clock();
 function animate(){
   requestAnimationFrame(animate);
-  if(isHolding && !rodLaunched) holdTime+=0.1;
+
+  let delta = clock.getDelta();
+  let speed = 5 * delta;
+
+  if(moveForward) player.position.add(player.getWorldDirection(new THREE.Vector3()).multiplyScalar(speed));
+  if(moveBackward) player.position.add(player.getWorldDirection(new THREE.Vector3()).multiplyScalar(-speed));
+  if(moveLeft){
+    let dir = new THREE.Vector3();
+    player.getWorldDirection(dir);
+    dir.cross(camera.up);
+    player.position.add(dir.multiplyScalar(-speed));
+  }
+  if(moveRight){
+    let dir = new THREE.Vector3();
+    player.getWorldDirection(dir);
+    dir.cross(camera.up);
+    player.position.add(dir.multiplyScalar(speed));
+  }
+
+  if(isHolding && !rodLaunched) holdTime += delta;
+
   renderer.render(scene,camera);
 }
 animate();
