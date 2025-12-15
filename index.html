@@ -62,19 +62,29 @@ joy.ontouchmove=e=>{const r=joy.getBoundingClientRect(),t=e.touches[0];let dx=t.
 joy.ontouchend=()=>{move={x:0,z:0};stick.style.left='40px';stick.style.top='40px'};
 
 /* ===== SAUT ===== */
-document.getElementById('jump').ontouchstart=()=>{if(player.onGround){player.vel.y=0.25;player.onGround=false}};
+document.getElementById('jump').ontouchstart=e=>{e.stopPropagation();if(player.onGround){player.vel.y=0.25;player.onGround=false}};
 
 /* ===== CAMÉRA + BLOCS ===== */
 const ray=new THREE.Raycaster();let look=false;let lx=0,ly=0;
 window.addEventListener('touchstart',e=>{if(e.target===renderer.domElement){look=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY}});
 window.addEventListener('touchmove',e=>{if(!look)return;const x=e.touches[0].clientX,y=e.touches[0].clientY;yaw-=(x-lx)*0.003;pitch-=(y-ly)*0.003;pitch=Math.max(-1.2,Math.min(1.2,pitch));lx=x;ly=y});
-window.addEventListener('touchend',e=>{look=false;ray.setFromCamera({x:0,y:0},camera);const hit=ray.intersectObjects(Object.values(blocks));if(hit.length){const p=hit[0].object.position;addBlock(p.x,p.y+1,p.z,currentBlock)}});
+window.addEventListener('touchend',e=>{
+ look=false;
+ // placer bloc seulement si on touche le centre
+ const cx=innerWidth/2, cy=innerHeight/2;
+ const t=e.changedTouches[0];
+ if(Math.abs(t.clientX-cx)<40 && Math.abs(t.clientY-cy)<40){
+  ray.setFromCamera({x:0,y:0},camera);
+  const hit=ray.intersectObjects(Object.values(blocks));
+  if(hit.length){const p=hit[0].object.position;addBlock(p.x,p.y+1,p.z,currentBlock)}
+ }
+});
 
 /* ===== BOUCLE ===== */
 function update(){
  player.vel.x=move.x*0.1;
  player.vel.z=move.z*0.1;
- player.vel.y-=0.01;
+ player.vel.y-=0.015;
  player.pos.add(player.vel);
  // collision simple avec blocs
  const bx=Math.round(player.pos.x);
@@ -90,5 +100,6 @@ window.onresize=()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectio
 </script>
 </body>
 </html>
+
 
 
