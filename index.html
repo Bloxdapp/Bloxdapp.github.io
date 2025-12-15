@@ -54,20 +54,26 @@ const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87ceeb);
 const camera=new THREE.PerspectiveCamera(90,innerWidth/innerHeight,0.1,1000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.shadowMap.enabled=true({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
-scene.add(new THREE.AmbientLight(0xffffff,.9));
-const sun=new THREE.DirectionalLight(0xffffff,.6);
+scene.add(new THREE.AmbientLight(0xffffff,.6));(0xffffff,.9));
+const sun=new THREE.DirectionalLight(0xffffff,1);
+sun.castShadow=true;
+sun.shadow.mapSize.width=2048;
+sun.shadow.mapSize.height=2048;(0xffffff,.6);
 sun.position.set(10,20,10);
 scene.add(sun);
 
 // ================= BLOCK WORLD =================
-const geo=new THREE.BoxGeometry(1,1,1);
+const geo=new THREE.BoxGeometry(1,1,1);(1,1,1);
 const mats={};
-for(const b in BLOCKS){mats[b]=new THREE.MeshLambertMaterial({color:BLOCKS[b]});}
+for(const b in BLOCKS){mats[b]=new THREE.MeshStandardMaterial({color:BLOCKS[b],roughness:0.8,metalness:0.1});({color:BLOCKS[b]});}
 const blocks=[];
 function addBlock(x,y,z,t){
  const m=new THREE.Mesh(geo,mats[t]);
+ m.castShadow=true;
+ m.receiveShadow=true;
  m.position.set(x,y,z);
  scene.add(m);
  blocks.push(m);
@@ -141,5 +147,6 @@ window.onresize=()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectio
 </script>
 </body>
 </html>
+
 
 
