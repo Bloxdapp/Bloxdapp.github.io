@@ -2,21 +2,50 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Mini Minecraft 3D – Mobile Avancé</title>
+<title>Mini Minecraft 3D Mobile</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
 body{margin:0;overflow:hidden;background:black;font-family:Arial}
 canvas{display:block}
+
 /* Joystick */
-#joystick{position:fixed;left:20px;bottom:60px;width:120px;height:120px;background:rgba(255,255,255,0.15);border-radius:50%}
-#stick{position:absolute;left:40px;top:40px;width:40px;height:40px;background:rgba(255,255,255,0.6);border-radius:50%}
-#jump{position:fixed;right:30px;bottom:80px;width:70px;height:70px;border-radius:50%;border:none;font-size:28px;background:rgba(255,255,255,0.7)}
+#joystick{
+  position:fixed;left:20px;bottom:60px;
+  width:120px;height:120px;
+  background:rgba(255,255,255,0.15);
+  border-radius:50%;z-index:10
+}
+#stick{
+  position:absolute;left:40px;top:40px;
+  width:40px;height:40px;
+  background:rgba(255,255,255,0.6);
+  border-radius:50%
+}
+
+/* Jump */
+#jump{
+  position:fixed;right:30px;bottom:80px;
+  width:70px;height:70px;
+  border-radius:50%;
+  border:none;font-size:28px;
+  background:rgba(255,255,255,0.7);
+  z-index:10
+}
+
 /* Hotbar */
-#hotbar{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
-.slot{width:42px;height:42px;border:2px solid rgba(255,255,255,0.6);background:rgba(0,0,0,0.4)}
+#hotbar{
+  position:fixed;bottom:10px;left:50%;
+  transform:translateX(-50%);
+  display:flex;gap:6px;z-index:10
+}
+.slot{
+  width:42px;height:42px;
+  border:2px solid rgba(255,255,255,0.6)
+}
 .selected{border:3px solid white}
 </style>
 </head>
+
 <body>
 <div id="joystick"><div id="stick"></div></div>
 <button id="jump">⤒</button>
@@ -24,83 +53,176 @@ canvas{display:block}
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
-/*************** INVENTAIRE ***************/
-const inventory=['grass','stone','wood','sand','water','dirt','brick','glass','gold'];
-let currentBlock='grass';
+/* ===== BLOCS ===== */
+const colors={
+ grass:'#4CAF50',
+ stone:'#9E9E9E',
+ wood:'#795548',
+ sand:'#E0C068',
+ water:'#2196F3',
+ dirt:'#5D4037',
+ brick:'#B71C1C',
+ glass:'#B3E5FC',
+ gold:'#FFD700'
+};
+
+/* ===== INVENTAIRE ===== */
+const inventory=Object.keys(colors);
+let currentBlock=inventory[0];
 const hotbar=document.getElementById('hotbar');
+
 inventory.forEach((b,i)=>{
- const d=document.createElement('div');d.className='slot'+(i===0?' selected':'');
- d.style.background=colors[b];d.onclick=()=>selectSlot(i);
- d.dataset.block=b;hotbar.appendChild(d);
+ const d=document.createElement('div');
+ d.className='slot'+(i===0?' selected':'');
+ d.style.background=colors[b];
+ d.onclick=()=>{
+  document.querySelectorAll('.slot').forEach(x=>x.classList.remove('selected'));
+  d.classList.add('selected');
+  currentBlock=b;
+ };
+ hotbar.appendChild(d);
 });
-function selectSlot(i){
- document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
- hotbar.children[i].classList.add('selected');
- currentBlock=inventory[i];
-}
 
-/*************** SCÈNE ***************/
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x87ceeb);
+/* ===== SCÈNE ===== */
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x87ceeb);
+
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);document.body.appendChild(renderer.domElement);
-scene.add(new THREE.AmbientLight(0xffffff,0.7));
-const sun=new THREE.DirectionalLight(0xffffff,0.6);sun.position.set(10,20,10);scene.add(sun);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+document.body.appendChild(renderer.domElement);
 
-/*************** BLOCS ***************/
+scene.add(new THREE.AmbientLight(0xffffff,0.7));
+const sun=new THREE.DirectionalLight(0xffffff,0.6);
+sun.position.set(10,20,10);
+scene.add(sun);
+
+/* ===== BLOCS 3D ===== */
 const geo=new THREE.BoxGeometry(1,1,1);
-const colors={grass:'#4CAF50',stone:'#9E9E9E',wood:'#795548',sand:'#E0C068',water:'#2196F3',dirt:'#5D4037',brick:'#B71C1C',glass:'#B3E5FC',gold:'#FFD700'};
-const mats={};Object.keys(colors).forEach(k=>mats[k]=new THREE.MeshLambertMaterial({color:colors[k],transparent:k==='glass',opacity:k==='glass'?0.5:1}));
+const mats={};
+inventory.forEach(b=>{
+ mats[b]=new THREE.MeshLambertMaterial({
+  color:colors[b],
+  transparent:b==='glass',
+  opacity:b==='glass'?0.5:1
+ });
+});
+
 const blocks={};
 const key=(x,y,z)=>`${x},${y},${z}`;
-function addBlock(x,y,z,type){if(blocks[key(x,y,z)])return;const m=new THREE.Mesh(geo,mats[type]);m.position.set(x,y,z);scene.add(m);blocks[key(x,y,z)]=m}
-function removeBlock(x,y,z){const k=key(x,y,z);if(blocks[k]){scene.remove(blocks[k]);delete blocks[k]}}
 
-/*************** MONDE (CHUNKS) ***************/
-const CHUNK=16;const loadedChunks={};
-function genChunk(cx,cz){const id=cx+','+cz;if(loadedChunks[id])return;loadedChunks[id]=true;
- for(let x=0;x<CHUNK;x++)for(let z=0;z<CHUNK;z++)addBlock(cx*CHUNK+x,0,cz*CHUNK+z,'grass');}
+function addBlock(x,y,z,t){
+ if(blocks[key(x,y,z)])return;
+ const m=new THREE.Mesh(geo,mats[t]);
+ m.position.set(x,y,z);
+ scene.add(m);
+ blocks[key(x,y,z)]=m;
+}
 
-/*************** JOUEUR ***************/
+/* ===== MONDE ===== */
+for(let x=-30;x<=30;x++)
+ for(let z=-30;z<=30;z++)
+  addBlock(x,0,z,'grass');
+
+/* ===== JOUEUR ===== */
 const player={pos:new THREE.Vector3(0,2,5),vel:new THREE.Vector3(),onGround:false};
-let yaw=0,pitch=0;let move={x:0,z:0};
+let yaw=0,pitch=0;
+let move={x:0,z:0};
 
-/*************** JOYSTICK ***************/
-const joy=document.getElementById('joystick');const stick=document.getElementById('stick');let joyActive=false;
-joy.ontouchstart=()=>joyActive=true;joy.ontouchend=()=>{joyActive=false;move={x:0,z:0};stick.style.left='40px';stick.style.top='40px'};
-joy.ontouchmove=e=>{const r=joy.getBoundingClientRect(),t=e.touches[0];let dx=t.clientX-(r.left+r.width/2),dy=t.clientY-(r.top+r.height/2);
-dx=Math.max(-40,Math.min(40,dx));dy=Math.max(-40,Math.min(40,dy));stick.style.left=40+dx+'px';stick.style.top=40+dy+'px';move.x=dx/40;move.z=dy/40};
+/* ===== JOYSTICK ===== */
+const joy=document.getElementById('joystick');
+const stick=document.getElementById('stick');
 
-/*************** SAUT ***************/
-document.getElementById('jump').ontouchstart=()=>{if(player.onGround){player.vel.y=0.25;player.onGround=false}};
+joy.ontouchmove=e=>{
+ const r=joy.getBoundingClientRect();
+ const t=e.touches[0];
+ let dx=t.clientX-(r.left+r.width/2);
+ let dy=t.clientY-(r.top+r.height/2);
+ dx=Math.max(-40,Math.min(40,dx));
+ dy=Math.max(-40,Math.min(40,dy));
+ stick.style.left=40+dx+'px';
+ stick.style.top=40+dy+'px';
+ move.x=dx/40;
+ move.z=dy/40;
+};
+joy.ontouchend=()=>{
+ move={x:0,z:0};
+ stick.style.left='40px';
+ stick.style.top='40px';
+};
 
-/*************** CAMÉRA + BLOCS ***************/
-const ray=new THREE.Raycaster();let press=0;
-window.addEventListener('touchstart',e=>{if(e.target.id!=='joystick'&&e.target.id!=='jump')press=Date.now()});
-window.addEventListener('touchmove',e=>{if(e.target.id!=='joystick'){yaw-=e.touches[0].movementX*0.003;pitch-=e.touches[0].movementY*0.003;pitch=Math.max(-1.2,Math.min(1.2,pitch))}});
-window.addEventListener('touchend',e=>{
- ray.setFromCamera({x:0,y:0},camera);const hit=ray.intersectObjects(Object.values(blocks));
- if(hit.length){const p=hit[0].object.position;
-  if(Date.now()-press>400) removeBlock(p.x,p.y,p.z);
-  else addBlock(p.x,p.y+1,p.z,currentBlock);
+/* ===== SAUT ===== */
+document.getElementById('jump').ontouchstart=()=>{
+ if(player.onGround){
+  player.vel.y=0.25;
+  player.onGround=false;
+ }
+};
+
+/* ===== CAMÉRA + PLACER BLOCS ===== */
+const ray=new THREE.Raycaster();
+let look=false,lx=0,ly=0;
+
+window.addEventListener('touchstart',e=>{
+ if(e.target===renderer.domElement){
+  look=true;
+  lx=e.touches[0].clientX;
+  ly=e.touches[0].clientY;
  }
 });
 
-/*************** UPDATE ***************/
-function update(){
- player.vel.x=move.x*0.1;player.vel.z=move.z*0.1;player.vel.y-=0.01;player.pos.add(player.vel);
- if(player.pos.y<1.8){player.pos.y=1.8;player.vel.y=0;player.onGround=true}
- camera.position.copy(player.pos);camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;
- const cx=Math.floor(player.pos.x/CHUNK),cz=Math.floor(player.pos.z/CHUNK);
- for(let x=-1;x<=1;x++)for(let z=-1;z<=1;z++)genChunk(cx+x,cz+z);
-}
-function loop(){update();renderer.render(scene,camera);requestAnimationFrame(loop)}loop();
+window.addEventListener('touchmove',e=>{
+ if(!look)return;
+ const x=e.touches[0].clientX;
+ const y=e.touches[0].clientY;
+ yaw-=(x-lx)*0.003;
+ pitch-=(y-ly)*0.003;
+ pitch=Math.max(-1.2,Math.min(1.2,pitch));
+ lx=x;ly=y;
+});
 
-onresize=()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)};
+window.addEventListener('touchend',()=>{
+ look=false;
+ ray.setFromCamera({x:0,y:0},camera);
+ const hit=ray.intersectObjects(Object.values(blocks));
+ if(hit.length){
+  const p=hit[0].object.position;
+  addBlock(p.x,p.y+1,p.z,currentBlock);
+ }
+});
+
+/* ===== BOUCLE ===== */
+function update(){
+ player.vel.x=move.x*0.1;
+ player.vel.z=move.z*0.1;
+ player.vel.y-=0.01;
+ player.pos.add(player.vel);
+
+ if(player.pos.y<1.8){
+  player.pos.y=1.8;
+  player.vel.y=0;
+  player.onGround=true;
+ }
+
+ camera.position.copy(player.pos);
+ camera.rotation.order='YXZ';
+ camera.rotation.y=yaw;
+ camera.rotation.x=pitch;
+}
+
+function loop(){
+ update();
+ renderer.render(scene,camera);
+ requestAnimationFrame(loop);
+}
+loop();
+
+window.onresize=()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+};
 </script>
 </body>
 </html>
-
-
-
-
 
