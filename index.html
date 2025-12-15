@@ -1,148 +1,128 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mini Minecraft Créatif 2D</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      margin: 0;
-      background: #1e1e1e;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 { margin: 10px; }
-    canvas {
-      background: #87ceeb; /* ciel */
-      border: 2px solid #fff;
-      cursor: crosshair;
-    }
-    #ui {
-      display: flex;
-      gap: 10px;
-      margin: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .block {
-      width: 28px;
-      height: 28px;
-      border: 2px solid #fff;
-      cursor: pointer;
-    }
-    .selected { outline: 3px solid yellow; }
-    #hint { opacity: 0.8; font-size: 14px; }
-  </style>
+<meta charset="UTF-8">
+<title>Mini Minecraft 3D – Créatif</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{margin:0;background:#1b1b1b;color:white;font-family:Arial;text-align:center}
+canvas{background:#87ceeb;display:block;margin:10px auto;border:2px solid white}
+#ui{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.block{width:30px;height:30px;border:2px solid white;cursor:pointer}
+.selected{outline:3px solid yellow}
+</style>
 </head>
 <body>
-  <h1>Mini Minecraft Créatif (2D)</h1>
+<h2>Mini Minecraft 3D (Créatif)</h2>
+<p>ZQSD / WASD = bouger | Espace = sauter | Clic = placer</p>
 
-  <div id="ui">
-    <div class="block selected" data-color="#8BC34A" style="background:#8BC34A"></div>
-    <div class="block" data-color="#795548" style="background:#795548"></div>
-    <div class="block" data-color="#9E9E9E" style="background:#9E9E9E"></div>
-    <div class="block" data-color="#03A9F4" style="background:#03A9F4"></div>
-    <div class="block" data-color="#FFEB3B" style="background:#FFEB3B"></div>
-    <button id="clear">Effacer tout</button>
-    <div id="hint">Clic gauche = placer | Clic droit = supprimer</div>
-  </div>
+<div id="ui">
+  <div class="block selected" data-color="#4CAF50" style="background:#4CAF50"></div>
+  <div class="block" data-color="#795548" style="background:#795548"></div>
+  <div class="block" data-color="#9E9E9E" style="background:#9E9E9E"></div>
+</div>
 
-  <canvas id="game" width="800" height="480"></canvas>
+<canvas id="game" width="900" height="500"></canvas>
 
-  <script>
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
+<script>
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
 
-    const TILE = 32;
-    const COLS = Math.floor(canvas.width / TILE);
-    const ROWS = Math.floor(canvas.height / TILE);
+const TILE=32;
+const MAP=20;
 
-    // Monde (grille)
-    const world = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+let currentColor='#4CAF50';
+document.querySelectorAll('.block').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.block').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    currentColor=b.dataset.color;
+  }
+});
 
-    // Bloc sélectionné
-    let currentColor = '#8BC34A';
+// Monde 3D simple (x,y,z)
+let world=[];
+for(let x=0;x<MAP;x++){
+  world[x]=[];
+  for(let y=0;y<MAP;y++){
+    world[x][y]=[];
+  }
+}
 
-    // UI sélection
-    const blocks = document.querySelectorAll('.block');
-    blocks.forEach(b => {
-      b.addEventListener('click', () => {
-        blocks.forEach(x => x.classList.remove('selected'));
-        b.classList.add('selected');
-        currentColor = b.dataset.color;
-      });
-    });
+// Joueur
+const player={x:10,y:10,z:1,vz:0};
+const gravity=0.08;
 
-    document.getElementById('clear').onclick = () => {
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) world[y][x] = null;
-      }
-      draw();
-    };
+const keys={};
+document.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 
-    // Désactiver menu clic droit
-    canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('click',()=>{
+  const bx=Math.floor(player.x);
+  const by=Math.floor(player.y);
+  const bz=Math.floor(player.z);
+  world[bx][by][bz]=currentColor;
+});
 
-    canvas.addEventListener('mousedown', e => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      const x = Math.floor(mx / TILE);
-      const y = Math.floor(my / TILE);
+function update(){
+  let speed=0.08;
+  if(keys['w']||keys['z']) player.y-=speed;
+  if(keys['s']) player.y+=speed;
+  if(keys['a']||keys['q']) player.x-=speed;
+  if(keys['d']) player.x+=speed;
 
-      if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return;
+  // gravité
+  player.vz-=gravity;
+  player.z+=player.vz;
 
-      if (e.button === 0) {
-        // placer
-        world[y][x] = currentColor;
-      } else if (e.button === 2) {
-        // supprimer
-        world[y][x] = null;
-      }
-      draw();
-    });
+  // collision sol
+  const bx=Math.floor(player.x);
+  const by=Math.floor(player.y);
+  const below=Math.floor(player.z-0.1);
+  if(below>=0 && world[bx]?.[by]?.[below]){
+    player.z=below+1;
+    player.vz=0;
+  }
 
-    function drawGrid() {
-      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-      for (let x = 0; x <= COLS; x++) {
-        ctx.beginPath();
-        ctx.moveTo(x * TILE, 0);
-        ctx.lineTo(x * TILE, canvas.height);
-        ctx.stroke();
-      }
-      for (let y = 0; y <= ROWS; y++) {
-        ctx.beginPath();
-        ctx.moveTo(0, y * TILE);
-        ctx.lineTo(canvas.width, y * TILE);
-        ctx.stroke();
-      }
-    }
+  if(player.z<1){player.z=1;player.vz=0;}
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if(keys[' ']){
+    if(player.vz===0) player.vz=0.6;
+  }
+}
 
-      // Sol
-      ctx.fillStyle = '#6D4C41';
-      ctx.fillRect(0, canvas.height - TILE * 2, canvas.width, TILE * 2);
+function iso(x,y,z){
+  return{
+    x:(x-y)*TILE+canvas.width/2,
+    y:(x+y)*TILE/2 - z*TILE + 150
+  }
+}
 
-      // Blocs
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
-          if (world[y][x]) {
-            ctx.fillStyle = world[y][x];
-            ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
-          }
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // blocs
+  for(let z=0;z<6;z++){
+    for(let x=0;x<MAP;x++){
+      for(let y=0;y<MAP;y++){
+        if(world[x][y][z]){
+          const p=iso(x,y,z);
+          ctx.fillStyle=world[x][y][z];
+          ctx.fillRect(p.x,p.y,TILE,TILE);
         }
       }
-
-      drawGrid();
     }
+  }
 
-    draw();
-  </script>
+  // joueur
+  const p=iso(player.x,player.y,player.z);
+  ctx.fillStyle='red';
+  ctx.fillRect(p.x,p.y,16,24);
+}
+
+function loop(){update();draw();requestAnimationFrame(loop)}
+loop();
+</script>
 </body>
 </html>
 
