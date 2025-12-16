@@ -13,19 +13,17 @@ html, body {
   touch-action: none;
 }
 
-/* LEFT JOYSTICK (MOVE) */
-.joystick {
+/* MOVE JOYSTICK */
+#joystick {
   position: fixed;
   bottom: 30px;
+  left: 30px;
   width: 120px;
   height: 120px;
   background: rgba(255,255,255,0.15);
   border-radius: 50%;
 }
-#moveJoy { left: 30px; }
-#lookJoy { right: 30px; }
-
-.stick {
+#stick {
   position: absolute;
   left: 35px;
   top: 35px;
@@ -38,8 +36,8 @@ html, body {
 /* JUMP */
 #jump {
   position: fixed;
-  bottom: 180px;
-  right: 50px;
+  bottom: 40px;
+  right: 30px;
   width: 90px;
   height: 90px;
   border-radius: 50%;
@@ -50,8 +48,7 @@ html, body {
 </head>
 <body>
 
-<div id="moveJoy" class="joystick"><div class="stick"></div></div>
-<div id="lookJoy" class="joystick"><div class="stick"></div></div>
+<div id="joystick"><div id="stick"></div></div>
 <button id="jump">JUMP</button>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
@@ -60,8 +57,14 @@ html, body {
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({antialias:true});
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
@@ -75,14 +78,14 @@ scene.add(sun);
 /* WORLD */
 const water = new THREE.Mesh(
   new THREE.BoxGeometry(100,0.5,100),
-  new THREE.MeshLambertMaterial({color:0x1e90ff})
+  new THREE.MeshLambertMaterial({ color: 0x1e90ff })
 );
 water.position.y = 0.25;
 scene.add(water);
 
 const island = new THREE.Mesh(
   new THREE.BoxGeometry(20,1,20),
-  new THREE.MeshLambertMaterial({color:0x2e8b57})
+  new THREE.MeshLambertMaterial({ color: 0x2e8b57 })
 );
 island.position.set(0,0.5,-10);
 scene.add(island);
@@ -100,63 +103,74 @@ let grounded = true;
 let yaw = 0;
 let pitch = 0;
 
-/* MOVE JOYSTICK */
-let moveX = 0, moveZ = 0;
-setupJoystick("moveJoy", (x,y)=>{
-  moveX = x;
-  moveZ = y;
+/* ===== TOUCH LOOK (SWIPE SCREEN) ===== */
+let looking = false;
+let lastX = 0;
+let lastY = 0;
+
+window.addEventListener("touchstart", e => {
+  if (e.target.id === "joystick" || e.target.id === "stick" || e.target.id === "jump") return;
+  looking = true;
+  lastX = e.touches[0].clientX;
+  lastY = e.touches[0].clientY;
 });
 
-/* LOOK JOYSTICK */
-setupJoystick("lookJoy", (x,y)=>{
-  yaw -= x * 0.05;
-  pitch -= y * 0.05;
+window.addEventListener("touchmove", e => {
+  if (!looking) return;
+  const x = e.touches[0].clientX;
+  const y = e.touches[0].clientY;
+  yaw -= (x - lastX) * 0.004;
+  pitch -= (y - lastY) * 0.004;
   pitch = Math.max(-1.4, Math.min(1.4, pitch));
+  lastX = x;
+  lastY = y;
+});
+
+window.addEventListener("touchend", () => looking = false);
+
+/* ===== MOVE JOYSTICK ===== */
+let moveX = 0, moveZ = 0;
+const joystick = document.getElementById("joystick");
+const stick = document.getElementById("stick");
+let joyActive = false;
+let joyCenter = {x:0,y:0};
+
+joystick.addEventListener("touchstart", e => {
+  joyActive = true;
+  const r = joystick.getBoundingClientRect();
+  joyCenter.x = r.left + r.width/2;
+  joyCenter.y = r.top + r.height/2;
+});
+
+window.addEventListener("touchmove", e => {
+  if (!joyActive) return;
+  const t = e.touches[0];
+  let dx = t.clientX - joyCenter.x;
+  let dy = t.clientY - joyCenter.y;
+  dx = Math.max(-40, Math.min(40, dx));
+  dy = Math.max(-40, Math.min(40, dy));
+  stick.style.left = 35 + dx + "px";
+  stick.style.top = 35 + dy + "px";
+  moveX = dx / 40;
+  moveZ = dy / 40;
+});
+
+window.addEventListener("touchend", () => {
+  joyActive = false;
+  stick.style.left = "35px";
+  stick.style.top = "35px";
+  moveX = moveZ = 0;
 });
 
 /* JUMP */
-document.getElementById("jump").addEventListener("touchstart", ()=>{
-  if(grounded){
+document.getElementById("jump").addEventListener("touchstart", () => {
+  if (grounded) {
     velocityY = 0.18;
     grounded = false;
   }
 });
 
-/* JOYSTICK FUNCTION */
-function setupJoystick(id, callback){
-  const joy = document.getElementById(id);
-  const stick = joy.querySelector(".stick");
-  let active = false;
-  let center = {x:0,y:0};
-
-  joy.addEventListener("touchstart", e=>{
-    active = true;
-    const r = joy.getBoundingClientRect();
-    center.x = r.left + r.width/2;
-    center.y = r.top + r.height/2;
-  });
-
-  window.addEventListener("touchmove", e=>{
-    if(!active) return;
-    const t = e.touches[0];
-    let dx = t.clientX - center.x;
-    let dy = t.clientY - center.y;
-    dx = Math.max(-40, Math.min(40, dx));
-    dy = Math.max(-40, Math.min(40, dy));
-    stick.style.left = 35 + dx + "px";
-    stick.style.top = 35 + dy + "px";
-    callback(dx/40, dy/40);
-  });
-
-  window.addEventListener("touchend", ()=>{
-    active = false;
-    stick.style.left = "35px";
-    stick.style.top = "35px";
-    callback(0,0);
-  });
-}
-
-/* LOOP */
+/* ===== LOOP ===== */
 function animate(){
   requestAnimationFrame(animate);
 
@@ -172,23 +186,22 @@ function animate(){
 
   velocityY -= 0.01;
   player.position.y += velocityY;
-  if(player.position.y <= 2){
+  if (player.position.y <= 2) {
     player.position.y = 2;
     velocityY = 0;
     grounded = true;
   }
 
-  renderer.render(scene,camera);
+  renderer.render(scene, camera);
 }
 animate();
 
 /* RESIZE */
-window.addEventListener("resize", ()=>{
-  camera.aspect = window.innerWidth/window.innerHeight;
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 </script>
 </body>
 </html>
-
