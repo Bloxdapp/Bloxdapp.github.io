@@ -42,7 +42,6 @@ html, body {
   height: 80px;
   border-radius: 50%;
   border: none;
-  font-size: 16px;
 }
 
 /* INVENTORY */
@@ -55,11 +54,11 @@ html, body {
   gap: 6px;
 }
 .slot {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border: 2px solid white;
   color: white;
-  font-size: 10px;
+  font-size: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,13 +85,12 @@ html, body {
 
 <div id="joystick"><div id="stick"></div></div>
 <button id="jump">JUMP</button>
-
 <div id="inventory"></div>
 <div id="msg"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script>
-/* ===== THREE SETUP ===== */
+/* ===== BASIC SETUP ===== */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 
@@ -102,9 +100,8 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-/* LIGHT */
-scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-const sun = new THREE.DirectionalLight(0xffffff, 1);
+scene.add(new THREE.AmbientLight(0xffffff,0.7));
+const sun = new THREE.DirectionalLight(0xffffff,1);
 sun.position.set(10,20,10);
 scene.add(sun);
 
@@ -113,7 +110,7 @@ const water = new THREE.Mesh(
   new THREE.BoxGeometry(100,0.5,100),
   new THREE.MeshLambertMaterial({color:0x1e90ff})
 );
-water.position.y = 0.25;
+water.position.y=0.25;
 scene.add(water);
 
 const island = new THREE.Mesh(
@@ -124,50 +121,46 @@ island.position.set(0,0.5,-10);
 scene.add(island);
 
 /* PLAYER */
-const player = new THREE.Object3D();
+const player=new THREE.Object3D();
 scene.add(player);
 player.position.set(0,2,10);
 player.add(camera);
 
-let velocityY = 0;
-let grounded = true;
+let velocityY=0, grounded=true;
 
-/* CAMERA LOOK */
-let yaw = 0, pitch = 0;
-let looking = false, lastX = 0, lastY = 0;
-
-/* TOUCH LOOK */
-window.addEventListener("touchstart", e=>{
-  if(e.target.closest(".slot") || e.target.id==="joystick" || e.target.id==="stick" || e.target.id==="jump") return;
-  looking = true;
-  lastX = e.touches[0].clientX;
-  lastY = e.touches[0].clientY;
+/* LOOK */
+let yaw=0,pitch=0,looking=false,lastX=0,lastY=0;
+window.addEventListener("touchstart",e=>{
+  if(e.target.closest(".slot")||e.target.id==="joystick"||e.target.id==="stick"||e.target.id==="jump")return;
+  looking=true;
+  lastX=e.touches[0].clientX;
+  lastY=e.touches[0].clientY;
 });
-window.addEventListener("touchmove", e=>{
-  if(!looking) return;
+window.addEventListener("touchmove",e=>{
+  if(!looking)return;
   const x=e.touches[0].clientX;
   const y=e.touches[0].clientY;
-  yaw -= (x-lastX)*0.004;
-  pitch -= (y-lastY)*0.004;
+  yaw-=(x-lastX)*0.004;
+  pitch-=(y-lastY)*0.004;
   pitch=Math.max(-1.4,Math.min(1.4,pitch));
   lastX=x; lastY=y;
 });
-window.addEventListener("touchend", ()=>looking=false);
+window.addEventListener("touchend",()=>looking=false);
 
 /* MOVE JOYSTICK */
-let moveX=0, moveZ=0;
+let moveX=0,moveZ=0;
 const joystick=document.getElementById("joystick");
 const stick=document.getElementById("stick");
-let joyActive=false, joyCenter={x:0,y:0};
+let joyActive=false,joyCenter={x:0,y:0};
 
-joystick.addEventListener("touchstart", ()=>{
+joystick.addEventListener("touchstart",()=>{
   joyActive=true;
   const r=joystick.getBoundingClientRect();
   joyCenter.x=r.left+r.width/2;
   joyCenter.y=r.top+r.height/2;
 });
-window.addEventListener("touchmove", e=>{
-  if(!joyActive) return;
+window.addEventListener("touchmove",e=>{
+  if(!joyActive)return;
   const t=e.touches[0];
   let dx=t.clientX-joyCenter.x;
   let dy=t.clientY-joyCenter.y;
@@ -178,7 +171,7 @@ window.addEventListener("touchmove", e=>{
   moveX=dx/40;
   moveZ=dy/40;
 });
-window.addEventListener("touchend", ()=>{
+window.addEventListener("touchend",()=>{
   joyActive=false;
   stick.style.left="30px";
   stick.style.top="30px";
@@ -186,24 +179,24 @@ window.addEventListener("touchend", ()=>{
 });
 
 /* JUMP */
-document.getElementById("jump").addEventListener("touchstart", ()=>{
+document.getElementById("jump").addEventListener("touchstart",()=>{
   if(grounded){
     velocityY=0.18;
     grounded=false;
   }
 });
 
-/* ===== INVENTORY ===== */
-const inventory = ["Rod", "", "", "", "", "", "", "", ""];
-let selectedSlot = 0;
-const invDiv = document.getElementById("inventory");
+/* INVENTORY */
+const inventory=["Rod","","","","","","","",""];
+let selectedSlot=0;
+const invDiv=document.getElementById("inventory");
 
 function renderInventory(){
   invDiv.innerHTML="";
   inventory.forEach((item,i)=>{
     const d=document.createElement("div");
     d.className="slot"+(i===selectedSlot?" active":"");
-    d.innerText=item||"";
+    d.innerText=item;
     d.addEventListener("touchstart",()=>{
       selectedSlot=i;
       renderInventory();
@@ -213,26 +206,75 @@ function renderInventory(){
 }
 renderInventory();
 
-/* ===== FISHING ===== */
-let holding=false, holdTime=0;
-let fishing=false, taps=0, tapTimer=null;
+/* FISHING */
+let holding=false,holdTime=0,fishing=false,taps=0,tapTimer=null;
 const msg=document.getElementById("msg");
 
-window.addEventListener("touchstart", ()=>{
-  if(fishing) return;
-  if(inventory[selectedSlot]!=="Rod") return;
+window.addEventListener("touchstart",()=>{
+  if(fishing)return;
+  if(inventory[selectedSlot]!=="Rod")return;
   holding=true;
   holdTime=0;
 });
-
-window.addEventListener("touchend", ()=>{
+window.addEventListener("touchend",()=>{
   holding=false;
   holdTime=0;
 });
-
-window.addEventListener("touchstart", ()=>{
+window.addEventListener("touchstart",()=>{
   if(fishing && tapTimer) taps++;
 });
+
+function getRandomFish(){
+  const r=Math.random();
+  if(r<0.25) return "Clownfish";
+  if(r<0.5) return "Tuna";
+  return "Shark";
+}
+
+function addToInventory(item){
+  for(let i=0;i<inventory.length;i++){
+    if(inventory[i]===""){
+      inventory[i]=item;
+      renderInventory();
+      return true;
+    }
+  }
+  return false;
+}
+
+function startFishing(){
+  fishing=true;
+  msg.style.display="block";
+  msg.innerText="Casting rod...";
+  setTimeout(()=>{
+    msg.innerText="Waiting for fish...";
+    setTimeout(startMinigame,5000);
+  },500);
+}
+
+function startMinigame(){
+  const fish=getRandomFish();
+  msg.innerText=fish+"! TAP 10 TIMES!";
+  taps=0;
+  let time=5;
+  tapTimer=setInterval(()=>{
+    time--;
+    if(time<=0){
+      clearInterval(tapTimer);
+      tapTimer=null;
+      if(taps>=10){
+        msg.innerText="You caught a "+fish+"!";
+        addToInventory(fish);
+      }else{
+        msg.innerText=fish+" escaped!";
+      }
+      setTimeout(()=>{
+        msg.style.display="none";
+        fishing=false;
+      },2000);
+    }
+  },1000);
+}
 
 /* LOOP */
 function animate(){
@@ -244,6 +286,7 @@ function animate(){
 
   const forward=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
   const right=new THREE.Vector3(forward.z,0,-forward.x);
+
   player.position.add(forward.multiplyScalar(moveZ*0.15));
   player.position.add(right.multiplyScalar(moveX*0.15));
 
@@ -267,37 +310,8 @@ function animate(){
 }
 animate();
 
-/* FISH LOGIC */
-function startFishing(){
-  fishing=true;
-  msg.style.display="block";
-  msg.innerText="Casting rod...";
-  setTimeout(()=>{
-    msg.innerText="Waiting for Clownfish...";
-    setTimeout(startMinigame,5000);
-  },500);
-}
-
-function startMinigame(){
-  msg.innerText="Clownfish! TAP 10 TIMES!";
-  taps=0;
-  let time=5;
-  tapTimer=setInterval(()=>{
-    time--;
-    if(time<=0){
-      clearInterval(tapTimer);
-      tapTimer=null;
-      msg.innerText = taps>=10 ? "You caught a Clownfish!" : "The Clownfish escaped!";
-      setTimeout(()=>{
-        msg.style.display="none";
-        fishing=false;
-      },2000);
-    }
-  },1000);
-}
-
 /* RESIZE */
-window.addEventListener("resize", ()=>{
+window.addEventListener("resize",()=>{
   camera.aspect=window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth,window.innerHeight);
