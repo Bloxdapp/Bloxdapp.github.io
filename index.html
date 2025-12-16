@@ -49,6 +49,25 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 #inventory{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
 .slot{width:42px;height:42px;border:2px solid white;color:white;font-size:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5)}
 .slot.active{border-color:yellow}
+
+/* SHOP (ADDITION) */
+#shop{
+ position:fixed;
+ top:50%;left:50%;
+ transform:translate(-50%,-50%);
+ background:rgba(0,0,0,.9);
+ color:white;
+ padding:20px;
+ border-radius:12px;
+ display:none;
+ z-index:50;
+ text-align:center
+}
+#shop button{
+ margin:6px;
+ padding:6px 14px;
+ font-size:16px
+}
 </style>
 </head>
 <body>
@@ -87,6 +106,14 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 <div id="joystick"><div id="stick"></div></div>
 <button id="jump">JUMP</button>
 <div id="inventory"></div>
+
+<!-- SHOP UI (ADDITION) -->
+<div id="shop">
+ <h3>Shop</h3>
+ <button id="buySunRod">Buy Sun Rod ($1000)</button><br>
+ <button id="buyBait">Buy 1 Bait ($25)</button><br><br>
+ <button onclick="shop.style.display='none'">CLOSE</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script>
@@ -140,7 +167,7 @@ for(let i=0;i<6;i++){
  addTree(Math.random()*12-6,Math.random()*12-6);
 }
 
-/* ===== ORB (ONLY ADDITION) ===== */
+/* ===== ORB (ADDITION) ===== */
 const orb=new THREE.Mesh(
  new THREE.SphereGeometry(0.4,16,16),
  new THREE.MeshStandardMaterial({
@@ -273,6 +300,47 @@ function updateRod(){
   }
  }else if(rod){camera.remove(rod);rod=null;}
 }
+
+/* ===== ORB CLICK → SHOP (ADDITION) ===== */
+const raycaster=new THREE.Raycaster();
+const touchVec=new THREE.Vector2();
+const shop=document.getElementById("shop");
+
+addEventListener("touchstart",e=>{
+ touchVec.x=(e.touches[0].clientX/innerWidth)*2-1;
+ touchVec.y=-(e.touches[0].clientY/innerHeight)*2+1;
+ raycaster.setFromCamera(touchVec,camera);
+ if(raycaster.intersectObject(orb).length){
+  shop.style.display="block";
+ }
+});
+
+/* SHOP BUTTONS (ADDITION) */
+buySunRod.onclick=()=>{
+ if(money<1000)return alert("Not enough money");
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]===""){
+   inventory[i]="Sun Rod";
+   money-=1000;
+   document.getElementById("money").textContent="$"+money;
+   renderInv();
+   return;
+  }
+ }
+};
+
+buyBait.onclick=()=>{
+ if(money<25)return alert("Not enough money");
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]===""){
+   inventory[i]="Bait";
+   money-=25;
+   document.getElementById("money").textContent="$"+money;
+   renderInv();
+   return;
+  }
+ }
+};
 
 /* FISHING */
 let holding=false,holdTime=0,fishing=false,taps=0;
