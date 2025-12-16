@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,10 +46,33 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 #stick{position:absolute;left:30px;top:30px;width:50px;height:50px;background:white;border-radius:50%}
 #jump{position:fixed;bottom:120px;right:20px;width:80px;height:80px;border-radius:50%}
 
-/* Inventory */
-#inventory{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
-.slot{width:42px;height:42px;border:2px solid white;color:white;font-size:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5)}
-.slot.active{border-color:yellow}
+/* INVENTORY */
+#inventory{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 90%;
+  padding: 6px;
+  background: rgba(0,0,0,.3);
+  border-radius: 6px;
+}
+.slot{
+  width: 42px;
+  height: 42px;
+  border: 2px solid white;
+  color: white;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.5);
+  flex: 0 0 auto;
+}
+.slot.active{border-color: yellow}
 
 /* SHOP */
 #shop{
@@ -90,21 +114,6 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  padding:6px 14px;
  font-size:16px;
 }
-
-/* FISH BUTTON */
-.fish-btn{
- position:fixed;
- z-index:100;
- border-radius:50%;
- padding:20px;
- font-size:18px;
- background:gray;
- color:white;
- border:none;
- cursor:pointer;
- text-align:center;
- user-select:none;
-}
 </style>
 </head>
 <body>
@@ -130,7 +139,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  • Equip Rod from inventory<br>
  • Hold screen 2 seconds to cast<br>
  • Wait for fish<br>
- • A circular "Press Here" button will spawn randomly<br>
+ • A "Press Here" button will spawn randomly<br>
  • Tap it within 1 second, 10 times to catch the fish<br><br>
 
  🐟 <b>Fish Chances</b><br>
@@ -167,14 +176,16 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 <script>
-// ===== SCENE & PLAYER =====
+/* ===== SCENE ===== */
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87CEEB);
+
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,1000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
+
 scene.add(new THREE.AmbientLight(0xffffff,.7));
 const sun=new THREE.DirectionalLight(0xffffff,1);
 sun.position.set(10,20,10);
@@ -231,7 +242,7 @@ player.add(camera);
 let velocityY=0,grounded=true;
 let yaw=0,pitch=0;
 
-// Camera look
+/* CAMERA LOOK */
 let looking=false,lastX=0,lastY=0;
 addEventListener("touchstart",e=>{
  if(e.target.closest(".slot")||e.target.id==="joystick"||e.target.id==="stick"||e.target.id==="jump"||e.target.id==="book")return;
@@ -249,7 +260,7 @@ addEventListener("touchmove",e=>{
 });
 addEventListener("touchend",()=>looking=false);
 
-// Movement
+/* MOVE */
 let moveX=0,moveZ=0,joy=false,center={};
 joystick.addEventListener("touchstart",()=>{
  joy=true;
@@ -274,59 +285,165 @@ addEventListener("touchend",()=>{
  moveX=moveZ=0;
 });
 
-// Jump
+/* JUMP */
 jump.addEventListener("touchstart",()=>{
  if(grounded){velocityY=.18;grounded=false;}
 });
 
-// Inventory
-let money=0;
-const prices={Clownfish:5,Tuna:10,Shark:25,Pufferfish:25,SeaTurtle:50,MantaRay:500,Megalodon:1000};
-const inventory=["Rod","","","","","","","",""];
-let selected=0,lastTapTime=0;
-const inv=document.getElementById("inventory");
+/* ===== INVENTORY SYSTEM ===== */
+let money = 0;
+const prices = {Clownfish:5, Tuna:10, Shark:25, Pufferfish:25, SeaTurtle:50, MantaRay:500, Megalodon:1000};
 
-function parseStack(item){if(!item)return{name:"",count:0};const match=item.match(/^(.+)x(\d+)$/);if(match)return{name:match[1],count:parseInt(match[2])};return{name:item,count:1};}
+// Start with 9 slots
+let inventory = ["Rod","","","","","","","",""];
+let selected = 0;
+const inv = document.getElementById("inventory");
+let lastTapTime = 0;
 
-function slotTap(index){
- const {name,count}=parseStack(inventory[index]);
- selected=index; renderInv(); updateRod();
- if(!name || name==="Rod"||name==="Sun Rod"||name==="Bait") return;
- const now=Date.now();
- if(lastTapTime && now-lastTapTime<500 && selected===index){
-   money+=prices[name]||0;
-   document.getElementById("money").textContent="$"+money;
-   if(count>1) inventory[index]=name+"x"+(count-1); else inventory[index]="";
-   renderInv();
-   lastTapTime=0;
- } else {
-   msg.style.display="block";
-   msg.textContent=name+" (tap again to sell)";
-   setTimeout(()=>{msg.style.display="none"},1000);
-   lastTapTime=now;
- }
+// Parse item stacks
+function parseStack(item){
+  if(!item) return {name:"", count:0};
+  const match = item.match(/^(.+)x(\d+)$/);
+  if(match) return {name:match[1], count:parseInt(match[2])};
+  return {name:item, count:1};
 }
 
-function renderInv(){inv.innerHTML="";inventory.forEach((it,i)=>{const d=document.createElement("div");d.className="slot"+(i===selected?" active":"");d.textContent=it;d.onclick=()=>slotTap(i);inv.appendChild(d);});}
+// Add item with stacking logic
+function addItem(fishName){
+  const maxStack = 99;
+  // Try to stack first
+  for(let i=0;i<inventory.length;i++){
+    const {name,count} = parseStack(inventory[i]);
+    if(name === fishName && count < maxStack){
+      const newCount = Math.min(count+1, maxStack);
+      inventory[i] = fishName + (newCount>1 ? "x"+newCount : "");
+      renderInv();
+      return;
+    }
+  }
+  // Find empty slot
+  for(let i=0;i<inventory.length;i++){
+    if(inventory[i]===""){
+      inventory[i] = fishName;
+      renderInv();
+      return;
+    }
+  }
+  alert("Inventory full!");
+}
+
+// Tap handling (preview / sell)
+function slotTap(index){
+  const {name,count} = parseStack(inventory[index]);
+  selected = index;
+  renderInv();
+  updateRod();
+
+  if(!name || name==="Rod" || name==="Sun Rod" || name==="Bait") return;
+
+  const now = Date.now();
+  if(lastTapTime && now-lastTapTime<500 && selected===index){
+    // Double tap → sell
+    money += (prices[name]||0) * count; // Sell all in stack
+    document.getElementById("money").textContent = "$" + money;
+    inventory[index] = "";
+    renderInv();
+    lastTapTime = 0;
+  }else{
+    // Single tap → preview
+    msg.style.display = "block";
+    msg.textContent = name + " (double tap to sell all)";
+    setTimeout(()=>{msg.style.display="none"},1000);
+    lastTapTime = now;
+  }
+}
+
+// Render inventory with scrollable UI
+function renderInv(){
+  inv.innerHTML = "";
+  inventory.forEach((it,i)=>{
+    const d = document.createElement("div");
+    d.className = "slot"+(i===selected?" active":"");
+    d.textContent = it;
+    d.onclick = ()=>slotTap(i);
+    inv.appendChild(d);
+  });
+}
 renderInv();
 
-// Rod
+// Inventory expansion
+function expandInventory(slots=3){
+  for(let i=0;i<slots;i++) inventory.push("");
+  renderInv();
+}
+
+// Example shop button for expansion (can be added to your shop)
+const expandBtn = document.createElement("button");
+expandBtn.textContent = "Buy 3 Inventory Slots ($500)";
+expandBtn.onclick = ()=>{
+  if(money<500) return alert("Not enough money");
+  money -= 500;
+  document.getElementById("money").textContent = "$"+money;
+  expandInventory(3);
+};
+shop.appendChild(expandBtn);
+
+/* ROD */
 let rod=null;
 function updateRod(){
  if(inventory[selected]==="Rod"||inventory[selected]==="Sun Rod"){
-   if(!rod){rod=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,1),new THREE.MeshStandardMaterial({color:inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513}));
- rod.position.set(.3,-.4,-1);rod.rotation.z=Math.PI/4;camera.add(rod);}
- else rod.material.color.set(inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513);
- } else if(rod){camera.remove(rod);rod=null;}
+   if(!rod){
+     rod=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,1),new THREE.MeshStandardMaterial({color:inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513}));
+     rod.position.set(.3,-.4,-1);
+     rod.rotation.z=Math.PI/4;
+     camera.add(rod);
+   }else{
+     rod.material.color.set(inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513);
+   }
+ }else if(rod){camera.remove(rod);rod=null;}
 }
 
-// Reaction-time fishing mini-game
+/* ORB CLICK → SHOP */
+const raycaster=new THREE.Raycaster();
+const touchVec=new THREE.Vector2();
+addEventListener("touchstart",e=>{
+ touchVec.x=(e.touches[0].clientX/innerWidth)*2-1;
+ touchVec.y=-(e.touches[0].clientY/innerHeight)*2+1;
+ raycaster.setFromCamera(touchVec,camera);
+ if(raycaster.intersectObject(orb).length){
+  shop.style.display="block";
+ }
+});
+
+/* SHOP BUTTONS */
+buySunRod.onclick=()=>{
+ if(money<1000)return alert("Not enough money");
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]==="Rod"){inventory[i]="Sun Rod"; renderInv(); money-=1000; document.getElementById("money").textContent="$"+money; return;}
+ }
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]===""){inventory[i]="Sun Rod"; money-=1000; document.getElementById("money").textContent="$"+money; renderInv(); return;}
+ }
+ alert("Inventory full!");
+};
+
+buyBait.onclick=()=>{
+ if(money<25)return alert("Not enough money");
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]===""){inventory[i]="Bait"; money-=25; document.getElementById("money").textContent="$"+money; renderInv(); return;}
+ }
+ alert("Inventory full!");
+};
+
+/* ===== REACTION-TIME MINI-GAME FISHING ===== */
 let holding=false, holdTime=0, fishing=false, taps=0, requiredTaps=10, fishButton=null, fishTimer=null;
-addEventListener("touchstart",()=>{if(inventory[selected]==="Rod"||inventory[selected]==="Sun Rod"){if(!fishing){holding=true;holdTime=0}}});
-addEventListener("touchend",()=>{holding=false; holdTime=0;});
+
+addEventListener("touchstart",()=>{if(inventory[selected]==="Rod"||inventory[selected]==="Sun Rod"){if(!fishing){holding=true; holdTime=0}}});
+addEventListener("touchend",()=>{holding=false; holdTime=0});
 
 function randomFish(){
- const r=Math.random(); let fish="";
+ const r=Math.random();
+ let fish="";
  if(r<1/50) fish="Megalodon";
  else if(r<1/25) fish="MantaRay";
  else if(r<1/5) fish="SeaTurtle";
@@ -334,51 +451,89 @@ function randomFish(){
  else if(r<0.58) fish="Tuna";
  else if(r<0.83) fish="Clownfish";
  else fish="Shark";
- if(inventory[selected]==="Sun Rod"&&Math.random()<0.5){const rarities=["Megalodon","MantaRay","SeaTurtle"];fish=rarities[Math.floor(Math.random()*rarities.length)];}
+
+ if(inventory[selected]==="Sun Rod" && Math.random()<0.5){
+  const rarities=["Megalodon","MantaRay","SeaTurtle"];
+  fish=rarities[Math.floor(Math.random()*rarities.length)];
+ }
  return fish;
 }
-
-function addItem(f){for(let i=0;i<inventory.length;i++){const {name,count}=parseStack(inventory[i]);if(name===f){inventory[i]=name+"x"+(count+1);renderInv();return;}}for(let i=0;i<inventory.length;i++){if(inventory[i]===""){inventory[i]=f;renderInv();return;}}alert("Inventory full!");}
 
 function createFishButton(){
  if(fishButton) document.body.removeChild(fishButton);
  fishButton=document.createElement("button");
- fishButton.className="fish-btn";
- fishButton.textContent="Press Here x"+(taps+1);
- const x=Math.random()*(window.innerWidth-100);
- const y=Math.random()*(window.innerHeight-100);
- fishButton.style.left=x+"px"; fishButton.style.top=y+"px";
+ fishButton.textContent="PRESS HERE!";
+ fishButton.style.position="fixed";
+ fishButton.style.zIndex="100";
+ fishButton.style.padding="12px 20px";
+ fishButton.style.fontSize="18px";
+ fishButton.style.borderRadius="8px";
+ fishButton.style.background="yellow";
+ fishButton.style.color="black";
+ const x=Math.random()*(window.innerWidth-150);
+ const y=Math.random()*(window.innerHeight-60);
+ fishButton.style.left=x+"px";
+ fishButton.style.top=y+"px";
  document.body.appendChild(fishButton);
 }
 
 function startFishing(){
- fishing=true; holding=false; holdTime=0; taps=0; msg.style.display="block"; msg.textContent="Casting...";
+ fishing=true;
+ holding=false;
+ holdTime=0;
+ taps=0;
+ msg.style.display="block";
+ msg.textContent="Casting...";
+ const castDelay = 1000 + Math.random()*1500;
+
  setTimeout(()=>{
    const fish=randomFish();
    msg.textContent=fish+"! Catch it by pressing the button!";
-   function failFish(){msg.textContent="Fish escaped!"; fishing=false; if(fishButton) document.body.removeChild(fishButton); fishButton=null; clearTimeout(fishTimer); setTimeout(()=>{msg.style.display="none"},2000);}
+   
+   function failFish(){
+     msg.textContent="Fish escaped!";
+     fishing=false;
+     if(fishButton) document.body.removeChild(fishButton);
+     fishButton=null;
+     clearTimeout(fishTimer);
+     setTimeout(()=>{msg.style.display="none"},2000);
+   }
+
    function nextTap(){
-     if(taps>=requiredTaps){msg.textContent="Caught "+fish+"!"; addItem(fish); fishing=false; if(fishButton) document.body.removeChild(fishButton); fishButton=null; clearTimeout(fishTimer); setTimeout(()=>{msg.style.display="none"},2000);return;}
+     if(taps>=requiredTaps){
+       msg.textContent="Caught "+fish+"!";
+       addItem(fish);
+       fishing=false;
+       if(fishButton) document.body.removeChild(fishButton);
+       fishButton=null;
+       clearTimeout(fishTimer);
+       setTimeout(()=>{msg.style.display="none"},2000);
+       return;
+     }
      createFishButton();
      fishTimer=setTimeout(failFish,1000);
      fishButton.onclick=()=>{
-       taps++; clearTimeout(fishTimer);
-       if(fishButton) document.body.removeChild(fishButton); fishButton=null;
+       taps++;
+       clearTimeout(fishTimer);
+       if(fishButton) document.body.removeChild(fishButton);
+       fishButton=null;
        nextTap();
-     };
+     }
    }
+
    nextTap();
- },1000+Math.random()*1500);
+ }, castDelay);
 }
 
-// Book
+/* BOOK */
 book.onclick=()=>rules.style.display="block";
 
-// Login system
+/* ===== LOGIN FEATURE ===== */
 const loginDiv=document.getElementById("login");
 const usernameInput=document.getElementById("username");
 const loginBtn=document.getElementById("loginBtn");
 let username=null;
+
 function loadPlayerData(name){
  const data=localStorage.getItem("fishingGame_"+name);
  if(data){
@@ -390,7 +545,12 @@ function loadPlayerData(name){
  document.getElementById("money").textContent="$"+money;
  renderInv();
 }
-function savePlayerData(){if(!username)return; localStorage.setItem("fishingGame_"+username,JSON.stringify({money,inventory,selected}));}
+
+function savePlayerData(){
+ if(!username)return;
+ localStorage.setItem("fishingGame_"+username,JSON.stringify({money,inventory,selected}));
+}
+
 loginBtn.onclick=()=>{
  const name=usernameInput.value.trim();
  if(!name)return alert("Enter a username");
@@ -399,34 +559,32 @@ loginBtn.onclick=()=>{
  loginDiv.style.display="none";
  savePlayerData();
 };
+
 setInterval(savePlayerData,5000);
 
-// Shop buttons
-buySunRod.onclick=()=>{
- if(money<1000)return alert("Not enough money");
- for(let i=0;i<inventory.length;i++){if(inventory[i]==="Rod"){inventory[i]="Sun Rod"; renderInv(); money-=1000; document.getElementById("money").textContent="$"+money; return;}}
- for(let i=0;i<inventory.length;i++){if(inventory[i]===""){inventory[i]="Sun Rod"; money-=1000; document.getElementById("money").textContent="$"+money; renderInv(); return;}}
- alert("Inventory full!");
-};
-buyBait.onclick=()=>{
- if(money<25)return alert("Not enough money");
- for(let i=0;i<inventory.length;i++){if(inventory[i]===""){inventory[i]="Bait"; money-=25; document.getElementById("money").textContent="$"+money; renderInv(); return;}}
- alert("Inventory full!");
-};
-
-// Main loop
+/* ===== LOOP ===== */
 function animate(){
  requestAnimationFrame(animate);
  updateRod();
+
  camera.rotation.order="YXZ";
- camera.rotation.y=yaw; camera.rotation.x=pitch;
+ camera.rotation.y=yaw;
+ camera.rotation.x=pitch;
+
  const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
  const r=new THREE.Vector3(f.z,0,-f.x);
  player.position.add(f.multiplyScalar(moveZ*.15));
  player.position.add(r.multiplyScalar(moveX*.15));
- velocityY-=.01; player.position.y+=velocityY;
+
+ velocityY-=.01;
+ player.position.y+=velocityY;
  if(player.position.y<=3){player.position.y=3;velocityY=0;grounded=true;}
- if(holding&&!fishing){holdTime+=.016; if(holdTime>=2){startFishing();holding=false;}}
+
+ if(holding&&!fishing){
+  holdTime+=.016;
+  if(holdTime>=2){startFishing();holding=false;}
+ }
+
  renderer.render(scene,camera);
 }
 animate();
