@@ -2,58 +2,152 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Three.js Test</title>
+<title>3D Game – Joystick Movement</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { margin:0; overflow:hidden; }
+body {
+  margin: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* UI */
+#joystick {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  width: 120px;
+  height: 120px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+}
+
+#stick {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  left: 35px;
+  top: 35px;
+}
+
+#jumpBtn {
+  position: absolute;
+  bottom: 50px;
+  right: 40px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  font-size: 20px;
+  border: none;
+}
 </style>
 </head>
 <body>
+
+<div id="joystick">
+  <div id="stick"></div>
+</div>
+<button id="jumpBtn">JUMP</button>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script>
-let scene = new THREE.Scene();
+// =====================
+// BASIC THREE.JS SETUP
+// =====================
+const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 
-let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.set(0,2,10);
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
 
-let renderer = new THREE.WebGLRenderer({antialias:true});
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Lighting
+// Lights
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-let dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-dirLight.position.set(10,20,10);
-scene.add(dirLight);
+const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+sun.position.set(10, 20, 10);
+scene.add(sun);
 
-// Ground / water
-let water = new THREE.Mesh(
-    new THREE.BoxGeometry(50,0.5,50),
-    new THREE.MeshPhongMaterial({color:0x1E90FF})
+// =====================
+// WORLD
+// =====================
+
+// Water
+const water = new THREE.Mesh(
+  new THREE.BoxGeometry(100, 0.5, 100),
+  new THREE.MeshPhongMaterial({ color: 0x1E90FF })
 );
-water.position.set(0,0.25,0);
+water.position.y = 0.25;
 scene.add(water);
 
 // Island
-let island = new THREE.Mesh(
-    new THREE.BoxGeometry(10,1,10),
-    new THREE.MeshPhongMaterial({color:0x228B22})
+const island = new THREE.Mesh(
+  new THREE.BoxGeometry(15, 1, 15),
+  new THREE.MeshPhongMaterial({ color: 0x228B22 })
 );
-island.position.set(-10,0.5,-10);
+island.position.set(0, 0.5, -10);
 scene.add(island);
 
-function animate(){
-    requestAnimationFrame(animate);
-    renderer.render(scene,camera);
-}
-animate();
+// =====================
+// PLAYER
+// =====================
+const player = new THREE.Object3D();
+scene.add(player);
+player.position.set(0, 2, 10);
+player.add(camera);
 
-// Window resize
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+let velocityY = 0;
+let grounded = false;
+
+// =====================
+// JOYSTICK INPUT
+// =====================
+let moveX = 0;
+let moveZ = 0;
+
+const joystick = document.getElementById("joystick");
+const stick = document.getElementById("stick");
+
+let dragging = false;
+let center = { x: 0, y: 0 };
+
+joystick.addEventListener("touchstart", e => {
+  dragging = true;
+  const rect = joystick.getBoundingClientRect();
+  center.x = rect.left + rect.width / 2;
+  center.y = rect.top + rect.height / 2;
 });
-</script>
-</body>
-</html>
+
+window.addEventListener("touchmove", e => {
+  if (!dragging) return;
+  const touch = e.touches[0];
+  let dx = touch.clientX - center.x;
+  let dy = touch.clientY - center.y;
+
+  const max = 40;
+  dx = Math.max(-max, Math.min(max, dx));
+  dy = Math.max(-max, Math.min(max, dy));
+
+  stick.style.left = 35 + dx + "px";
+  stick.style.top = 35 + dy + "px";
+
+  moveX = dx / max;
+  moveZ = dy / max;
+});
+
+window.addEventListener("touchend", () => {
+  dragging = false;
+  stick.style.left = "35px";
+  stick.style.top = "35px";
+  moveX = 0;
+  moveZ = 0;
+});
