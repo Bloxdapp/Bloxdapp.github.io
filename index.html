@@ -10,7 +10,7 @@ html,body{margin:0;overflow:hidden;background:black;touch-action:none}
 /* UI */
 #money{position:fixed;bottom:10px;right:10px;color:white;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:6px}
 #msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:22px;display:none;text-shadow:2px 2px 6px black}
-#book{position:fixed;top:10px;left:10px;font-size:28px;z-index:10}
+#book{position:fixed;top:10px;left:10px;font-size:28px;z-index:10;cursor:pointer}
 
 /* Rules */
 #rules{
@@ -52,7 +52,8 @@ Swipe to look<br>
 Jump button<br><br>
 Equip rod → hold 2s to fish<br>
 Tap fast to catch fish<br><br>
-Double tap fish to sell
+Tap fish once = preview<br>
+Tap fish twice = sell
 </p>
 <button onclick="rules.style.display='none'">Close</button>
 </div>
@@ -151,7 +152,7 @@ addEventListener("touchend",()=>look=false);
 
 /* MOVE */
 let mx=0,mz=0,joy=false,c={};
-joystick.ontouchstart=e=>{joy=true;const r=joystick.getBoundingClientRect();c={x:r.left+r.width/2,y:r.top+r.height/2}};
+joystick.ontouchstart=()=>{joy=true;const r=joystick.getBoundingClientRect();c={x:r.left+r.width/2,y:r.top+r.height/2}};
 addEventListener("touchmove",e=>{
  if(!joy)return;
  let dx=e.touches[0].clientX-c.x,dy=e.touches[0].clientY-c.y;
@@ -164,10 +165,11 @@ addEventListener("touchend",()=>{joy=false;mx=mz=0;stick.style.left="30px";stick
 jump.ontouchstart=()=>{if(grounded){vy=.18;grounded=false}};
 
 /* INVENTORY */
+const moneyDiv=document.getElementById("money");
 let money=0;
 const prices={Clownfish:5,Tuna:10,Shark:25};
 const inventory=["Rod","","","","","","","",""];
-let selected=0;
+let selected=0,lastTap=0,preview=null;
 const inv=document.getElementById("inventory");
 
 function renderInv(){
@@ -176,11 +178,35 @@ function renderInv(){
   const d=document.createElement("div");
   d.className="slot"+(i===selected?" active":"");
   d.textContent=it;
-  d.onclick=()=>{selected=i;renderInv()};
+  d.onclick=()=>slotTap(i);
   inv.appendChild(d);
  });
 }
 renderInv();
+
+function slotTap(i){
+ const now=Date.now();
+ if(inventory[i].includes("Rod")){selected=i;removePreview();renderInv();return;}
+ if(inventory[i]==="")return;
+ if(now-lastTap<400){
+  money+=prices[inventory[i]];
+  inventory[i]="";
+  moneyDiv.textContent="$"+money;
+  removePreview();renderInv();
+ }else{
+  previewFish(inventory[i]);
+  lastTap=now;
+ }
+}
+
+function previewFish(name){
+ removePreview();
+ const color=name==="Shark"?0x555555:name==="Tuna"?0xaaaaaa:0xff8800;
+ preview=new THREE.Mesh(new THREE.SphereGeometry(.25,16,16),new THREE.MeshLambertMaterial({color}));
+ preview.position.set(0,-.2,-1);
+ camera.add(preview);
+}
+function removePreview(){if(preview){camera.remove(preview);preview=null;}}
 
 /* SHOP */
 function addItem(it){
@@ -193,13 +219,16 @@ buySun.onclick=()=>{if(money>=100&&addItem("Sun Rod")){money-=100;moneyDiv.textC
 buyBait.onclick=()=>{if(money>=15&&addItem("Bait")){money-=15;moneyDiv.textContent="$"+money}};
 
 /* NPC CLICK */
-const ray=new THREE.Raycaster(),pt=new THREE.Vector2();
-renderer.domElement.ontouchstart=e=>{
- pt.x=(e.touches[0].clientX/innerWidth)*2-1;
- pt.y=-(e.touches[0].clientY/innerHeight)*2+1;
- ray.setFromCamera(pt,camera);
- if(ray.intersectObject(fisherman,true).length)shop.style.display="block";
-};
+const raycaster=new THREE.Raycaster(),mouse=new THREE.Vector2();
+renderer.domElement.addEventListener("touchstart",e=>{
+ mouse.x=(e.touches[0].clientX/innerWidth)*2-1;
+ mouse.y=-(e.touches[0].clientY/innerHeight)*2+1;
+ raycaster.setFromCamera(mouse,camera);
+ const hit=raycaster.intersectObject(fisherman,true);
+ if(hit.length && player.position.distanceTo(fisherman.position)<5){
+  shop.style.display="block";
+ }
+});
 
 /* FISHING */
 let holding=false,ht=0,fishing=false,taps=0;
