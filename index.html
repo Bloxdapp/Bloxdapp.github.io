@@ -282,13 +282,19 @@ function parseStack(item){
  return {name:item,count:1};
 }
 
+function slotTap(index){
+  selected = index;       // Update selected slot
+  renderInv();            // Highlight selection
+  updateRod();            // Show or hide rod if equipped
+}
+
 function renderInv(){
  inv.innerHTML="";
  inventory.forEach((it,i)=>{
    const d=document.createElement("div");
    d.className="slot"+(i===selected?" active":"");
    d.textContent=it;
-   d.onclick=()=>slotTap(i);
+   d.onclick=()=>slotTap(i);   // Call slotTap on click
    inv.appendChild(d);
  });
 }
