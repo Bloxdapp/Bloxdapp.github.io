@@ -151,7 +151,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 <script>
 /* ===== SCENE ===== */
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x87CEEB);
+scene.background=new THREE.Color(0x87CEEB); // Sky Blue Background
 
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,1000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -165,11 +165,10 @@ sun.position.set(10,20,10);
 sun.castShadow=true;
 scene.add(sun);
 
-/* WATER / OCEAN (BIGGER and deeper blue) */
-const oceanSize = 2000; // Increase size significantly
-const waterGeo=new THREE.PlaneGeometry(oceanSize,oceanSize,oceanSize/40,oceanSize/40); // Increased segments for more waves
+/* WATER (Ocean Mod: Use Fog and larger plane) */
+const waterGeo=new THREE.PlaneGeometry(1000,1000,50,50); // Increased size to 1000x1000
 const waterMat=new THREE.MeshStandardMaterial({
-  color:0x0055aa, // Deeper ocean blue
+  color:0x1e90ff, // Blue color for the ground/surface
   roughness:0.3,
   metalness:0.1,
   side:THREE.DoubleSide
@@ -178,6 +177,9 @@ const water=new THREE.Mesh(waterGeo,waterMat);
 water.rotation.x=-Math.PI/2;
 water.position.y=0;
 scene.add(water);
+
+// Add Fog to blend the water into the sky color at the horizon
+scene.fog = new THREE.Fog(0x87CEEB, 150, 400); 
 
 /* ISLAND */
 const islandGeo=new THREE.CylinderGeometry(18,22,2,64);
@@ -533,21 +535,11 @@ function animate(){
   if(holdTime>=2){startFishing();holding=false;}
  }
 
- // Animate water (Wave effect on the large plane)
- const positions = water.geometry.attributes.position;
- for(let i=0;i<positions.count;i++){
-   // Calculate a unique displacement for each vertex
-   const x = positions.getX(i);
-   const z = positions.getZ(i);
-   // Use position and time for a smooth wave
-   const wave = Math.sin(x*0.2 + performance.now()*0.002) * 0.15 + 
-               Math.cos(z*0.1 + performance.now()*0.001) * 0.1;
-
-   // The wave height is added to the base Y position (which is 0)
-   positions.setY(i, wave);
+ // Animate water
+ for(let i=0;i<water.geometry.attributes.position.count;i++){
+   water.geometry.attributes.position.setY(i,Math.sin(i/5 + performance.now()*0.002)*0.1);
  }
- positions.needsUpdate=true;
-
+ water.geometry.attributes.position.needsUpdate=true;
 
  renderer.render(scene,camera);
 }
