@@ -8,8 +8,26 @@
 html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 
 /* UI */
-#money{position:fixed;top:10px;left:10px;color:white;font-size:18px}
-#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:22px;display:none;text-shadow:2px 2px 5px black}
+#money{
+ position:fixed;
+ bottom:10px;
+ right:10px;
+ color:white;
+ font-size:18px;
+ background:rgba(0,0,0,.5);
+ padding:6px 10px;
+ border-radius:6px
+}
+#msg{
+ position:fixed;
+ top:50%;
+ left:50%;
+ transform:translate(-50%,-50%);
+ color:white;
+ font-size:22px;
+ display:none;
+ text-shadow:2px 2px 5px black
+}
 
 /* Joystick */
 #joystick{position:fixed;bottom:120px;left:20px;width:110px;height:110px;background:rgba(255,255,255,.15);border-radius:50%}
@@ -20,7 +38,16 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 
 /* Inventory */
 #inventory{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
-.slot{width:42px;height:42px;border:2px solid white;color:white;font-size:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5)}
+.slot{
+ width:42px;height:42px;
+ border:2px solid white;
+ color:white;
+ font-size:9px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:rgba(0,0,0,.5)
+}
 .slot.active{border-color:yellow}
 </style>
 </head>
@@ -39,7 +66,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87CEEB);
 
-const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,1000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
@@ -52,15 +79,15 @@ scene.add(sun);
 
 /* WORLD */
 const water=new THREE.Mesh(
-  new THREE.BoxGeometry(200,.5,200),
-  new THREE.MeshLambertMaterial({color:0x1e90ff})
+ new THREE.BoxGeometry(200,.5,200),
+ new THREE.MeshLambertMaterial({color:0x1e90ff})
 );
 water.position.y=.25;
 scene.add(water);
 
 const island=new THREE.Mesh(
-  new THREE.CylinderGeometry(15,20,2,32),
-  new THREE.MeshLambertMaterial({color:0x2e8b57})
+ new THREE.CylinderGeometry(15,20,2,32),
+ new THREE.MeshLambertMaterial({color:0x2e8b57})
 );
 island.position.set(0,1,0);
 scene.add(island);
@@ -68,7 +95,7 @@ scene.add(island);
 /* PLAYER */
 const player=new THREE.Object3D();
 scene.add(player);
-player.position.set(0,3,0); // SPAWN ON ISLAND
+player.position.set(0,3,0);
 player.add(camera);
 
 let velocityY=0,grounded=true;
@@ -94,9 +121,6 @@ addEventListener("touchend",()=>looking=false);
 
 /* MOVE */
 let moveX=0,moveZ=0,joy=false,center={};
-const joystick=document.getElementById("joystick");
-const stick=document.getElementById("stick");
-
 joystick.addEventListener("touchstart",()=>{
  joy=true;
  const r=joystick.getBoundingClientRect();
@@ -127,9 +151,13 @@ jump.addEventListener("touchstart",()=>{
 
 /* INVENTORY */
 let money=0;
+const prices={Clownfish:5,Tuna:10,Shark:25};
 const inventory=["Rod","","","","","","","",""];
 let selected=0;
 const inv=document.getElementById("inventory");
+
+let lastTapTime=0;
+let previewFish=null;
 
 function renderInv(){
  inv.innerHTML="";
@@ -137,21 +165,69 @@ function renderInv(){
   const d=document.createElement("div");
   d.className="slot"+(i===selected?" active":"");
   d.textContent=it;
-  d.onclick=()=>{
-   if(it!=="Rod"&&it!==""){
-     sellFish(i);
-   }else{
-     selected=i;
-     renderInv();
-   }
-  };
+  d.onclick=()=>slotTap(i);
   inv.appendChild(d);
  });
 }
 renderInv();
 
-/* ROD MODEL */
-let rod;
+function slotTap(i){
+ const now=Date.now();
+ if(inventory[i]==="Rod"){
+  selected=i;
+  removePreview();
+  renderInv();
+  return;
+ }
+ if(inventory[i]==="") return;
+
+ if(now-lastTapTime<400){
+  sellFish(i);
+  lastTapTime=0;
+ }else{
+  previewFishModel(inventory[i]);
+  lastTapTime=now;
+ }
+}
+
+/* MONEY */
+function updateMoney(){
+ document.getElementById("money").textContent="$"+money;
+}
+
+/* SELL */
+function sellFish(i){
+ money+=prices[inventory[i]];
+ inventory[i]="";
+ updateMoney();
+ removePreview();
+ renderInv();
+}
+
+/* PREVIEW FISH */
+function previewFishModel(name){
+ removePreview();
+ let color=0xffaa00;
+ if(name==="Tuna")color=0x999999;
+ if(name==="Shark")color=0x555555;
+
+ previewFish=new THREE.Mesh(
+  new THREE.SphereGeometry(.2,16,16),
+  new THREE.MeshLambertMaterial({color})
+ );
+ previewFish.position.set(0,-.2,-1);
+ camera.add(previewFish);
+}
+
+function removePreview(){
+ if(previewFish){
+  camera.remove(previewFish);
+  previewFish=null;
+ }
+}
+
+/* ROD */
+let rod=null;
 function updateRod(){
  if(inventory[selected]==="Rod"){
   if(!rod){
@@ -170,8 +246,6 @@ function updateRod(){
 
 /* FISHING */
 let holding=false,holdTime=0,fishing=false,taps=0;
-const msg=document.getElementById("msg");
-
 addEventListener("touchstart",()=>{
  if(inventory[selected]!=="Rod"||fishing)return;
  holding=true;holdTime=0;
@@ -181,23 +255,14 @@ addEventListener("touchstart",()=>{if(fishing)taps++});
 
 function randomFish(){
  const r=Math.random();
- if(r<.25)return "Clownfish";
- if(r<.5)return "Tuna";
- return "Shark";
+ if(r<.25)return"Clownfish";
+ if(r<.5)return"Tuna";
+ return"Shark";
 }
-
 function addItem(item){
  for(let i=0;i<inventory.length;i++){
   if(inventory[i]===""){inventory[i]=item;renderInv();return;}
  }
-}
-
-function sellFish(i){
- const prices={Clownfish:5,Tuna:10,Shark:25};
- money+=prices[inventory[i]];
- inventory[i]="";
- document.getElementById("money").textContent="$"+money;
- renderInv();
 }
 
 function startFishing(){
@@ -258,4 +323,3 @@ addEventListener("resize",()=>{
 </script>
 </body>
 </html>
-
