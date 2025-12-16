@@ -151,3 +151,48 @@ window.addEventListener("touchend", () => {
   moveX = 0;
   moveZ = 0;
 });
+
+// =====================
+// JUMP BUTTON
+// =====================
+document.getElementById("jumpBtn").addEventListener("touchstart", () => {
+  if (grounded) {
+    velocityY = 0.18;
+    grounded = false;
+  }
+});
+
+// =====================
+// GAME LOOP
+// =====================
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Movement
+  player.position.x += moveX * 0.15;
+  player.position.z += moveZ * 0.15;
+
+  // Gravity
+  velocityY -= 0.01;
+  player.position.y += velocityY;
+
+  if (player.position.y <= 2) {
+    player.position.y = 2;
+    velocityY = 0;
+    grounded = true;
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Resize fix
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
