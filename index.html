@@ -288,10 +288,10 @@ let preview=null;
 
 // Helper: Parse item and count
 function parseStack(item){
-  if(!item) return {name:"",count:0};
-  const match = item.match(/^(.+)x(\d+)$/);
-  if(match) return {name:match[1],count:parseInt(match[2])};
-  return {name:item,count:1};
+ if(!item) return {name:"",count:0};
+ const match = item.match(/^(.+)x(\d+)$/);
+ if(match) return {name:match[1],count:parseInt(match[2])};
+ return {name:item,count:1};
 }
 
 function renderInv(){
@@ -349,11 +349,14 @@ function updateRod(){
   if(!rod){
    rod=new THREE.Mesh(
     new THREE.CylinderGeometry(.02,.02,1),
-    new THREE.MeshBasicMaterial({color:0x8b4513})
+    new THREE.MeshBasicMaterial({color:inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513})
    );
    rod.position.set(.3,-.4,-1);
    rod.rotation.z=Math.PI/4;
    camera.add(rod);
+  }else{
+   // update color if changed
+   rod.material.color.set(inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513);
   }
  }else if(rod){camera.remove(rod);rod=null;}
 }
@@ -375,14 +378,13 @@ addEventListener("touchstart",e=>{
 /* SHOP BUTTONS */
 buySunRod.onclick=()=>{
  if(money<1000)return alert("Not enough money");
+ // Replace Rod with Sun Rod
  for(let i=0;i<inventory.length;i++){
-  if(inventory[i]===""){
-   inventory[i]="Sun Rod";
-   money-=1000;
-   document.getElementById("money").textContent="$"+money;
-   renderInv();
-   return;
-  }
+  if(inventory[i]==="Rod"){inventory[i]="Sun Rod"; renderInv(); money-=1000; document.getElementById("money").textContent="$"+money; return;}
+ }
+ // If no Rod, add Sun Rod to empty slot
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]===""){inventory[i]="Sun Rod"; money-=1000; document.getElementById("money").textContent="$"+money; renderInv(); return;}
  }
  alert("Inventory full!");
 };
@@ -410,13 +412,20 @@ addEventListener("touchstart",()=>{if(fishing)taps++});
 // Random Fish with probabilities
 function randomFish(){
  const r=Math.random();
- if(r<1/50) return "Megalodon";
- if(r<1/25) return "MantaRay";
- if(r<1/5) return "SeaTurtle";
- if(r<1/3) return "Pufferfish";
- if(r<0.58) return "Tuna";
- if(r<0.83) return "Clownfish";
- return "Shark";
+ let fish = "";
+ if(r<1/50) fish = "Megalodon";
+ else if(r<1/25) fish = "MantaRay";
+ else if(r<1/5) fish = "SeaTurtle";
+ else if(r<1/3) fish = "Pufferfish";
+ else if(r<0.58) fish = "Tuna";
+ else if(r<0.83) fish = "Clownfish";
+ else fish = "Shark";
+
+ // Double chance if Sun Rod equipped
+ if(inventory[selected]==="Sun Rod"){
+   if(Math.random() < 0.5) return fish; // extra 50% chance
+ }
+ return fish;
 }
 
 function addItem(f){
