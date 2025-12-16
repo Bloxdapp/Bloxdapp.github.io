@@ -149,9 +149,9 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 <script>
-/* ===== SCENE ===== */
+/* ===== SCENE SETUP (CRITICAL) ===== */
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x87CEEB); // Sky Blue Background
+scene.background=new THREE.Color(0x87CEEB); // Light blue sky
 
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,1000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -159,16 +159,18 @@ renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
+// Minimal Lighting
 scene.add(new THREE.AmbientLight(0xffffff,.7));
 const sun=new THREE.DirectionalLight(0xffffff,1);
 sun.position.set(10,20,10);
 sun.castShadow=true;
 scene.add(sun);
 
-/* WATER (Big Blue Ground Plane - Simple Ocean) */
-const waterGeo=new THREE.PlaneGeometry(1000,1000,50,50); // Larger plane
+/* 🌊 BLUE FLOOR / OCEAN (Visible and Large) */
+// Increased size to 1000x1000 and segments to 100x100 for better waves
+const waterGeo=new THREE.PlaneGeometry(1000,1000,100,100); 
 const waterMat=new THREE.MeshStandardMaterial({
-  color:0x1e90ff, // Blue ocean color
+  color:0x1e90ff, // Bright blue floor/water color
   roughness:0.3,
   metalness:0.1,
   side:THREE.DoubleSide
@@ -178,23 +180,20 @@ water.rotation.x=-Math.PI/2;
 water.position.y=0;
 scene.add(water);
 
-// Add Fog to blend the water into the sky color at the horizon
+// Add Fog to blend the large plane into the sky color at the horizon
 scene.fog = new THREE.Fog(0x87CEEB, 150, 400); 
 
-
-/* ISLAND (Small Green Cube - For Diagnostics) */
-// Replacing the complex cylinder island with a simple cube to ensure visibility.
-const islandGeo=new THREE.BoxGeometry(5, 5, 5); // Simple cube
-const islandMat=new THREE.MeshStandardMaterial({color:0x2e8b57});
+/* 🏝️ ISLAND (A single object to check scale) */
+const islandGeo=new THREE.CylinderGeometry(18,22,2,64);
+const islandMat=new THREE.MeshStandardMaterial({color:0x2e8b57, roughness:0.8, metalness:0.1});
 const island=new THREE.Mesh(islandGeo,islandMat);
-island.position.set(0,2.5,0); // Lifted half its height
+island.position.set(0,1,0); // Island sits on the water plane (y=0)
 scene.add(island);
 
-/* TREES (Removed for initial debug) */
-// function addTree(x,z){ ... }
-// for(let i=0;i<6;i++){ ... }
+/* 🌲 TREES (REMOVED - Re-add if the floor works) */
+// Removed function addTree(x,z) and the loop to reduce complexity.
 
-/* ORB (Still present, ensure it's above ground) */
+/* ORB (Shop trigger) */
 const orb=new THREE.Mesh(
  new THREE.SphereGeometry(0.4,16,16),
  new THREE.MeshStandardMaterial({
@@ -203,13 +202,14 @@ const orb=new THREE.Mesh(
   emissiveIntensity:0.7
  })
 );
-orb.position.set(3,5,3); // Lifted higher
+orb.position.set(3,3,3); // Lifted slightly higher than the island
 scene.add(orb);
 
 /* PLAYER */
 const player=new THREE.Object3D();
 scene.add(player);
-player.position.set(0,7,0); // Lifted player higher to see the ground
+// Set player higher to ensure they see the ground/water plane (y=0)
+player.position.set(0, 10, 0); 
 player.add(camera);
 
 let velocityY=0,grounded=true;
@@ -509,20 +509,25 @@ function animate(){
  player.position.add(r.multiplyScalar(moveX*.15));
 
  velocityY-=.01;
- // Only apply gravity down to 5 units (where the cube island is)
  player.position.y+=velocityY;
- if(player.position.y<=7){player.position.y=7;velocityY=0;grounded=true;}
+ // Changed grounding height from 3 to 10 for visibility.
+ if(player.position.y<=10){player.position.y=10;velocityY=0;grounded=true;}
 
  if(holding&&!fishing){
   holdTime+=.016;
   if(holdTime>=2){startFishing();holding=false;}
  }
 
- // Animate water
- for(let i=0;i<water.geometry.attributes.position.count;i++){
-   water.geometry.attributes.position.setY(i,Math.sin(i/5 + performance.now()*0.002)*0.1);
+ // Animate water for wave effect
+ const positions = water.geometry.attributes.position;
+ for(let i=0;i<positions.count;i++){
+   const x = positions.getX(i);
+   const z = positions.getZ(i);
+   // Simple wave calculation (small displacement)
+   const wave = Math.sin(x*0.2 + performance.now()*0.002) * 0.15 + Math.cos(z*0.1 + performance.now()*0.001) * 0.1;
+   positions.setY(i, wave);
  }
- water.geometry.attributes.position.needsUpdate=true;
+ positions.needsUpdate=true;
 
  renderer.render(scene,camera);
 }
