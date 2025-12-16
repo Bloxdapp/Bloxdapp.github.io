@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>3D Mobile FPS</title>
+<title>3D Fishing Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
 html, body {
@@ -44,27 +44,34 @@ html, body {
   border: none;
   font-size: 18px;
 }
+
+/* MESSAGE */
+#msg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 24px;
+  text-shadow: 2px 2px 5px black;
+  display: none;
+}
 </style>
 </head>
 <body>
 
 <div id="joystick"><div id="stick"></div></div>
 <button id="jump">JUMP</button>
+<div id="msg"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script>
-/* ===== THREE SETUP ===== */
+/* ===== SETUP ===== */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-
-const renderer = new THREE.WebGLRenderer({ antialias:true });
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
@@ -78,14 +85,14 @@ scene.add(sun);
 /* WORLD */
 const water = new THREE.Mesh(
   new THREE.BoxGeometry(100,0.5,100),
-  new THREE.MeshLambertMaterial({ color: 0x1e90ff })
+  new THREE.MeshLambertMaterial({color:0x1e90ff})
 );
 water.position.y = 0.25;
 scene.add(water);
 
 const island = new THREE.Mesh(
   new THREE.BoxGeometry(20,1,20),
-  new THREE.MeshLambertMaterial({ color: 0x2e8b57 })
+  new THREE.MeshLambertMaterial({color:0x2e8b57})
 );
 island.position.set(0,0.5,-10);
 scene.add(island);
@@ -99,108 +106,168 @@ player.add(camera);
 let velocityY = 0;
 let grounded = true;
 
-/* CAMERA ROTATION */
-let yaw = 0;
-let pitch = 0;
+/* CAMERA LOOK */
+let yaw = 0, pitch = 0;
+let looking = false, lastX = 0, lastY = 0;
 
-/* ===== TOUCH LOOK (SWIPE SCREEN) ===== */
-let looking = false;
-let lastX = 0;
-let lastY = 0;
-
-window.addEventListener("touchstart", e => {
-  if (e.target.id === "joystick" || e.target.id === "stick" || e.target.id === "jump") return;
+/* TOUCH LOOK */
+window.addEventListener("touchstart", e=>{
+  if(e.target.id==="joystick"||e.target.id==="stick"||e.target.id==="jump") return;
   looking = true;
   lastX = e.touches[0].clientX;
   lastY = e.touches[0].clientY;
 });
 
-window.addEventListener("touchmove", e => {
-  if (!looking) return;
+window.addEventListener("touchmove", e=>{
+  if(!looking) return;
   const x = e.touches[0].clientX;
   const y = e.touches[0].clientY;
-  yaw -= (x - lastX) * 0.004;
-  pitch -= (y - lastY) * 0.004;
+  yaw -= (x-lastX)*0.004;
+  pitch -= (y-lastY)*0.004;
   pitch = Math.max(-1.4, Math.min(1.4, pitch));
-  lastX = x;
-  lastY = y;
+  lastX = x; lastY = y;
 });
 
-window.addEventListener("touchend", () => looking = false);
+window.addEventListener("touchend", ()=>looking=false);
 
-/* ===== MOVE JOYSTICK ===== */
-let moveX = 0, moveZ = 0;
-const joystick = document.getElementById("joystick");
-const stick = document.getElementById("stick");
-let joyActive = false;
-let joyCenter = {x:0,y:0};
+/* MOVE JOYSTICK */
+let moveX=0, moveZ=0;
+const joystick=document.getElementById("joystick");
+const stick=document.getElementById("stick");
+let joyActive=false, joyCenter={x:0,y:0};
 
-joystick.addEventListener("touchstart", e => {
-  joyActive = true;
-  const r = joystick.getBoundingClientRect();
-  joyCenter.x = r.left + r.width/2;
-  joyCenter.y = r.top + r.height/2;
+joystick.addEventListener("touchstart", ()=>{
+  joyActive=true;
+  const r=joystick.getBoundingClientRect();
+  joyCenter.x=r.left+r.width/2;
+  joyCenter.y=r.top+r.height/2;
 });
 
-window.addEventListener("touchmove", e => {
-  if (!joyActive) return;
-  const t = e.touches[0];
-  let dx = t.clientX - joyCenter.x;
-  let dy = t.clientY - joyCenter.y;
-  dx = Math.max(-40, Math.min(40, dx));
-  dy = Math.max(-40, Math.min(40, dy));
-  stick.style.left = 35 + dx + "px";
-  stick.style.top = 35 + dy + "px";
-  moveX = dx / 40;
-  moveZ = dy / 40;
+window.addEventListener("touchmove", e=>{
+  if(!joyActive) return;
+  const t=e.touches[0];
+  let dx=t.clientX-joyCenter.x;
+  let dy=t.clientY-joyCenter.y;
+  dx=Math.max(-40,Math.min(40,dx));
+  dy=Math.max(-40,Math.min(40,dy));
+  stick.style.left=35+dx+"px";
+  stick.style.top=35+dy+"px";
+  moveX=dx/40;
+  moveZ=dy/40;
 });
 
-window.addEventListener("touchend", () => {
-  joyActive = false;
-  stick.style.left = "35px";
-  stick.style.top = "35px";
-  moveX = moveZ = 0;
+window.addEventListener("touchend", ()=>{
+  joyActive=false;
+  stick.style.left="35px";
+  stick.style.top="35px";
+  moveX=moveZ=0;
 });
 
 /* JUMP */
-document.getElementById("jump").addEventListener("touchstart", () => {
-  if (grounded) {
-    velocityY = 0.18;
-    grounded = false;
+document.getElementById("jump").addEventListener("touchstart",()=>{
+  if(grounded){
+    velocityY=0.18;
+    grounded=false;
   }
+});
+
+/* ===== FISHING ===== */
+let holdTime=0;
+let holding=false;
+let fishing=false;
+let taps=0;
+let tapTimer=null;
+const msg=document.getElementById("msg");
+
+/* HOLD TO CAST */
+window.addEventListener("touchstart", ()=>{
+  if(fishing) return;
+  holding=true;
+  holdTime=0;
+});
+
+window.addEventListener("touchend", ()=>{
+  holding=false;
+  holdTime=0;
+});
+
+/* TAP MINIGAME */
+window.addEventListener("touchstart", ()=>{
+  if(fishing && tapTimer) taps++;
 });
 
 /* ===== LOOP ===== */
 function animate(){
   requestAnimationFrame(animate);
 
-  camera.rotation.order = "YXZ";
-  camera.rotation.y = yaw;
-  camera.rotation.x = pitch;
+  camera.rotation.order="YXZ";
+  camera.rotation.y=yaw;
+  camera.rotation.x=pitch;
 
-  const forward = new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
-  const right = new THREE.Vector3(forward.z,0,-forward.x);
+  const forward=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
+  const right=new THREE.Vector3(forward.z,0,-forward.x);
 
-  player.position.add(forward.multiplyScalar(moveZ * 0.15));
-  player.position.add(right.multiplyScalar(moveX * 0.15));
+  player.position.add(forward.multiplyScalar(moveZ*0.15));
+  player.position.add(right.multiplyScalar(moveX*0.15));
 
-  velocityY -= 0.01;
-  player.position.y += velocityY;
-  if (player.position.y <= 2) {
-    player.position.y = 2;
-    velocityY = 0;
-    grounded = true;
+  velocityY-=0.01;
+  player.position.y+=velocityY;
+  if(player.position.y<=2){
+    player.position.y=2;
+    velocityY=0;
+    grounded=true;
   }
 
-  renderer.render(scene, camera);
+  if(holding && !fishing){
+    holdTime+=0.016;
+    if(holdTime>=2){
+      startFishing();
+      holding=false;
+    }
+  }
+
+  renderer.render(scene,camera);
 }
 animate();
 
+/* ===== FISH LOGIC ===== */
+function startFishing(){
+  fishing=true;
+  msg.style.display="block";
+  msg.innerText="Casting rod...";
+  setTimeout(()=>{
+    msg.innerText="Waiting for Clownfish...";
+    setTimeout(startMinigame,5000);
+  },500);
+}
+
+function startMinigame(){
+  msg.innerText="Clownfish! TAP 10 TIMES!";
+  taps=0;
+  let time=5;
+  tapTimer=setInterval(()=>{
+    time--;
+    if(time<=0){
+      clearInterval(tapTimer);
+      tapTimer=null;
+      if(taps>=10){
+        msg.innerText="You caught a Clownfish!";
+      } else {
+        msg.innerText="The Clownfish escaped!";
+      }
+      setTimeout(()=>{
+        msg.style.display="none";
+        fishing=false;
+      },2000);
+    }
+  },1000);
+}
+
 /* RESIZE */
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+window.addEventListener("resize",()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(window.innerWidth,window.innerHeight);
 });
 </script>
 </body>
