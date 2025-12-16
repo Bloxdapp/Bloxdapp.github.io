@@ -90,6 +90,30 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  padding:6px 14px;
  font-size:16px;
 }
+
+/* FISCH MINIGAME BARS */
+#castBar,#reelBar{
+ position:fixed;
+ left:50%;
+ transform:translateX(-50%);
+ width:300px;
+ height:30px;
+ background:rgba(255,255,255,0.2);
+ border:2px solid white;
+ border-radius:6px;
+ z-index:40;
+}
+#castFill,#reelFill{
+ height:100%;
+ width:0%;
+ border-radius:4px;
+ background:lime;
+}
+#reelZone{
+ position:absolute;
+ height:100%;
+ background:rgba(255,0,0,0.5);
+}
 </style>
 </head>
 <body>
@@ -147,6 +171,10 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  <button id="buyBait">Buy 1 Bait ($25)</button><br><br>
  <button onclick="shop.style.display='none'">CLOSE</button>
 </div>
+
+<!-- FISCH MINIGAME ELEMENTS -->
+<div id="castBar" style="display:none;bottom:60%"><div id="castFill"></div></div>
+<div id="reelBar" style="display:none;bottom:50%"><div id="reelFill"></div><div id="reelZone"></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
@@ -340,9 +368,17 @@ buyBait.onclick=()=>{
  alert("Inventory full!");
 };
 
-/* ===== FISCH-STYLE FISHING MINIGAME ===== */
-let holding=false, holdTime=0, fishing=false, castBar=null, reelBar=null;
-let currentFish=null, castDir=1, castPower=0, reelProgress=0, reelDir=1;
+/* ===== FISCH-STYLE MINIGAME ===== */
+let holding=false, holdTime=0, fishing=false;
+let castPower=0,castDir=1;
+let currentFish=null,reelProgress=0,reelDir=1;
+
+const castBar=document.getElementById("castBar");
+const castFill=document.getElementById("castFill");
+const reelBar=document.getElementById("reelBar");
+const reelFill=document.getElementById("reelFill");
+const reelZone=document.getElementById("reelZone");
+const msg=document.getElementById("msg");
 
 function randomFish(){
  const r=Math.random();
@@ -366,132 +402,57 @@ function addItem(f){
  alert("Inventory full!");
 }
 
-function createCastBar(){
- castBar=document.createElement("div");
- castBar.style.position="fixed";
- castBar.style.left="50%";
- castBar.style.bottom="60%";
- castBar.style.transform="translate(-50%,50%)";
- castBar.style.width="300px";
- castBar.style.height="30px";
- castBar.style.background="rgba(255,255,255,0.2)";
- castBar.style.border="2px solid white";
- castBar.style.borderRadius="6px";
- castBar.style.zIndex="40";
- document.body.appendChild(castBar);
-
- let fill=document.createElement("div");
- fill.style.height="100%";
- fill.style.width="0%";
- fill.style.background="lime";
- fill.style.borderRadius="4px";
- castBar.appendChild(fill);
- castBar.fill=fill;
-}
-
-function removeCastBar(){if(castBar){document.body.removeChild(castBar); castBar=null;}}
-function createReelBar(fish){
- reelBar=document.createElement("div");
- reelBar.style.position="fixed";
- reelBar.style.left="50%";
- reelBar.style.bottom="50%";
- reelBar.style.transform="translate(-50%,50%)";
- reelBar.style.width="300px";
- reelBar.style.height="30px";
- reelBar.style.background="rgba(255,255,255,0.2)";
- reelBar.style.border="2px solid white";
- reelBar.style.borderRadius="6px";
- reelBar.style.zIndex="40";
- document.body.appendChild(reelBar);
-
- let fill=document.createElement("div");
- fill.style.height="100%";
- fill.style.width="0%";
- fill.style.background="lime";
- fill.style.borderRadius="4px";
- reelBar.appendChild(fill);
- reelBar.fill=fill;
-
- let zone=document.createElement("div");
- zone.style.position="absolute";
- zone.style.height="100%";
- let size={"Clownfish":80,"Tuna":60,"Shark":50,"Pufferfish":45,"SeaTurtle":35,"MantaRay":25,"Megalodon":15}[fish];
- zone.style.width=size+"px";
- zone.style.left=Math.random()*(300-size)+"px";
- zone.style.background="rgba(255,0,0,0.5)";
- reelBar.appendChild(zone);
-
- reelBar.zone=zone;
- reelProgress=0; reelDir=1;
-}
-
-function removeReelBar(){if(reelBar){document.body.removeChild(reelBar); reelBar=null;}}
-
 function startFishing(){
  holding=false; holdTime=0;
  currentFish=randomFish();
+ fishing=true;
  msg.style.display="block";
  msg.textContent="Casting...";
-
- createCastBar(); castPower=0; castDir=1;
- function animateCast(){
-     if(!castBar) return;
-     castPower+=castDir*1.5;
-     if(castPower>=100){castPower=100;castDir=-1;}
-     if(castPower<=0){castPower=0;castDir=1;}
-     castBar.fill.style.width=castPower+"%";
-     requestAnimationFrame(animateCast);
- }
- animateCast();
+ castPower=0; castDir=1;
+ castBar.style.display="block";
 }
 
 function stopCast(){
- if(!castBar) return;
- removeCastBar();
+ castBar.style.display="none";
+ // Setup reel bar
+ reelBar.style.display="block";
+ reelFill.style.width="0%";
+ const size={"Clownfish":80,"Tuna":60,"Shark":50,"Pufferfish":45,"SeaTurtle":35,"MantaRay":25,"Megalodon":15}[currentFish];
+ reelZone.style.width=size+"px";
+ reelZone.style.left=Math.random()*(300-size)+"px";
+ reelProgress=0; reelDir=1;
  msg.textContent="Reeling "+currentFish+"! Tap to keep bar inside red zone!";
- createReelBar(currentFish);
- function animateReel(){
-     if(!reelBar) return;
-     reelProgress+=reelDir*1;
-     if(reelProgress>=100){reelProgress=100; reelDir=-1;}
-     if(reelProgress<=0){reelProgress=0; reelDir=1;}
-     reelBar.fill.style.width=reelProgress+"%";
-     requestAnimationFrame(animateReel);
- }
- animateReel();
 }
 
 function reelTap(){
- if(!reelBar) return;
- const barLeft=parseFloat(reelBar.fill.style.width);
- const zoneLeft=parseFloat(reelBar.zone.style.left);
- const zoneWidth=parseFloat(reelBar.zone.style.width);
- if(barLeft>=zoneLeft && barLeft<=zoneLeft+zoneWidth){
-     reelProgress+=2; // success
- } else {
-     reelProgress-=2; // fail
- }
- if(reelProgress>=100){msg.textContent="Caught "+currentFish+"!"; addItem(currentFish); removeReelBar(); setTimeout(()=>{msg.style.display="none"},1500);}
- if(reelProgress<=0){msg.textContent=currentFish+" escaped!"; removeReelBar(); setTimeout(()=>{msg.style.display="none"},1500);}
+ const bar=parseFloat(reelFill.style.width);
+ const zoneLeft=parseFloat(reelZone.style.left);
+ const zoneWidth=parseFloat(reelZone.style.width);
+ if(bar>=zoneLeft && bar<=zoneLeft+zoneWidth) reelProgress+=3;
+ else reelProgress-=3;
+ if(reelProgress>=100){msg.textContent="Caught "+currentFish+"!"; addItem(currentFish); reelBar.style.display="none"; setTimeout(()=>msg.style.display="none",1500); fishing=false;}
+ if(reelProgress<=0){msg.textContent=currentFish+" escaped!"; reelBar.style.display="none"; setTimeout(()=>msg.style.display="none",1500); fishing=false;}
 }
 
 /* TOUCH EVENTS */
 addEventListener("touchstart",(e)=>{
- if(fishing){if(reelBar){reelTap();} return;}
+ if(fishing && reelBar.style.display==="block"){reelTap(); return;}
  if(inventory[selected]==="Rod"||inventory[selected]==="Sun Rod"){holding=true;}
 });
 
 addEventListener("touchend",()=>{
- if(holding && !fishing){holding=false; startFishing();}
- else if(castBar){stopCast();}
+ if(holding && !fishing){startFishing();}
+ else if(castBar.style.display==="block"){stopCast();}
 });
 
-function updateFishingHold(){if(holding && !fishing){holdTime+=0.016; if(holdTime>=2){holding=false; startFishing();}}}
+function updateFishingHold(){
+ if(holding && !fishing){holdTime+=0.016; if(holdTime>=2){startFishing();}}
+}
 
 /* BOOK */
 book.onclick=()=>rules.style.display="block";
 
-/* ===== LOGIN FEATURE ===== */
+/* ===== LOGIN ===== */
 const loginDiv=document.getElementById("login");
 const usernameInput=document.getElementById("username");
 const loginBtn=document.getElementById("loginBtn");
@@ -544,6 +505,23 @@ function animate(){
  if(player.position.y<=3){player.position.y=3;velocityY=0;grounded=true;}
 
  updateFishingHold();
+
+ /* Update cast bar */
+ if(castBar.style.display==="block"){
+  castPower+=castDir*1.5;
+  if(castPower>100){castPower=100;castDir=-1;}
+  if(castPower<0){castPower=0;castDir=1;}
+  castFill.style.width=castPower+"%";
+ }
+
+ /* Update reel bar */
+ if(reelBar.style.display==="block"){
+  let w=parseFloat(reelFill.style.width);
+  w+=reelDir*0.8;
+  if(w>=300){w=300;reelDir=-1;}
+  if(w<=0){w=0;reelDir=1;}
+  reelFill.style.width=w+"px";
+ }
 
  renderer.render(scene,camera);
 }
