@@ -50,7 +50,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 .slot{width:42px;height:42px;border:2px solid white;color:white;font-size:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5)}
 .slot.active{border-color:yellow}
 
-/* SHOP (ADDITION) */
+/* SHOP */
 #shop{
  position:fixed;
  top:50%;left:50%;
@@ -68,12 +68,35 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  padding:6px 14px;
  font-size:16px
 }
+
+/* LOGIN */
+#login{
+ position:fixed;top:50%;left:50%;
+ transform:translate(-50%,-50%);
+ background:rgba(0,0,0,.9);
+ color:white;
+ padding:20px;border-radius:12px;text-align:center;
+ z-index:100;
+}
+#login input{
+ padding:6px;width:80%;margin:6px 0;
+}
+#login button{
+ padding:6px 12px;margin-top:6px;
+}
 </style>
 </head>
 <body>
 
-<div id="book">📘</div>
+<!-- LOGIN -->
+<div id="login">
+ <h2>Login</h2>
+ <input id="username" placeholder="Username"><br>
+ <input id="password" type="password" placeholder="Password"><br>
+ <button id="loginBtn">Login</button>
+</div>
 
+<div id="book">📘</div>
 <div id="rules">
  <h2>Fishing Game Rules</h2>
  <p>
@@ -107,7 +130,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 <button id="jump">JUMP</button>
 <div id="inventory"></div>
 
-<!-- SHOP UI (ADDITION) -->
+<!-- SHOP UI -->
 <div id="shop">
  <h3>Shop</h3>
  <button id="buySunRod">Buy Sun Rod ($1000)</button><br>
@@ -117,6 +140,56 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script>
+/* ===== LOGIN / SAVE SYSTEM ===== */
+const loginDiv = document.getElementById("login");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+
+let money = 0;
+let inventory = ["Rod","","","","","","","",""];
+let selected = 0;
+let currentUser = null;
+
+function saveProgress() {
+ if(!currentUser) return;
+ const data = {money, inventory, selected};
+ localStorage.setItem("save_"+currentUser, JSON.stringify(data));
+}
+
+function loadProgress(user) {
+ const data = JSON.parse(localStorage.getItem("save_"+user) || "{}");
+ money = data.money || 0;
+ inventory.length = 9;
+ for(let i=0;i<9;i++){
+  inventory[i] = data.inventory?.[i] || "";
+ }
+ selected = data.selected || 0;
+ document.getElementById("money").textContent="$"+money;
+ renderInv();
+}
+
+loginBtn.onclick = () => {
+ const user = usernameInput.value.trim();
+ const pass = passwordInput.value.trim();
+ if(!user || !pass) return alert("Enter username and password");
+
+ const users = JSON.parse(localStorage.getItem("users")||"{}");
+ if(users[user]){
+  if(users[user] !== pass) return alert("Wrong password");
+ } else {
+  users[user] = pass;
+  localStorage.setItem("users", JSON.stringify(users));
+ }
+
+ currentUser = user;
+ loginDiv.style.display = "none";
+ loadProgress(currentUser);
+};
+
+/* Auto-save every 10 seconds */
+setInterval(saveProgress,10000);
+
 /* ===== SCENE ===== */
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87CEEB);
@@ -167,7 +240,7 @@ for(let i=0;i<6;i++){
  addTree(Math.random()*12-6,Math.random()*12-6);
 }
 
-/* ===== ORB (ADDITION) ===== */
+/* ORB (SHOP) */
 const orb=new THREE.Mesh(
  new THREE.SphereGeometry(0.4,16,16),
  new THREE.MeshStandardMaterial({
@@ -237,10 +310,7 @@ jump.addEventListener("touchstart",()=>{
 });
 
 /* INVENTORY */
-let money=0;
 const prices={Clownfish:5,Tuna:10,Shark:25};
-const inventory=["Rod","","","","","","","",""];
-let selected=0;
 const inv=document.getElementById("inventory");
 let lastTap=0;
 let preview=null;
@@ -259,14 +329,15 @@ renderInv();
 
 function slotTap(i){
  const now=Date.now();
- if(inventory[i]==="Rod"){selected=i;removePreview();renderInv();return;}
+ if(inventory[i]==="Rod"||inventory[i]==="Sun Rod"){selected=i;removePreview();renderInv();return;}
  if(inventory[i]==="")return;
  if(now-lastTap<400){
-  money+=prices[inventory[i]];
+  money+=prices[inventory[i]]||0;
   inventory[i]="";
   document.getElementById("money").textContent="$"+money;
   removePreview();
   renderInv();
+  saveProgress();
  }else{
   previewFish(inventory[i]);
   lastTap=now;
@@ -288,7 +359,7 @@ function removePreview(){if(preview){camera.remove(preview);preview=null;}}
 /* ROD */
 let rod=null;
 function updateRod(){
- if(inventory[selected]==="Rod"){
+ if(inventory[selected]==="Rod"||inventory[selected]==="Sun Rod"){
   if(!rod){
    rod=new THREE.Mesh(
     new THREE.CylinderGeometry(.02,.02,1),
@@ -301,7 +372,7 @@ function updateRod(){
  }else if(rod){camera.remove(rod);rod=null;}
 }
 
-/* ===== ORB CLICK → SHOP (ADDITION) ===== */
+/* ORB CLICK → SHOP */
 const raycaster=new THREE.Raycaster();
 const touchVec=new THREE.Vector2();
 const shop=document.getElementById("shop");
@@ -315,7 +386,7 @@ addEventListener("touchstart",e=>{
  }
 });
 
-/* SHOP BUTTONS (ADDITION) */
+/* SHOP BUTTONS */
 buySunRod.onclick=()=>{
  if(money<1000)return alert("Not enough money");
  for(let i=0;i<inventory.length;i++){
@@ -324,6 +395,7 @@ buySunRod.onclick=()=>{
    money-=1000;
    document.getElementById("money").textContent="$"+money;
    renderInv();
+   saveProgress();
    return;
   }
  }
@@ -337,6 +409,7 @@ buyBait.onclick=()=>{
    money-=25;
    document.getElementById("money").textContent="$"+money;
    renderInv();
+   saveProgress();
    return;
   }
  }
@@ -344,7 +417,7 @@ buyBait.onclick=()=>{
 
 /* FISHING */
 let holding=false,holdTime=0,fishing=false,taps=0;
-addEventListener("touchstart",()=>{if(inventory[selected]==="Rod"&&!fishing){holding=true;holdTime=0}});
+addEventListener("touchstart",()=>{if(inventory[selected].includes("Rod")&&!fishing){holding=true;holdTime=0}});
 addEventListener("touchend",()=>{holding=false;holdTime=0});
 addEventListener("touchstart",()=>{if(fishing)taps++});
 
@@ -356,7 +429,7 @@ function randomFish(){
 }
 function addItem(f){
  for(let i=0;i<inventory.length;i++){
-  if(inventory[i]===""){inventory[i]=f;renderInv();return;}
+  if(inventory[i]===""){inventory[i]=f;renderInv();saveProgress();return;}
  }
 }
 function startFishing(){
