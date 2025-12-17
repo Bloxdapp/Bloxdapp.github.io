@@ -590,7 +590,7 @@ addEventListener("touchstart",e=>{
  touchVec.y=-(e.touches[0].clientY/innerHeight)*2+1;
  raycaster.setFromCamera(touchVec,camera);
  if(raycaster.intersectObjects(shopTable.children, true).length){
-  shop.style.display = "block";
+  shop.style.display = "block";}
  }
 });
 
