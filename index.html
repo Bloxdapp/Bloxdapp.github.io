@@ -6,38 +6,148 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
 html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
-#money{position:fixed;bottom:10px;right:10px;color:white;font-size:18px;background:rgba(0,0,0,.5);padding:6px 10px;border-radius:6px}
-#book{position:fixed;top:10px;left:10px;font-size:28px;cursor:pointer;z-index:10}
-#rules{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:420px;background:rgba(0,0,0,.9);color:white;padding:20px;border-radius:12px;display:none;z-index:20}
-#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:22px;display:none;text-shadow:2px 2px 5px black}
+
+/* UI */
+#money{
+ position:fixed;bottom:10px;right:10px;
+ color:white;font-size:18px;
+ background:rgba(0,0,0,.5);
+ padding:6px 10px;border-radius:6px
+}
+#book{
+ position:fixed;top:10px;left:10px;
+ font-size:28px;cursor:pointer;
+ z-index:10
+}
+#rules{
+ position:fixed;top:50%;left:50%;
+ transform:translate(-50%,-50%);
+ width:85%;max-width:420px;
+ background:rgba(0,0,0,.9);
+ color:white;padding:20px;
+ border-radius:12px;
+ display:none;
+ z-index:20
+}
+#rules button{
+ margin-top:12px;padding:6px 14px;
+ font-size:16px
+}
+#msg{
+ position:fixed;top:50%;left:50%;
+ transform:translate(-50%,-50%);
+ color:white;font-size:22px;
+ display:none;text-shadow:2px 2px 5px black
+}
+
+/* Controls */
 #joystick{position:fixed;bottom:120px;left:20px;width:110px;height:110px;background:rgba(255,255,255,.15);border-radius:50%}
 #stick{position:absolute;left:30px;top:30px;width:50px;height:50px;background:white;border-radius:50%}
 #jump{position:fixed;bottom:120px;right:20px;width:80px;height:80px;border-radius:50%}
-#inventory{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;overflow-x:auto;max-width:90%;padding:6px;background:rgba(0,0,0,.3);border-radius:6px}
-.slot{width:42px;height:42px;border:2px solid white;color:white;font-size:9px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);flex:0 0 auto}
-.slot.active{border-color:yellow}
-#shop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.9);color:white;padding:20px;border-radius:12px;display:none;z-index:50;text-align:center}
-#login{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.9);color:white;padding:20px;border-radius:12px;z-index:100;text-align:center}
+
+/* INVENTORY */
+#inventory{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 90%;
+  padding: 6px;
+  background: rgba(0,0,0,.3);
+  border-radius: 6px;
+}
+.slot{
+  width: 42px;
+  height: 42px;
+  border: 2px solid white;
+  color: white;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.5);
+  flex: 0 0 auto;
+}
+.slot.active{border-color: yellow}
+
+/* SHOP */
+#shop{
+ position:fixed;
+ top:50%;left:50%;
+ transform:translate(-50%,-50%);
+ background:rgba(0,0,0,.9);
+ color:white;
+ padding:20px;
+ border-radius:12px;
+ display:none;
+ z-index:50;
+ text-align:center
+}
+#shop button{
+ margin:6px;
+ padding:6px 14px;
+ font-size:16px
+}
+
+/* LOGIN */
+#login{
+ position:fixed;
+ top:50%;left:50%;
+ transform:translate(-50%,-50%);
+ background:rgba(0,0,0,.9);
+ color:white;
+ padding:20px;
+ border-radius:12px;
+ z-index:100;
+ text-align:center;
+}
+#login input{
+ padding:6px 10px;
+ font-size:16px;
+ margin-bottom:12px;
+}
+#login button{
+ padding:6px 14px;
+ font-size:16px;
+}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login">
  <h2>Login</h2>
- <input id="username" placeholder="Username"><br>
+ <input type="text" id="username" placeholder="Enter username"><br>
  <button id="loginBtn">Login</button>
 </div>
 
 <div id="book">📘</div>
-<div id="rules"><button onclick="rules.style.display='none'">Close</button></div>
+
+<div id="rules">
+ <h2>Fishing Game Rules</h2>
+ ...
+</div>
+
 <div id="money">$0</div>
 <div id="msg"></div>
+
 <div id="joystick"><div id="stick"></div></div>
 <button id="jump">JUMP</button>
 <div id="inventory"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<!-- SHOP -->
+<div id="shop">
+ <h3>Shop</h3>
+ <button id="buySunRod">Buy Sun Rod ($1000)</button><br>
+ <button id="buyBait">Buy 1 Bait ($25)</button><br><br>
+ <button onclick="shop.style.display='none'">CLOSE</button>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 <script>
 /* ===== SCENE ===== */
 const scene=new THREE.Scene();
@@ -46,48 +156,50 @@ scene.background=new THREE.Color(0x87CEEB);
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,1000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
 scene.add(new THREE.AmbientLight(0xffffff,.7));
 const sun=new THREE.DirectionalLight(0xffffff,1);
 sun.position.set(10,20,10);
+sun.castShadow=true;
 scene.add(sun);
 
-/* GROUND */
-const ground=new THREE.Mesh(
- new THREE.PlaneGeometry(2000,2000),
- new THREE.MeshStandardMaterial({color:0x1e90ff})
-);
-ground.rotation.x=-Math.PI/2;
-ground.position.y=-1;
-scene.add(ground);
+/* BLUE UNDERGROUND */
+const undergroundGeo=new THREE.PlaneGeometry(2000,2000,1,1);
+const undergroundMat=new THREE.MeshStandardMaterial({color:0x1e90ff,side:THREE.DoubleSide});
+const underground=new THREE.Mesh(undergroundGeo,undergroundMat);
+underground.rotation.x=-Math.PI/2;
+underground.position.y=-1;
+scene.add(underground);
 
 /* ISLAND */
-const island=new THREE.Mesh(
- new THREE.CylinderGeometry(18,22,2,64),
- new THREE.MeshStandardMaterial({color:0x2e8b57})
-);
-island.position.y=1;
+const islandGeo=new THREE.CylinderGeometry(18,22,2,64);
+const islandMat=new THREE.MeshStandardMaterial({color:0x2e8b57,roughness:.8,metalness:.1});
+const island=new THREE.Mesh(islandGeo,islandMat);
+island.position.set(0,1,0);
 scene.add(island);
 
-/* ===== TALL DENSE TREES (ALREADY INCLUDED) ===== */
+/* ===== NEW TALL DENSE TREES (ONLY CHANGE) ===== */
 function addTree(x,z){
  const height=6+Math.random()*6;
 
  const trunk=new THREE.Mesh(
   new THREE.CylinderGeometry(.4,.6,height,16),
-  new THREE.MeshStandardMaterial({color:0x8b5a2b})
+  new THREE.MeshStandardMaterial({color:0x8b4513})
  );
  trunk.position.set(x,height/2,z);
+ trunk.castShadow=true;
  scene.add(trunk);
 
  let y=height;
  for(let i=0;i<4;i++){
   const leaves=new THREE.Mesh(
    new THREE.ConeGeometry(2.8-i*.4,2.5,10),
-   new THREE.MeshStandardMaterial({color:0x1e7f3b})
+   new THREE.MeshStandardMaterial({color:0x228b22})
   );
   leaves.position.set(x,y,z);
+  leaves.castShadow=true;
   scene.add(leaves);
   y+=1.5;
  }
@@ -98,14 +210,20 @@ for(let i=0;i<35;i++){
  const r=Math.random()*14;
  addTree(Math.cos(a)*r,Math.sin(a)*r);
 }
+/* ===== END TREE CHANGE ===== */
+
+/* ORB */
+const orb=new THREE.Mesh(new THREE.SphereGeometry(.4,16,16),new THREE.MeshStandardMaterial({color:0xffff00,emissive:0xffff00,emissiveIntensity:.7}));
+orb.position.set(3,1.8,3);
+scene.add(orb);
 
 /* PLAYER */
 const player=new THREE.Object3D();
-player.position.y=3;
 scene.add(player);
+player.position.set(0,3,0);
 player.add(camera);
 
-/* LOOP */
+/* ===== LOOP ===== */
 function animate(){
  requestAnimationFrame(animate);
  renderer.render(scene,camera);
