@@ -772,3 +772,149 @@ document.addEventListener("touchstart",e=>{
 });
 </script>
 
+<script>
+/* ======================================================
+   POLISH PACK – SAFE VISUAL & UX ADD-ON
+   (Does NOT touch core logic)
+====================================================== */
+
+/* ---------- CAMERA BOB ---------- */
+let bobTime = 0;
+const baseCamY = camera.position.y;
+
+(function cameraBob(){
+ const speed = Math.abs(moveX) + Math.abs(moveZ);
+ bobTime += speed * 0.1;
+ camera.position.y = baseCamY + Math.sin(bobTime) * 0.03;
+ requestAnimationFrame(cameraBob);
+})();
+
+/* ---------- WATER SHIMMER ---------- */
+if (water && water.material) {
+ let waterTime = 0;
+ (function animateWater(){
+  waterTime += 0.002;
+  water.material.opacity = 0.82 + Math.sin(waterTime) * 0.03;
+  requestAnimationFrame(animateWater);
+ })();
+}
+
+/* ---------- SPLASH EFFECT ---------- */
+function splashEffect(){
+ const s = document.createElement("div");
+ s.style.position = "fixed";
+ s.style.left = "50%";
+ s.style.top = "60%";
+ s.style.width = "40px";
+ s.style.height = "40px";
+ s.style.borderRadius = "50%";
+ s.style.border = "2px solid rgba(255,255,255,0.7)";
+ s.style.transform = "translate(-50%,-50%) scale(0.5)";
+ s.style.opacity = "1";
+ s.style.pointerEvents = "none";
+ document.body.appendChild(s);
+
+ let scale = 0.5;
+ let op = 1;
+ const anim = setInterval(()=>{
+  scale += 0.08;
+  op -= 0.05;
+  s.style.transform = `translate(-50%,-50%) scale(${scale})`;
+  s.style.opacity = op;
+  if(op<=0){
+   clearInterval(anim);
+   document.body.removeChild(s);
+  }
+ },16);
+}
+
+/* Trigger splash when fishing starts */
+document.addEventListener("touchstart",e=>{
+ if(!fishing && inventory[selected] && inventory[selected].includes("Rod")){
+  if(Math.sqrt(player.position.x**2 + player.position.z**2) > 22){
+   splashEffect();
+  }
+ }
+});
+
+/* ---------- SCREEN FLASH FEEDBACK ---------- */
+function screenFlash(color){
+ const f = document.createElement("div");
+ f.style.position = "fixed";
+ f.style.left = "0";
+ f.style.top = "0";
+ f.style.width = "100%";
+ f.style.height = "100%";
+ f.style.background = color;
+ f.style.opacity = "0.3";
+ f.style.pointerEvents = "none";
+ f.style.zIndex = "999";
+ document.body.appendChild(f);
+ setTimeout(()=>f.remove(),120);
+}
+
+/* Hook into messages */
+const originalAddItem = addItem;
+window.addItem = function(item){
+ screenFlash("rgba(255,255,255,0.6)");
+ return originalAddItem(item);
+};
+
+/* ---------- INVENTORY HOVER FEEDBACK ---------- */
+document.querySelectorAll(".slot").forEach(slot=>{
+ slot.addEventListener("touchstart",()=>{
+  slot.style.transform="scale(1.1)";
+  slot.style.transition="transform 0.1s";
+ });
+ slot.addEventListener("touchend",()=>{
+  slot.style.transform="scale(1)";
+ });
+});
+
+/* ---------- SOFT UI TRANSITIONS ---------- */
+["rules","shop","login"].forEach(id=>{
+ const el=document.getElementById(id);
+ if(el){
+  el.style.transition="opacity 0.3s, transform 0.3s";
+  const obs=new MutationObserver(()=>{
+   if(el.style.display!=="none"){
+    el.style.opacity=1;
+    el.style.transform="translate(-50%,-50%) scale(1)";
+   }
+  });
+  obs.observe(el,{attributes:true,attributeFilter:["style"]});
+ }
+});
+
+/* ---------- MICRO SHAKE ON FAIL ---------- */
+function microShake(){
+ let i=0;
+ const shake=setInterval(()=>{
+  camera.rotation.z=Math.sin(i)*0.01;
+  i++;
+  if(i>10){
+   camera.rotation.z=0;
+   clearInterval(shake);
+  }
+ },16);
+}
+
+/* Listen for failure text */
+const msgObserver = new MutationObserver(()=>{
+ if(msg.textContent.includes("escaped")){
+  microShake();
+ }
+});
+msgObserver.observe(msg,{childList:true});
+
+/* ---------- PERFORMANCE GUARD ---------- */
+setInterval(()=>{
+ if(document.hidden){
+  renderer.setAnimationLoop(null);
+ }else{
+  renderer.setAnimationLoop(()=>{});
+ }
+},2000);
+</script>
+
+
