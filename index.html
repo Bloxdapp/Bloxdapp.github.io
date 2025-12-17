@@ -654,3 +654,95 @@ animate();
 </script>
 </body>
 </html>
+
+<script>
+/* ===============================
+   SAFE VISUAL + FISH ADD-ON
+   =============================== */
+
+(function(){
+  /* ---------- FOG ---------- */
+  if (window.THREE && window.scene) {
+    scene.fog = new THREE.FogExp2(0x87CEEB, 0.002);
+  }
+
+  /* ---------- SHADOWS ---------- */
+  if (window.renderer) {
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  }
+
+  if (window.sun) {
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = 2048;
+    sun.shadow.mapSize.height = 2048;
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 100;
+  }
+
+  // Enable shadow casting safely
+  scene.traverse(obj=>{
+    if(obj.isMesh){
+      obj.castShadow = true;
+      obj.receiveShadow = true;
+    }
+  });
+
+  /* ---------- NEW FISH DATA ---------- */
+  const extraFish = {
+    Salmon:        { price: 15,  chance: 0.18 },
+    Swordfish:    { price: 60,  chance: 0.10 },
+    BlueMarlin:   { price: 120, chance: 0.06 },
+    Anglerfish:   { price: 250, chance: 0.03 },
+    GoldenKoi:    { price: 750, chance: 0.01 },
+    Kraken:       { price: 2500, chance: 0.002 }
+  };
+
+  /* ---------- MERGE PRICES SAFELY ---------- */
+  if (window.prices) {
+    Object.assign(prices, Object.fromEntries(
+      Object.entries(extraFish).map(([k,v])=>[k,v.price])
+    ));
+  }
+
+  /* ---------- OVERRIDE randomFish SAFELY ---------- */
+  if (typeof window.randomFish === "function") {
+    const baseRandomFish = window.randomFish;
+
+    window.randomFish = function(){
+      // 30% chance to roll new fish table
+      if (Math.random() < 0.3) {
+        let roll = Math.random();
+        let cumulative = 0;
+
+        for (const [fish,data] of Object.entries(extraFish)) {
+          cumulative += data.chance;
+          if (roll < cumulative) {
+            // Sun Rod bonus
+            if (
+              inventory[selected] === "Sun Rod" &&
+              Math.random() < 0.4 &&
+              ["GoldenKoi","Kraken"].includes(fish)
+            ) return fish;
+
+            return fish;
+          }
+        }
+      }
+      // fallback to original logic
+      return baseRandomFish();
+    };
+  }
+
+  /* ---------- FOG MESSAGE ---------- */
+  if (window.msg) {
+    setTimeout(()=>{
+      msg.style.display="block";
+      msg.textContent="🌫 Fog rolled in... rare fish appear!";
+      setTimeout(()=>msg.style.display="none",2000);
+    }, 1500);
+  }
+
+})();
+</script>
+
