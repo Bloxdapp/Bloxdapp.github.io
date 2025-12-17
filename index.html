@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -227,43 +228,12 @@ for(let i=0;i<6;i++){
  addTree(Math.random()*12-6,Math.random()*12-6);
 }
 
-/* ===== FISHERMAN NPC ===== */
-const fisherman = new THREE.Group();
+/* ORB */
+const orb=new THREE.Mesh(new THREE.SphereGeometry(.4,16,16),new THREE.MeshStandardMaterial({color:0xffff00,emissive:0xffff00,emissiveIntensity:.7}));
+orb.position.set(3,1.8,3);
+scene.add(orb);
 
-// Body
-const bodyGeo = new THREE.CylinderGeometry(0.3,0.3,1.2,16);
-const bodyMat = new THREE.MeshStandardMaterial({color:0x654321});
-const body = new THREE.Mesh(bodyGeo,bodyMat);
-body.position.y = 0.6;
-fisherman.add(body);
-
-// Head
-const headGeo = new THREE.SphereGeometry(0.25,16,16);
-const headMat = new THREE.MeshStandardMaterial({color:0xffcc99});
-const head = new THREE.Mesh(headGeo,headMat);
-head.position.y = 1.4;
-fisherman.add(head);
-
-// Hat
-const hatGeo = new THREE.ConeGeometry(0.35,0.4,16);
-const hatMat = new THREE.MeshStandardMaterial({color:0x0000ff});
-const hat = new THREE.Mesh(hatGeo,hatMat);
-hat.position.y = 1.55;
-fisherman.add(hat);
-
-// Rod
-const rodGeo = new THREE.CylinderGeometry(0.02,0.02,1,8);
-const rodMat = new THREE.MeshStandardMaterial({color:0x8b4513});
-const rod = new THREE.Mesh(rodGeo,rodMat);
-rod.position.set(0.35,0.6,0);
-rod.rotation.z = Math.PI/4;
-fisherman.add(rod);
-
-// Position NPC
-fisherman.position.set(3,0,3);
-scene.add(fisherman);
-
-/* ===== PLAYER ===== */
+/* PLAYER */
 const player=new THREE.Object3D();
 scene.add(player);
 player.position.set(0,3,0);
@@ -320,91 +290,237 @@ jump.addEventListener("touchstart",()=>{
  if(grounded){velocityY=.18;grounded=false;}
 });
 
-/* ===== INVENTORY & SHOP SYSTEM ===== */
+/* ===== INVENTORY SYSTEM ===== */
 let money = 0;
-const prices = {Clownfish:5,Tuna:10,Shark:25,Pufferfish:25,SeaTurtle:50,MantaRay:500,Megalodon:1000};
+const prices = {Clownfish:5, Tuna:10, Shark:25, Pufferfish:25, SeaTurtle:50, MantaRay:500, Megalodon:1000};
+
+// Start with 9 slots
 let inventory = ["Rod","","","","","","","",""];
 let selected = 0;
 const inv = document.getElementById("inventory");
 let lastTapTime = 0;
 
-// Parse stack
-function parseStack(item){ if(!item) return {name:"",count:0}; const match=item.match(/^(.+)x(\d+)$/); return match?{name:match[1],count:parseInt(match[2])}:{name:item,count:1}; }
+// Parse item stacks
+function parseStack(item){
+  if(!item) return {name:"", count:0};
+  const match = item.match(/^(.+)x(\d+)$/);
+  if(match) return {name:match[1], count:parseInt(match[2])};
+  return {name:item, count:1};
+}
+
+// Add item with stacking logic
 function addItem(fishName){
- const maxStack=99;
- for(let i=0;i<inventory.length;i++){
-   const {name,count}=parseStack(inventory[i]);
-   if(name===fishName && count<maxStack){inventory[i]=fishName+(count+1>1?"x"+(count+1):""); renderInv(); return;}
- }
- for(let i=0;i<inventory.length;i++){if(inventory[i]===""){inventory[i]=fishName; renderInv(); return;}}
- alert("Inventory full!");
+  const maxStack = 99;
+  // Try to stack first
+  for(let i=0;i<inventory.length;i++){
+    const {name,count} = parseStack(inventory[i]);
+    if(name === fishName && count < maxStack){
+      const newCount = Math.min(count+1, maxStack);
+      inventory[i] = fishName + (newCount>1 ? "x"+newCount : "");
+      renderInv();
+      return;
+    }
+  }
+  // Find empty slot
+  for(let i=0;i<inventory.length;i++){
+    if(inventory[i]===""){
+      inventory[i] = fishName;
+      renderInv();
+      return;
+    }
+  }
+  alert("Inventory full!");
 }
+
+// Tap handling (preview / sell)
 function slotTap(index){
- const {name,count}=parseStack(inventory[index]);
- selected=index; renderInv(); updateRod();
- if(!name || name==="Rod"||name==="Sun Rod"||name==="Bait") return;
- const now=Date.now();
- if(lastTapTime && now-lastTapTime<500 && selected===index){money += (prices[name]||0)*count; document.getElementById("money").textContent="$"+money; inventory[index]=""; renderInv(); lastTapTime=0;}
- else{msg.style.display="block"; msg.textContent=name+" (double tap to sell all)"; setTimeout(()=>{msg.style.display="none"},1000); lastTapTime=now;}
+  const {name,count} = parseStack(inventory[index]);
+  selected = index;
+  renderInv();
+  updateRod();
+
+  if(!name || name==="Rod" || name==="Sun Rod" || name==="Bait") return;
+
+  const now = Date.now();
+  if(lastTapTime && now-lastTapTime<500 && selected===index){
+    // Double tap → sell
+    money += (prices[name]||0) * count; // Sell all in stack
+    document.getElementById("money").textContent = "$" + money;
+    inventory[index] = "";
+    renderInv();
+    lastTapTime = 0;
+  }else{
+    // Single tap → preview
+    msg.style.display = "block";
+    msg.textContent = name + " (double tap to sell all)";
+    setTimeout(()=>{msg.style.display="none"},1000);
+    lastTapTime = now;
+  }
 }
-function renderInv(){inv.innerHTML=""; inventory.forEach((it,i)=>{const d=document.createElement("div"); d.className="slot"+(i===selected?" active":""); d.textContent=it; d.onclick=()=>slotTap(i); inv.appendChild(d);});}
+
+// Render inventory with scrollable UI
+function renderInv(){
+  inv.innerHTML = "";
+  inventory.forEach((it,i)=>{
+    const d = document.createElement("div");
+    d.className = "slot"+(i===selected?" active":"");
+    d.textContent = it;
+    d.onclick = ()=>slotTap(i);
+    inv.appendChild(d);
+  });
+}
 renderInv();
-function expandInventory(slots=3){for(let i=0;i<slots;i++) inventory.push(""); renderInv();}
-const expandBtn=document.createElement("button"); expandBtn.textContent="Buy 3 Inventory Slots ($500)";
-expandBtn.onclick=()=>{if(money<500)return alert("Not enough money"); money-=500; document.getElementById("money").textContent="$"+money; expandInventory(3);};
+
+// Inventory expansion
+function expandInventory(slots=3){
+  for(let i=0;i<slots;i++) inventory.push("");
+  renderInv();
+}
+
+// Example shop button for expansion (can be added to your shop)
+const expandBtn = document.createElement("button");
+expandBtn.textContent = "Buy 3 Inventory Slots ($500)";
+expandBtn.onclick = ()=>{
+  if(money<500) return alert("Not enough money");
+  money -= 500;
+  document.getElementById("money").textContent = "$"+money;
+  expandInventory(3);
+};
 shop.appendChild(expandBtn);
 
 /* ROD */
 let rod=null;
 function updateRod(){
  if(inventory[selected]==="Rod"||inventory[selected]==="Sun Rod"){
-   if(!rod){rod=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,1),new THREE.MeshStandardMaterial({color:inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513})); rod.position.set(.3,-.4,-1); rod.rotation.z=Math.PI/4; camera.add(rod);}
-   else rod.material.color.set(inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513);
- } else if(rod){camera.remove(rod); rod=null;}
+   if(!rod){
+     rod=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,1),new THREE.MeshStandardMaterial({color:inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513}));
+     rod.position.set(.3,-.4,-1);
+     rod.rotation.z=Math.PI/4;
+     camera.add(rod);
+   }else{
+     rod.material.color.set(inventory[selected]==="Sun Rod"?0xffcc00:0x8b4513);
+   }
+ }else if(rod){camera.remove(rod);rod=null;}
 }
 
-/* ===== NPC CLICK → SHOP ===== */
+/* ORB CLICK → SHOP */
 const raycaster=new THREE.Raycaster();
 const touchVec=new THREE.Vector2();
-addEventListener("touchstart", e=>{
+addEventListener("touchstart",e=>{
  touchVec.x=(e.touches[0].clientX/innerWidth)*2-1;
  touchVec.y=-(e.touches[0].clientY/innerHeight)*2+1;
  raycaster.setFromCamera(touchVec,camera);
- if(raycaster.intersectObject(fisherman,true).length){ shop.style.display="block"; }
+ if(raycaster.intersectObject(orb).length){
+  shop.style.display="block";
+ }
 });
 
 /* SHOP BUTTONS */
 buySunRod.onclick=()=>{
  if(money<1000)return alert("Not enough money");
- for(let i=0;i<inventory.length;i++){if(inventory[i]==="Rod"){inventory[i]="Sun Rod"; renderInv(); money-=1000; document.getElementById("money").textContent="$"+money; return;}}
- for(let i=0;i<inventory.length;i++){if(inventory[i]===""){inventory[i]="Sun Rod"; money-=1000; document.getElementById("money").textContent="$"+money; renderInv(); return;}}
- alert("Inventory full!");
-};
-buyBait.onclick=()=>{
- if(money<25)return alert("Not enough money");
- for(let i=0;i<inventory.length;i++){if(inventory[i]===""){inventory[i]="Bait"; money-=25; document.getElementById("money").textContent="$"+money; renderInv(); return;}}
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]==="Rod"){inventory[i]="Sun Rod"; renderInv(); money-=1000; document.getElementById("money").textContent="$"+money; return;}
+ }
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]===""){inventory[i]="Sun Rod"; money-=1000; document.getElementById("money").textContent="$"+money; renderInv(); return;}
+ }
  alert("Inventory full!");
 };
 
-/* ===== FISHING MINI-GAME ===== */
+buyBait.onclick=()=>{
+ if(money<25)return alert("Not enough money");
+ for(let i=0;i<inventory.length;i++){
+  if(inventory[i]===""){inventory[i]="Bait"; money-=25; document.getElementById("money").textContent="$"+money; renderInv(); return;}
+ }
+ alert("Inventory full!");
+};
+
+/* ===== REACTION-TIME MINI-GAME FISHING ===== */
 let holding=false, holdTime=0, fishing=false, taps=0, requiredTaps=10, fishButton=null, fishTimer=null;
+
 addEventListener("touchstart",()=>{if(inventory[selected]==="Rod"||inventory[selected]==="Sun Rod"){if(!fishing){holding=true; holdTime=0}}});
-addEventListener("touchend",()=>{holding=false; holdTime=0;});
+addEventListener("touchend",()=>{holding=false; holdTime=0});
+
 function randomFish(){
- const r=Math.random(); let fish="";
- if(r<1/50) fish="Megalodon"; else if(r<1/25) fish="MantaRay"; else if(r<1/5) fish="SeaTurtle"; else if(r<1/3) fish="Pufferfish"; else if(r<0.58) fish="Tuna"; else if(r<0.83) fish="Clownfish"; else fish="Shark";
- if(inventory[selected]==="Sun Rod" && Math.random()<0.5){ const rarities=["Megalodon","MantaRay","SeaTurtle"]; fish=rarities[Math.floor(Math.random()*rarities.length)]; }
+ const r=Math.random();
+ let fish="";
+ if(r<1/50) fish="Megalodon";
+ else if(r<1/25) fish="MantaRay";
+ else if(r<1/5) fish="SeaTurtle";
+ else if(r<1/3) fish="Pufferfish";
+ else if(r<0.58) fish="Tuna";
+ else if(r<0.83) fish="Clownfish";
+ else fish="Shark";
+
+ if(inventory[selected]==="Sun Rod" && Math.random()<0.5){
+  const rarities=["Megalodon","MantaRay","SeaTurtle"];
+  fish=rarities[Math.floor(Math.random()*rarities.length)];
+ }
  return fish;
 }
-function createFishButton(){if(fishButton) document.body.removeChild(fishButton); fishButton=document.createElement("button"); fishButton.textContent="PRESS HERE!"; fishButton.style.position="fixed"; fishButton.style.zIndex="100"; fishButton.style.padding="12px 20px"; fishButton.style.fontSize="18px"; fishButton.style.borderRadius="8px"; fishButton.style.background="yellow"; fishButton.style.color="black"; const x=Math.random()*(window.innerWidth-150); const y=Math.random()*(window.innerHeight-60); fishButton.style.left=x+"px"; fishButton.style.top=y+"px"; document.body.appendChild(fishButton);}
+
+function createFishButton(){
+ if(fishButton) document.body.removeChild(fishButton);
+ fishButton=document.createElement("button");
+ fishButton.textContent="PRESS HERE!";
+ fishButton.style.position="fixed";
+ fishButton.style.zIndex="100";
+ fishButton.style.padding="12px 20px";
+ fishButton.style.fontSize="18px";
+ fishButton.style.borderRadius="8px";
+ fishButton.style.background="yellow";
+ fishButton.style.color="black";
+ const x=Math.random()*(window.innerWidth-150);
+ const y=Math.random()*(window.innerHeight-60);
+ fishButton.style.left=x+"px";
+ fishButton.style.top=y+"px";
+ document.body.appendChild(fishButton);
+}
+
 function startFishing(){
- fishing=true; holding=false; holdTime=0; taps=0; msg.style.display="block"; msg.textContent="Casting...";
+ fishing=true;
+ holding=false;
+ holdTime=0;
+ taps=0;
+ msg.style.display="block";
+ msg.textContent="Casting...";
  const castDelay = 1000 + Math.random()*1500;
+
  setTimeout(()=>{
-   const fish=randomFish(); msg.textContent=fish+"! Catch it by pressing the button!";
-   function failFish(){msg.textContent="Fish escaped!"; fishing=false; if(fishButton) document.body.removeChild(fishButton); fishButton=null; clearTimeout(fishTimer); setTimeout(()=>{msg.style.display="none"},2000);}
-   function nextTap(){if(taps>=requiredTaps){msg.textContent="Caught "+fish+"!"; addItem(fish); fishing=false; if(fishButton) document.body.removeChild(fishButton); fishButton=null; clearTimeout(fishTimer); setTimeout(()=>{msg.style.display="none"},2000); return;}
-   createFishButton(); fishTimer=setTimeout(failFish,1000); fishButton.onclick=()=>{taps++; clearTimeout(fishTimer); if(fishButton) document.body.removeChild(fishButton); fishButton=null; nextTap();};}
+   const fish=randomFish();
+   msg.textContent=fish+"! Catch it by pressing the button!";
+   
+   function failFish(){
+     msg.textContent="Fish escaped!";
+     fishing=false;
+     if(fishButton) document.body.removeChild(fishButton);
+     fishButton=null;
+     clearTimeout(fishTimer);
+     setTimeout(()=>{msg.style.display="none"},2000);
+   }
+
+   function nextTap(){
+     if(taps>=requiredTaps){
+       msg.textContent="Caught "+fish+"!";
+       addItem(fish);
+       fishing=false;
+       if(fishButton) document.body.removeChild(fishButton);
+       fishButton=null;
+       clearTimeout(fishTimer);
+       setTimeout(()=>{msg.style.display="none"},2000);
+       return;
+     }
+     createFishButton();
+     fishTimer=setTimeout(failFish,1000);
+     fishButton.onclick=()=>{
+       taps++;
+       clearTimeout(fishTimer);
+       if(fishButton) document.body.removeChild(fishButton);
+       fishButton=null;
+       nextTap();
+     }
+   }
+
    nextTap();
  }, castDelay);
 }
@@ -417,35 +533,58 @@ const loginDiv=document.getElementById("login");
 const usernameInput=document.getElementById("username");
 const loginBtn=document.getElementById("loginBtn");
 let username=null;
+
 function loadPlayerData(name){
  const data=localStorage.getItem("fishingGame_"+name);
- if(data){const parsed=JSON.parse(data); money=parsed.money||0; inventory.splice(0,inventory.length,...parsed.inventory||inventory); selected=parsed.selected||0;}
+ if(data){
+  const parsed=JSON.parse(data);
+  money=parsed.money||0;
+  inventory.splice(0,inventory.length,...parsed.inventory||inventory);
+  selected=parsed.selected||0;
+ }
  document.getElementById("money").textContent="$"+money;
  renderInv();
 }
-function savePlayerData(){if(!username)return; localStorage.setItem("fishingGame_"+username,JSON.stringify({money,inventory,selected}));}
+
+function savePlayerData(){
+ if(!username)return;
+ localStorage.setItem("fishingGame_"+username,JSON.stringify({money,inventory,selected}));
+}
+
 loginBtn.onclick=()=>{
  const name=usernameInput.value.trim();
  if(!name)return alert("Enter a username");
- username=name; loadPlayerData(username); loginDiv.style.display="none"; savePlayerData();
+ username=name;
+ loadPlayerData(username);
+ loginDiv.style.display="none";
+ savePlayerData();
 };
+
 setInterval(savePlayerData,5000);
 
 /* ===== LOOP ===== */
 function animate(){
  requestAnimationFrame(animate);
  updateRod();
+
  camera.rotation.order="YXZ";
  camera.rotation.y=yaw;
  camera.rotation.x=pitch;
+
  const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
  const r=new THREE.Vector3(f.z,0,-f.x);
  player.position.add(f.multiplyScalar(moveZ*.15));
  player.position.add(r.multiplyScalar(moveX*.15));
+
  velocityY-=.01;
  player.position.y+=velocityY;
  if(player.position.y<=3){player.position.y=3;velocityY=0;grounded=true;}
- if(holding&&!fishing){holdTime+=.016; if(holdTime>=2){startFishing();holding=false;}}
+
+ if(holding&&!fishing){
+  holdTime+=.016;
+  if(holdTime>=2){startFishing();holding=false;}
+ }
+
  renderer.render(scene,camera);
 }
 animate();
