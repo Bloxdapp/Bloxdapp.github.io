@@ -654,3 +654,114 @@ animate();
 </script>
 </body>
 </html>
+
+/* ===============================
+   FISH PREVIEW ADD-ON (DROP-IN)
+   =============================== */
+
+let __fishPreviewMesh = null;
+
+/* Simple procedural fish models */
+function __makeFishMesh(name){
+  let g, m;
+
+  switch(name){
+    case "Clownfish":
+      g = new THREE.SphereGeometry(0.25, 16, 16);
+      m = new THREE.MeshStandardMaterial({ color: 0xff7f00 });
+      break;
+
+    case "Tuna":
+      g = new THREE.CylinderGeometry(0.15, 0.25, 0.7, 12);
+      m = new THREE.MeshStandardMaterial({ color: 0x1e90ff });
+      break;
+
+    case "Shark":
+      g = new THREE.ConeGeometry(0.3, 0.9, 16);
+      m = new THREE.MeshStandardMaterial({ color: 0x808080 });
+      break;
+
+    case "Pufferfish":
+      g = new THREE.SphereGeometry(0.35, 18, 18);
+      m = new THREE.MeshStandardMaterial({ color: 0xffff99 });
+      break;
+
+    case "SeaTurtle":
+      g = new THREE.SphereGeometry(0.4, 16, 16);
+      m = new THREE.MeshStandardMaterial({ color: 0x2e8b57 });
+      break;
+
+    case "MantaRay":
+      g = new THREE.PlaneGeometry(0.9, 0.5);
+      m = new THREE.MeshStandardMaterial({
+        color: 0x111111,
+        side: THREE.DoubleSide
+      });
+      break;
+
+    case "Megalodon":
+      g = new THREE.ConeGeometry(0.5, 1.2, 20);
+      m = new THREE.MeshStandardMaterial({ color: 0x444444 });
+      break;
+
+    default:
+      return null;
+  }
+
+  const mesh = new THREE.Mesh(g, m);
+  mesh.rotation.x = Math.PI / 2;
+  return mesh;
+}
+
+/* Show fish in front of camera */
+function __showFishPreview(name){
+  if(typeof camera === "undefined") return;
+
+  if(__fishPreviewMesh){
+    camera.remove(__fishPreviewMesh);
+    __fishPreviewMesh = null;
+  }
+
+  const mesh = __makeFishMesh(name);
+  if(!mesh) return;
+
+  mesh.position.set(0, -0.2, -1.5);
+  camera.add(mesh);
+  __fishPreviewMesh = mesh;
+
+  setTimeout(()=>{
+    if(__fishPreviewMesh){
+      camera.remove(__fishPreviewMesh);
+      __fishPreviewMesh = null;
+    }
+  }, 1500);
+}
+
+/* Auto-hook into inventory slot clicks */
+(function(){
+  const originalSlotTap = window.slotTap;
+  if(!originalSlotTap) return;
+
+  window.slotTap = function(index){
+    const before = inventory[index];
+    originalSlotTap(index);
+
+    const item = inventory[index] || before;
+    if(!item) return;
+
+    const name = item.split("x")[0];
+    if(prices && prices[name]){
+      __showFishPreview(name);
+    }
+  };
+})();
+
+/* Rotate preview fish automatically */
+const __oldAnimate = animate;
+animate = function(){
+  if(__fishPreviewMesh){
+    __fishPreviewMesh.rotation.y += 0.03;
+  }
+  __oldAnimate();
+};
+
