@@ -207,7 +207,9 @@ island.position.set(0,1,0);
 scene.add(island);
 
 /* TREES */
+let treePositions = [];
 function addTree(x,z){
+ treePositions.push({x,z});
  const trunkGeo=new THREE.CylinderGeometry(.3,.5,3,12);
  const trunkMat=new THREE.MeshStandardMaterial({color:0x8b4513});
  const trunk=new THREE.Mesh(trunkGeo,trunkMat);
@@ -287,25 +289,19 @@ jump.addEventListener("touchstart",()=>{
 /* ===== INVENTORY SYSTEM ===== */
 let money = 0;
 const prices = {Clownfish:5, Tuna:10, Shark:25, Pufferfish:25, SeaTurtle:50, MantaRay:500, Megalodon:1000};
-
-// Start with 9 slots
 let inventory = ["Rod","","","","","","","",""];
 let selected = 0;
 const inv = document.getElementById("inventory");
 let lastTapTime = 0;
 
-// Parse item stacks
 function parseStack(item){
   if(!item) return {name:"", count:0};
   const match = item.match(/^(.+)x(\d+)$/);
   if(match) return {name:match[1], count:parseInt(match[2])};
   return {name:item, count:1};
 }
-
-// Add item with stacking logic
 function addItem(fishName){
   const maxStack = 99;
-  // Try to stack first
   for(let i=0;i<inventory.length;i++){
     const {name,count} = parseStack(inventory[i]);
     if(name === fishName && count < maxStack){
@@ -315,7 +311,6 @@ function addItem(fishName){
       return;
     }
   }
-  // Find empty slot
   for(let i=0;i<inventory.length;i++){
     if(inventory[i]===""){
       inventory[i] = fishName;
@@ -325,34 +320,26 @@ function addItem(fishName){
   }
   alert("Inventory full!");
 }
-
-// Tap handling (preview / sell)
 function slotTap(index){
   const {name,count} = parseStack(inventory[index]);
   selected = index;
   renderInv();
   updateRod();
-
   if(!name || name==="Rod" || name==="Sun Rod" || name==="Bait") return;
-
   const now = Date.now();
   if(lastTapTime && now-lastTapTime<500 && selected===index){
-    // Double tap → sell
-    money += (prices[name]||0) * count; // Sell all in stack
+    money += (prices[name]||0) * count;
     document.getElementById("money").textContent = "$" + money;
     inventory[index] = "";
     renderInv();
     lastTapTime = 0;
   }else{
-    // Single tap → preview
     msg.style.display = "block";
     msg.textContent = name + " (double tap to sell all)";
     setTimeout(()=>{msg.style.display="none"},1000);
     lastTapTime = now;
   }
 }
-
-// Render inventory with scrollable UI
 function renderInv(){
   inv.innerHTML = "";
   inventory.forEach((it,i)=>{
@@ -364,14 +351,10 @@ function renderInv(){
   });
 }
 renderInv();
-
-// Inventory expansion
 function expandInventory(slots=3){
   for(let i=0;i<slots;i++) inventory.push("");
   renderInv();
 }
-
-// Example shop button for expansion
 const expandBtn = document.createElement("button");
 expandBtn.textContent = "Buy 3 Inventory Slots ($500)";
 expandBtn.onclick = ()=>{
@@ -397,25 +380,19 @@ function updateRod(){
  }else if(rod){camera.remove(rod);rod=null;}
 }
 
-/* ===== FISHERMAN NPC ===== */
+/* ===== FISHERMAN NPC NEAR TREES ===== */
 function createFisherman(x, y, z) {
     const npc = new THREE.Group();
-
-    // Body
     const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.2, 12);
     const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2e8b57 });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 1.2 / 2;
+    body.position.y = 0.6;
     npc.add(body);
-
-    // Head
     const headGeo = new THREE.SphereGeometry(0.25, 16, 16);
     const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa });
     const head = new THREE.Mesh(headGeo, headMat);
     head.position.y = 1.2 + 0.25;
     npc.add(head);
-
-    // Arms
     const armGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 12);
     const armMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
     const leftArm = new THREE.Mesh(armGeo, armMat);
@@ -426,8 +403,6 @@ function createFisherman(x, y, z) {
     rightArm.position.set(0.35, 1.0, 0);
     rightArm.rotation.z = -Math.PI / 4;
     npc.add(rightArm);
-
-    // Legs
     const legGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.8, 12);
     const legMat = new THREE.MeshStandardMaterial({ color: 0x000080 });
     const leftLeg = new THREE.Mesh(legGeo, legMat);
@@ -436,13 +411,14 @@ function createFisherman(x, y, z) {
     const rightLeg = new THREE.Mesh(legGeo, legMat);
     rightLeg.position.set(0.15, 0.4, 0);
     npc.add(rightLeg);
-
     npc.position.set(x, y, z);
     scene.add(npc);
-
     return npc;
 }
-const fisherman = createFisherman(3,0,3);
+
+// Place fisherman near a tree
+let tree = treePositions[0]; // first tree
+const fisherman = createFisherman(tree.x+1,0,tree.z+1); // offset so not inside tree
 
 /* ===== FISHERMAN CLICK → SHOP ===== */
 const raycaster=new THREE.Raycaster();
@@ -451,7 +427,6 @@ addEventListener("touchstart", e => {
     touchVec.x = (e.touches[0].clientX / innerWidth) * 2 - 1;
     touchVec.y = -(e.touches[0].clientY / innerHeight) * 2 + 1;
     raycaster.setFromCamera(touchVec, camera);
-
     if (raycaster.intersectObject(fisherman, true).length) {
         shop.style.display = "block";
     }
@@ -468,7 +443,6 @@ buySunRod.onclick=()=>{
  }
  alert("Inventory full!");
 };
-
 buyBait.onclick=()=>{
  if(money<25)return alert("Not enough money");
  for(let i=0;i<inventory.length;i++){
@@ -477,159 +451,163 @@ buyBait.onclick=()=>{
  alert("Inventory full!");
 };
 
-/* ===== REACTION-TIME MINI-GAME FISHING ===== */
+/* ===== FISHING MINI-GAME ===== */
 let holding=false, holdTime=0, fishing=false, taps=0, requiredTaps=10, fishButton=null, fishTimer=null;
-
 addEventListener("touchstart",()=>{if(inventory[selected]==="Rod"||inventory[selected]==="Sun Rod"){if(!fishing){holding=true; holdTime=0}}});
 addEventListener("touchend",()=>{holding=false; holdTime=0});
 
 function randomFish(){
  const r=Math.random();
  let fish="";
- if(r<1/50) fish="Megalodon";
- else if(r<1/25) fish="MantaRay";
- else if(r<1/5) fish="SeaTurtle";
- else if(r<1/3) fish="Pufferfish";
- else if(r<0.58) fish="Tuna";
- else if(r<0.83) fish="Clownfish";
- else fish="Shark";
+ function randomFish() {
+    const r = Math.random();
+    let fish = "";
+    if (r < 1 / 50) fish = "Megalodon";
+    else if (r < 1 / 25) fish = "MantaRay";
+    else if (r < 1 / 5) fish = "SeaTurtle";
+    else if (r < 1 / 3) fish = "Pufferfish";
+    else if (r < 0.58) fish = "Tuna";
+    else if (r < 0.83) fish = "Clownfish";
+    else fish = "Shark";
 
- if(inventory[selected]==="Sun Rod" && Math.random()<0.5){
-  const rarities=["Megalodon","MantaRay","SeaTurtle"];
-  fish=rarities[Math.floor(Math.random()*rarities.length)];
- }
- return fish;
+    if (inventory[selected] === "Sun Rod" && Math.random() < 0.5) {
+        const rarities = ["Megalodon", "MantaRay", "SeaTurtle"];
+        fish = rarities[Math.floor(Math.random() * rarities.length)];
+    }
+    return fish;
 }
 
-function createFishButton(){
- if(fishButton) document.body.removeChild(fishButton);
- fishButton=document.createElement("button");
- fishButton.textContent="PRESS HERE!";
- fishButton.style.position="fixed";
- fishButton.style.zIndex="100";
- fishButton.style.padding="12px 20px";
- fishButton.style.fontSize="18px";
- fishButton.style.borderRadius="8px";
- fishButton.style.background="yellow";
- fishButton.style.color="black";
- const x=Math.random()*(window.innerWidth-150);
- const y=Math.random()*(window.innerHeight-60);
- fishButton.style.left=x+"px";
- fishButton.style.top=y+"px";
- document.body.appendChild(fishButton);
+function createFishButton() {
+    if (fishButton) document.body.removeChild(fishButton);
+    fishButton = document.createElement("button");
+    fishButton.textContent = "PRESS HERE!";
+    fishButton.style.position = "fixed";
+    fishButton.style.zIndex = "100";
+    fishButton.style.padding = "12px 20px";
+    fishButton.style.fontSize = "18px";
+    fishButton.style.borderRadius = "8px";
+    fishButton.style.background = "yellow";
+    fishButton.style.color = "black";
+    const x = Math.random() * (window.innerWidth - 150);
+    const y = Math.random() * (window.innerHeight - 60);
+    fishButton.style.left = x + "px";
+    fishButton.style.top = y + "px";
+    document.body.appendChild(fishButton);
 }
 
-function startFishing(){
- fishing=true;
- holding=false;
- holdTime=0;
- taps=0;
- msg.style.display="block";
- msg.textContent="Casting...";
- const castDelay = 1000 + Math.random()*1500;
+function startFishing() {
+    fishing = true;
+    holding = false;
+    holdTime = 0;
+    taps = 0;
+    msg.style.display = "block";
+    msg.textContent = "Casting...";
+    const castDelay = 1000 + Math.random() * 1500;
 
- setTimeout(()=>{
-   const fish=randomFish();
-   msg.textContent=fish+"! Catch it by pressing the button!";
-   
-   function failFish(){
-     msg.textContent="Fish escaped!";
-     fishing=false;
-     if(fishButton) document.body.removeChild(fishButton);
-     fishButton=null;
-     clearTimeout(fishTimer);
-     setTimeout(()=>{msg.style.display="none"},2000);
-   }
+    setTimeout(() => {
+        const fish = randomFish();
+        msg.textContent = fish + "! Catch it by pressing the button!";
 
-   function nextTap(){
-     if(taps>=requiredTaps){
-       msg.textContent="Caught "+fish+"!";
-       addItem(fish);
-       fishing=false;
-       if(fishButton) document.body.removeChild(fishButton);
-       fishButton=null;
-       clearTimeout(fishTimer);
-       setTimeout(()=>{msg.style.display="none"},2000);
-       return;
-     }
-     createFishButton();
-     fishTimer=setTimeout(failFish,1000);
-     fishButton.onclick=()=>{
-       taps++;
-       clearTimeout(fishTimer);
-       if(fishButton) document.body.removeChild(fishButton);
-       fishButton=null;
-       nextTap();
-     }
-   }
+        function failFish() {
+            msg.textContent = "Fish escaped!";
+            fishing = false;
+            if (fishButton) document.body.removeChild(fishButton);
+            fishButton = null;
+            clearTimeout(fishTimer);
+            setTimeout(() => { msg.style.display = "none"; }, 2000);
+        }
 
-   nextTap();
- }, castDelay);
+        function nextTap() {
+            if (taps >= requiredTaps) {
+                msg.textContent = "Caught " + fish + "!";
+                addItem(fish);
+                fishing = false;
+                if (fishButton) document.body.removeChild(fishButton);
+                fishButton = null;
+                clearTimeout(fishTimer);
+                setTimeout(() => { msg.style.display = "none"; }, 2000);
+                return;
+            }
+            createFishButton();
+            fishTimer = setTimeout(failFish, 1000);
+            fishButton.onclick = () => {
+                taps++;
+                clearTimeout(fishTimer);
+                if (fishButton) document.body.removeChild(fishButton);
+                fishButton = null;
+                nextTap();
+            };
+        }
+
+        nextTap();
+    }, castDelay);
 }
 
-/* BOOK */
-book.onclick=()=>rules.style.display="block";
+/* ===== BOOK ===== */
+book.onclick = () => rules.style.display = "block";
 
 /* ===== LOGIN FEATURE ===== */
-const loginDiv=document.getElementById("login");
-const usernameInput=document.getElementById("username");
-const loginBtn=document.getElementById("loginBtn");
-let username=null;
+const loginDiv = document.getElementById("login");
+const usernameInput = document.getElementById("username");
+const loginBtn = document.getElementById("loginBtn");
+let username = null;
 
-function loadPlayerData(name){
- const data=localStorage.getItem("fishingGame_"+name);
- if(data){
-  const parsed=JSON.parse(data);
-  money=parsed.money||0;
-  inventory.splice(0,inventory.length,...parsed.inventory||inventory);
-  selected=parsed.selected||0;
- }
- document.getElementById("money").textContent="$"+money;
- renderInv();
+function loadPlayerData(name) {
+    const data = localStorage.getItem("fishingGame_" + name);
+    if (data) {
+        const parsed = JSON.parse(data);
+        money = parsed.money || 0;
+        inventory.splice(0, inventory.length, ...(parsed.inventory || inventory));
+        selected = parsed.selected || 0;
+    }
+    document.getElementById("money").textContent = "$" + money;
+    renderInv();
 }
 
-function savePlayerData(){
- if(!username)return;
- localStorage.setItem("fishingGame_"+username,JSON.stringify({money,inventory,selected}));
+function savePlayerData() {
+    if (!username) return;
+    localStorage.setItem("fishingGame_" + username, JSON.stringify({ money, inventory, selected }));
 }
 
-loginBtn.onclick=()=>{
- const name=usernameInput.value.trim();
- if(!name)return alert("Enter a username");
- username=name;
- loadPlayerData(username);
- loginDiv.style.display="none";
- savePlayerData();
+loginBtn.onclick = () => {
+    const name = usernameInput.value.trim();
+    if (!name) return alert("Enter a username");
+    username = name;
+    loadPlayerData(username);
+    loginDiv.style.display = "none";
+    savePlayerData();
 };
 
-setInterval(savePlayerData,5000);
+setInterval(savePlayerData, 5000);
 
 /* ===== LOOP ===== */
-function animate(){
- requestAnimationFrame(animate);
- updateRod();
+function animate() {
+    requestAnimationFrame(animate);
+    updateRod();
 
- camera.rotation.order="YXZ";
- camera.rotation.y=yaw;
- camera.rotation.x=pitch;
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = yaw;
+    camera.rotation.x = pitch;
 
- const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
- const r=new THREE.Vector3(f.z,0,-f.x);
- player.position.add(f.multiplyScalar(moveZ*.15));
- player.position.add(r.multiplyScalar(moveX*.15));
+    const f = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+    const r = new THREE.Vector3(f.z, 0, -f.x);
+    player.position.add(f.multiplyScalar(moveZ * 0.15));
+    player.position.add(r.multiplyScalar(moveX * 0.15));
 
- velocityY-=.01;
- player.position.y+=velocityY;
- if(player.position.y<=3){player.position.y=3;velocityY=0;grounded=true;}
+    velocityY -= 0.01;
+    player.position.y += velocityY;
+    if (player.position.y <= 3) { player.position.y = 3; velocityY = 0; grounded = true; }
 
- if(holding&&!fishing){
-  holdTime+=.016;
-  if(holdTime>=2){startFishing();holding=false;}
- }
+    if (holding && !fishing) {
+        holdTime += 0.016;
+        if (holdTime >= 2) { startFishing(); holding = false; }
+    }
 
- renderer.render(scene,camera);
+    renderer.render(scene, camera);
 }
 animate();
 </script>
 </body>
 </html>
+
+ if(r<1/50)
