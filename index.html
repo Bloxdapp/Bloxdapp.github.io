@@ -168,7 +168,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 <div id="shop">
  <h3>Shop</h3>
  <button id="buySunRod">Buy Sun Rod ($1000)</button><br>
- <button id="buyBait">Buy 1 Bait ($25)</button><br><br>
+ <br>
  <button onclick="shop.style.display='none'">CLOSE</button>
 </div>
 
@@ -490,13 +490,7 @@ buySunRod.onclick=()=>{
  alert("Inventory full!");
 };
 
-buyBait.onclick=()=>{
- if(money<25)return alert("Not enough money");
- for(let i=0;i<inventory.length;i++){
-  if(inventory[i]===""){inventory[i]="Bait"; money-=25; document.getElementById("money").textContent="$"+money; renderInv(); return;}
- }
- alert("Inventory full!");
-};
+
 
 /* ===== REACTION-TIME MINI-GAME FISHING ===== */
 let holding=false, holdTime=0, fishing=false, taps=0, requiredTaps=10, fishButton=null, fishTimer=null;
