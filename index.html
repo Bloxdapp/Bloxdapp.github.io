@@ -148,7 +148,10 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  • Pufferfish – 1/3<br>
  • Sea Turtle – 1/5<br>
  • Manta Ray – 1/25<br>
- • Megalodon – 1/50<br><br>
+ • Great White Shark – 1/75<br>
+ • Terrorshark – 1/50<br>
+ • Megalodon – 1/50<br>
+ • Kraken – 1/100<br><br>
 
  💰 <b>Selling</b><br>
  • Tap fish once to preview<br>
@@ -364,7 +367,18 @@ jump.addEventListener("touchstart",()=>{
 
 /* ===== INVENTORY SYSTEM ===== */
 let money = 0;
-const prices = {Clownfish:5, Tuna:10, Shark:25, Pufferfish:25, SeaTurtle:50, MantaRay:500, Megalodon:1000};
+const prices = {
+  Clownfish:5, 
+  Tuna:10, 
+  Shark:25, 
+  Pufferfish:25, 
+  SeaTurtle:50, 
+  MantaRay:500, 
+  GreatWhiteShark:1500,
+  Terrorshark:2000,
+  Megalodon:1000,
+  Kraken:5000
+};
 
 // Start with 9 slots
 let inventory = ["Rod","","","","","","","",""];
@@ -592,7 +606,6 @@ addEventListener("touchend",()=>{holding=false; holdTime=0});
 
 function randomFish(currentRod){
  const r=Math.random();
- let fish="";
  
  // Check for Ocean Rod (100% Megalodon)
  if(currentRod === "Ocean Rod") return "Megalodon";
@@ -600,28 +613,31 @@ function randomFish(currentRod){
  // Check for Moon Rod (75% Megalodon, 25% other rares)
  if(currentRod === "Moon Rod"){
    if(r < 0.75) return "Megalodon";
-   if(r < 0.80) return "MantaRay";
-   if(r < 0.85) return "SeaTurtle";
-   if(r < 0.90) return "Pufferfish";
-   return "Shark";
+   if(r < 0.80) return "Kraken";
+   if(r < 0.85) return "Terrorshark";
+   if(r < 0.90) return "GreatWhiteShark";
+   if(r < 0.92) return "MantaRay";
+   if(r < 0.94) return "SeaTurtle";
+   return "Pufferfish";
  }
  
  // Sun Rod logic (50% better rare chances)
  if(currentRod === "Sun Rod" && Math.random()<0.5){
-   const rarities=["Megalodon","MantaRay","SeaTurtle"];
+   const rarities=["Kraken","Terrorshark","GreatWhiteShark","Megalodon","MantaRay","SeaTurtle"];
    return rarities[Math.floor(Math.random()*rarities.length)];
  }
  
- // Basic rod logic
- if(r<1/50) fish="Megalodon";
- else if(r<1/25) fish="MantaRay";
- else if(r<1/5) fish="SeaTurtle";
- else if(r<1/3) fish="Pufferfish";
- else if(r<0.58) fish="Tuna";
- else if(r<0.83) fish="Clownfish";
- else fish="Shark";
- 
- return fish;
+ // Basic rod logic with new fish
+ if(r<0.01) return "Kraken";           // 1/100
+ else if(r<0.03) return "Terrorshark"; // 1/50 (actually 2/100)
+ else if(r<0.02) return "Megalodon";   // 1/50 (actually 2/100)
+ else if(r<0.0333) return "GreatWhiteShark"; // 1/75 (actually ~1.33/100)
+ else if(r<0.0533) return "MantaRay";  // 1/25 (actually 2/100)
+ else if(r<0.2533) return "SeaTurtle"; // 1/5 (actually 20/100)
+ else if(r<0.5866) return "Pufferfish"; // 1/3 (actually ~33.33/100)
+ else if(r<0.7933) return "Clownfish"; // ~25% (actually ~20.67/100)
+ else if(r<1.0) return "Tuna";         // ~25% (actually ~20.67/100)
+ else return "Shark";                  // ~50% (actually ~41.34/100)
 }
 
 function createFishButton(){
@@ -670,10 +686,11 @@ function startFishing(){
 
    function nextTap(){
      if(taps>=requiredTaps){
-       const isRare = ["Megalodon","MantaRay","SeaTurtle"].includes(fish);
-       msg.style.color = isRare ? "gold" : "white";
-       msg.style.fontSize = isRare ? "28px" : "22px";
-       msg.textContent=(isRare ? "🎉 RARE CATCH! " : "")+"Caught "+fish+"!";
+       const isRare = ["Kraken","Terrorshark","GreatWhiteShark","Megalodon","MantaRay","SeaTurtle"].includes(fish);
+       const isUltraRare = ["Kraken","Terrorshark","GreatWhiteShark"].includes(fish);
+       msg.style.color = isUltraRare ? "#ff00ff" : (isRare ? "gold" : "white");
+       msg.style.fontSize = isUltraRare ? "30px" : (isRare ? "28px" : "22px");
+       msg.textContent=(isUltraRare ? "🔥 ULTRA RARE! " : (isRare ? "🎉 RARE! " : ""))+"Caught "+fish+"!";
        addItem(fish);
        fishing=false;
        if(fishButton) document.body.removeChild(fishButton);
@@ -683,7 +700,7 @@ function startFishing(){
          msg.style.display="none";
          msg.style.color = "white";
          msg.style.fontSize = "22px";
-       },3000);
+       },isUltraRare ? 4000 : 3000);
        savePlayerData();
        return;
      }
