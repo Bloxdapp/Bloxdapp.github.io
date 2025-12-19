@@ -449,6 +449,18 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  text-align: center;
  font-weight: bold;
 }
+
+/* SWING ANIMATION */
+.swing-animation {
+ animation: swingCast 0.8s ease-in-out;
+}
+@keyframes swingCast {
+ 0% { transform: rotate(0deg) translateY(0); }
+ 25% { transform: rotate(-30deg) translateY(-10px); }
+ 50% { transform: rotate(30deg) translateY(-20px); }
+ 75% { transform: rotate(-15deg) translateY(-10px); }
+ 100% { transform: rotate(0deg) translateY(0); }
+}
 </style>
 </head>
 <body>
@@ -485,6 +497,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 
  <b>Step 2 - Cast Line:</b><br>
  • Hold your finger anywhere on screen for 2 seconds<br>
+ • Rod will do a swinging animation<br>
  • Progress bar will show casting progress<br>
  • Release when bar is full to cast<br><br>
 
@@ -501,7 +514,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  <b>🌴 TROPICAL ISLAND FISH:</b><br>
  • <span style="color:#ccc">Clownfish</span> – Common – $5 – 5 XP<br>
  • <span style="color:#ccc">Tuna</span> – Common – $10 – 10 XP<br>
- • <span style="color:#ccc">Shark</span – Common – $25 – 15 XP<br>
+ • <span style="color:#ccc">Shark</span> – Common – $25 – 15 XP<br>
  • <span style="color:#4CAF50">Pufferfish</span> – Uncommon – $25 – 25 XP<br>
  • <span style="color:#4CAF50">Sea Turtle</span> – Uncommon – $50 – 50 XP<br>
  • <span style="color:#00a8ff">Manta Ray</span> – Rare – $500 – 100 XP<br>
@@ -527,11 +540,13 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  • <span style="color:#ffcc00">Sun Rod</span> – $1,000 – 2x better rare fish<br>
  • <span style="color:#8a2be2">Moon Rod</span> – $10,000 – 4x better rare fish<br>
  • <span style="color:#00bfff">Ocean Rod</span> – $100,000 – 8x better rare fish<br>
+ • <span style="color:#9370DB">Roblox Rod</span> – $50,000 – 12x better (Special!)<br>
  • <span style="color:#87CEEB">Glacier Rod</span> – $500,000 – 16x better<br>
  • <span style="color:#FF6347">Frostfire Rod</span> – $2,000,000 – 32x better<br>
  • <span style="color:#9370DB">Aurora Rod</span> – $10,000,000 – 64x better<br><br>
 
- <b>IMPORTANT:</b> Ocean Rod unlocks portal to Snowy Island!
+ <b>IMPORTANT:</b> Ocean Rod unlocks portal to Snowy Island!<br>
+ <b>SPECIAL:</b> Roblox Rod has swinging animation!
  </p>
  
  <h3 style="color:#00bcd4">🌐 PORTAL SYSTEM</h3>
@@ -547,7 +562,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  <h3 style="color:#FF5722">💰 ECONOMY & SHOPS</h3>
  <p>
  <b>Tropical Fisherman (Left side of island):</b><br>
- • Sells Sun, Moon, and Ocean rods<br>
+ • Sells Sun, Moon, Ocean, and Roblox rods<br>
  • Sells inventory expansions<br>
  • Gives fishing tips<br><br>
 
@@ -585,7 +600,8 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  5. Work towards Ocean Rod to unlock Snowy Island<br>
  6. Snowy Island fish are worth more but harder to catch<br>
  7. Higher level = better overall fishing chances<br>
- 8. Visit both island shops for best gear options
+ 8. Visit both island shops for best gear options<br>
+ 9. Try the Roblox Rod for cool swinging animation!
  </p>
  
  <div style="text-align:center;margin-top:20px;padding:10px;background:rgba(255,215,0,0.1);border-radius:10px;border:1px solid gold;">
@@ -655,6 +671,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  <button id="buySunRod">Buy Sun Rod ($1,000)</button><br>
  <button id="buyMoonRod">Buy Moon Rod ($10,000)</button><br>
  <button id="buyOceanRod">Buy Ocean Rod ($100,000)</button><br>
+ <button id="buyRobloxRod">Buy Roblox Rod ($50,000) ⭐NEW!</button><br>
  <button id="buyInventory">Buy 3 Inventory Slots ($500)</button><br>
  <br>
  <button onclick="shop.style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CLOSE</button>
@@ -678,6 +695,8 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 let currentIsland = 'tropical'; // 'tropical' or 'snowy'
 let portal = null;
 let hasOceanRod = false;
+let isCasting = false;
+let castAnimationTime = 0;
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x87CEEB, 50, 500);
@@ -1064,114 +1083,584 @@ function createSnowyFisherman() {
   return npc;
 }
 
-/* FISH MODELS - TROPICAL */
+/* ===== ENHANCED FISH MODELS ===== */
+
+/* FISH MODELS - TROPICAL (IMPROVED DESIGNS) */
 const tropicalFishModels = {};
 
-// Clownfish
-const clownfishGeometry = new THREE.ConeGeometry(0.5, 1.5, 8);
-clownfishGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Clownfish = new THREE.Mesh(clownfishGeometry, new THREE.MeshStandardMaterial({color: 0xFF6B35, roughness: 0.4}));
-
-// Tuna
-const tunaGeometry = new THREE.CapsuleGeometry(0.3, 1.2, 4, 8);
-tunaGeometry.rotateZ(Math.PI / 2);
-tropicalFishModels.Tuna = new THREE.Mesh(tunaGeometry, new THREE.MeshStandardMaterial({color: 0x4682B4, roughness: 0.3}));
-
-// Shark
-const sharkGeometry = new THREE.ConeGeometry(0.4, 2.0, 8);
-sharkGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Shark = new THREE.Mesh(sharkGeometry, new THREE.MeshStandardMaterial({color: 0x708090, roughness: 0.5}));
-
-// Pufferfish
-const pufferfishGeometry = new THREE.SphereGeometry(0.6, 16, 16);
-tropicalFishModels.Pufferfish = new THREE.Mesh(pufferfishGeometry, new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7}));
-
-// Sea Turtle
-const turtleGeometry = new THREE.BoxGeometry(1.2, 0.4, 1.5);
-tropicalFishModels.SeaTurtle = new THREE.Mesh(turtleGeometry, new THREE.MeshStandardMaterial({color: 0x228B22, roughness: 0.6}));
-
-// Manta Ray
-const mantaGeometry = new THREE.ConeGeometry(1.5, 0.3, 4);
-mantaGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.MantaRay = new THREE.Mesh(mantaGeometry, new THREE.MeshStandardMaterial({color: 0x483D8B, roughness: 0.4}));
-
-// Great White Shark
-const greatWhiteGeometry = new THREE.ConeGeometry(0.6, 3.0, 12);
-greatWhiteGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.GreatWhiteShark = new THREE.Mesh(greatWhiteGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.3}));
-
-// Terrorshark
-const terrorsharkGeometry = new THREE.ConeGeometry(0.8, 3.5, 12);
-terrorsharkGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Terrorshark = new THREE.Mesh(terrorsharkGeometry, new THREE.MeshStandardMaterial({color: 0xFF0000, roughness: 0.2}));
-
-// Megalodon
-const megalodonGeometry = new THREE.ConeGeometry(1.2, 5.0, 16);
-megalodonGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Megalodon = new THREE.Mesh(megalodonGeometry, new THREE.MeshStandardMaterial({color: 0x2F4F4F, roughness: 0.4}));
-
-// Kraken
-const krakenGeometry = new THREE.SphereGeometry(1.0, 32, 32);
-for(let i = 0; i < 8; i++) {
-  const tentacle = new THREE.ConeGeometry(0.2, 3.0, 8);
-  tentacle.rotateX(Math.PI / 2);
-  const tentacleMesh = new THREE.Mesh(tentacle, new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.5}));
-  tentacleMesh.position.set(Math.cos(i * Math.PI / 4) * 1.2, 0, Math.sin(i * Math.PI / 4) * 1.2);
-  krakenGeometry.merge(tentacleMesh.geometry, tentacleMesh.matrix);
+// Clownfish - More detailed
+const clownfishGroup = new THREE.Group();
+// Body
+const clownfishBody = new THREE.Mesh(
+  new THREE.ConeGeometry(0.4, 1.2, 8),
+  new THREE.MeshStandardMaterial({color: 0xFF6B35, roughness: 0.4})
+);
+clownfishBody.rotateX(Math.PI / 2);
+clownfishGroup.add(clownfishBody);
+// Stripes
+for(let i = 0; i < 3; i++) {
+  const stripe = new THREE.Mesh(
+    new THREE.BoxGeometry(0.45, 0.1, 0.05),
+    new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.5})
+  );
+  stripe.position.set(0, 0, -0.3 + i * 0.3);
+  clownfishGroup.add(stripe);
 }
-tropicalFishModels.Kraken = new THREE.Mesh(krakenGeometry, new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.6}));
+// Tail
+const clownfishTail = new THREE.Mesh(
+  new THREE.BoxGeometry(0.1, 0.6, 0.2),
+  new THREE.MeshStandardMaterial({color: 0xFF6B35, roughness: 0.4})
+);
+clownfishTail.position.set(0, 0, 0.7);
+clownfishGroup.add(clownfishTail);
+tropicalFishModels.Clownfish = clownfishGroup;
 
-/* FISH MODELS - SNOWY */
+// Tuna - More realistic
+const tunaGroup = new THREE.Group();
+// Body
+const tunaBody = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.25, 1.0, 4, 8),
+  new THREE.MeshStandardMaterial({color: 0x4682B4, roughness: 0.3})
+);
+tunaBody.rotateZ(Math.PI / 2);
+tunaGroup.add(tunaBody);
+// Fins
+const tunaFin = new THREE.Mesh(
+  new THREE.ConeGeometry(0.15, 0.3, 4),
+  new THREE.MeshStandardMaterial({color: 0x36648B, roughness: 0.4})
+);
+tunaFin.position.set(0, 0.2, 0);
+tunaFin.rotateX(Math.PI / 2);
+tunaGroup.add(tunaFin);
+// Tail
+const tunaTail = new THREE.Mesh(
+  new THREE.BoxGeometry(0.05, 0.4, 0.3),
+  new THREE.MeshStandardMaterial({color: 0x36648B, roughness: 0.3})
+);
+tunaTail.position.set(0, 0, 0.6);
+tunaGroup.add(tunaTail);
+tropicalFishModels.Tuna = tunaGroup;
+
+// Shark - More detailed
+const sharkGroup = new THREE.Group();
+// Body
+const sharkBody = new THREE.Mesh(
+  new THREE.ConeGeometry(0.35, 1.8, 8),
+  new THREE.MeshStandardMaterial({color: 0x708090, roughness: 0.5})
+);
+sharkBody.rotateX(Math.PI / 2);
+sharkGroup.add(sharkBody);
+// Dorsal fin
+const sharkFin = new THREE.Mesh(
+  new THREE.ConeGeometry(0.2, 0.4, 4),
+  new THREE.MeshStandardMaterial({color: 0x5A6978, roughness: 0.6})
+);
+sharkFin.position.set(0, 0.25, -0.3);
+sharkFin.rotateX(-Math.PI / 2);
+sharkGroup.add(sharkFin);
+// Tail fin
+const sharkTail = new THREE.Mesh(
+  new THREE.BoxGeometry(0.05, 0.5, 0.4),
+  new THREE.MeshStandardMaterial({color: 0x5A6978, roughness: 0.5})
+);
+sharkTail.position.set(0, 0, 1);
+sharkGroup.add(sharkTail);
+tropicalFishModels.Shark = sharkGroup;
+
+// Pufferfish - More spherical with spikes
+const pufferfishGroup = new THREE.Group();
+// Body
+const pufferfishBody = new THREE.Mesh(
+  new THREE.SphereGeometry(0.5, 16, 16),
+  new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7})
+);
+pufferfishGroup.add(pufferfishBody);
+// Spikes
+for(let i = 0; i < 20; i++) {
+  const phi = Math.acos(-1 + (2 * i) / 20);
+  const theta = Math.sqrt(20 * Math.PI) * phi;
+  
+  const spike = new THREE.Mesh(
+    new THREE.ConeGeometry(0.05, 0.3, 4),
+    new THREE.MeshStandardMaterial({color: 0x228B22, roughness: 0.8})
+  );
+  spike.position.set(
+    Math.cos(theta) * Math.sin(phi) * 0.6,
+    Math.sin(theta) * Math.sin(phi) * 0.6,
+    Math.cos(phi) * 0.6
+  );
+  spike.lookAt(0, 0, 0);
+  pufferfishGroup.add(spike);
+}
+// Eyes
+const eyeGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+const leftEye = new THREE.Mesh(eyeGeometry, new THREE.MeshStandardMaterial({color: 0x000000}));
+leftEye.position.set(0.2, 0.2, 0.4);
+pufferfishGroup.add(leftEye);
+const rightEye = new THREE.Mesh(eyeGeometry, new THREE.MeshStandardMaterial({color: 0x000000}));
+rightEye.position.set(-0.2, 0.2, 0.4);
+pufferfishGroup.add(rightEye);
+tropicalFishModels.Pufferfish = pufferfishGroup;
+
+// Sea Turtle - More detailed
+const turtleGroup = new THREE.Group();
+// Shell
+const turtleShell = new THREE.Mesh(
+  new THREE.BoxGeometry(1.2, 0.3, 1.5),
+  new THREE.MeshStandardMaterial({color: 0x228B22, roughness: 0.6})
+);
+turtleGroup.add(turtleShell);
+// Head
+const turtleHead = new THREE.Mesh(
+  new THREE.SphereGeometry(0.15, 8, 8),
+  new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7})
+);
+turtleHead.position.set(0, 0.1, 0.8);
+turtleGroup.add(turtleHead);
+// Legs
+for(let i = 0; i < 4; i++) {
+  const leg = new THREE.Mesh(
+    new THREE.BoxGeometry(0.2, 0.1, 0.3),
+    new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7})
+  );
+  const x = i < 2 ? -0.5 : 0.5;
+  const z = i % 2 === 0 ? -0.6 : 0.6;
+  leg.position.set(x, -0.1, z);
+  turtleGroup.add(leg);
+}
+// Tail
+const turtleTail = new THREE.Mesh(
+  new THREE.ConeGeometry(0.1, 0.3, 4),
+  new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7})
+);
+turtleTail.position.set(0, 0, -0.9);
+turtleTail.rotateX(Math.PI / 2);
+turtleGroup.add(turtleTail);
+tropicalFishModels.SeaTurtle = turtleGroup;
+
+// Manta Ray - More detailed
+const mantaGroup = new THREE.Group();
+// Body
+const mantaBody = new THREE.Mesh(
+  new THREE.ConeGeometry(1.2, 0.2, 4),
+  new THREE.MeshStandardMaterial({color: 0x483D8B, roughness: 0.4})
+);
+mantaBody.rotateX(Math.PI / 2);
+mantaGroup.add(mantaBody);
+// Tail
+const mantaTail = new THREE.Mesh(
+  new THREE.ConeGeometry(0.1, 0.8, 4),
+  new THREE.MeshStandardMaterial({color: 0x2F2F5C, roughness: 0.5})
+);
+mantaTail.position.set(0, 0, 0.7);
+mantaTail.rotateX(Math.PI / 2);
+mantaGroup.add(mantaTail);
+// Eyes
+const mantaEye = new THREE.SphereGeometry(0.05, 8, 8);
+const mantaLeftEye = new THREE.Mesh(mantaEye, new THREE.MeshStandardMaterial({color: 0xFFFFFF}));
+mantaLeftEye.position.set(0.3, 0.1, -0.3);
+mantaGroup.add(mantaLeftEye);
+const mantaRightEye = new THREE.Mesh(mantaEye, new THREE.MeshStandardMaterial({color: 0xFFFFFF}));
+mantaRightEye.position.set(-0.3, 0.1, -0.3);
+mantaGroup.add(mantaRightEye);
+tropicalFishModels.MantaRay = mantaGroup;
+
+// Great White Shark - More detailed
+const greatWhiteGroup = new THREE.Group();
+// Body
+const greatWhiteBody = new THREE.Mesh(
+  new THREE.ConeGeometry(0.5, 2.5, 12),
+  new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.3})
+);
+greatWhiteBody.rotateX(Math.PI / 2);
+greatWhiteGroup.add(greatWhiteBody);
+// Dorsal fin
+const greatWhiteFin = new THREE.Mesh(
+  new THREE.ConeGeometry(0.25, 0.5, 4),
+  new THREE.MeshStandardMaterial({color: 0xCCCCCC, roughness: 0.4})
+);
+greatWhiteFin.position.set(0, 0.35, -0.5);
+greatWhiteFin.rotateX(-Math.PI / 2);
+greatWhiteGroup.add(greatWhiteFin);
+// Teeth
+for(let i = 0; i < 8; i++) {
+  const tooth = new THREE.Mesh(
+    new THREE.ConeGeometry(0.05, 0.15, 4),
+    new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.2})
+  );
+  tooth.position.set(-0.35 + (i * 0.1), 0, 1.2);
+  tooth.rotateX(Math.PI / 2);
+  greatWhiteGroup.add(tooth);
+}
+tropicalFishModels.GreatWhiteShark = greatWhiteGroup;
+
+// Terrorshark - More scary
+const terrorsharkGroup = new THREE.Group();
+// Body
+const terrorsharkBody = new THREE.Mesh(
+  new THREE.ConeGeometry(0.6, 3.0, 12),
+  new THREE.MeshStandardMaterial({color: 0xFF0000, roughness: 0.2, emissive: 0x330000, emissiveIntensity: 0.3})
+);
+terrorsharkBody.rotateX(Math.PI / 2);
+terrorsharkGroup.add(terrorsharkBody);
+// Spikes on back
+for(let i = 0; i < 6; i++) {
+  const spike = new THREE.Mesh(
+    new THREE.ConeGeometry(0.1, 0.4, 4),
+    new THREE.MeshStandardMaterial({color: 0xCC0000, roughness: 0.3})
+  );
+  spike.position.set(0, 0.3, -1 + (i * 0.4));
+  spike.rotateX(-Math.PI / 2);
+  terrorsharkGroup.add(spike);
+}
+// Glowing eyes
+const terrorsharkEye = new THREE.SphereGeometry(0.08, 8, 8);
+const terrorsharkEyeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFF3300,
+  emissive: 0xFF3300,
+  emissiveIntensity: 0.5,
+  roughness: 0.1
+});
+const terrorsharkLeftEye = new THREE.Mesh(terrorsharkEye, terrorsharkEyeMaterial);
+terrorsharkLeftEye.position.set(0.3, 0.15, 0.8);
+terrorsharkGroup.add(terrorsharkLeftEye);
+const terrorsharkRightEye = new THREE.Mesh(terrorsharkEye, terrorsharkEyeMaterial);
+terrorsharkRightEye.position.set(-0.3, 0.15, 0.8);
+terrorsharkGroup.add(terrorsharkRightEye);
+tropicalFishModels.Terrorshark = terrorsharkGroup;
+
+// Megalodon - More massive
+const megalodonGroup = new THREE.Group();
+// Body
+const megalodonBody = new THREE.Mesh(
+  new THREE.ConeGeometry(0.9, 4.5, 16),
+  new THREE.MeshStandardMaterial({color: 0x2F4F4F, roughness: 0.4})
+);
+megalodonBody.rotateX(Math.PI / 2);
+megalodonGroup.add(megalodonBody);
+// Massive dorsal fin
+const megalodonFin = new THREE.Mesh(
+  new THREE.ConeGeometry(0.4, 1.0, 6),
+  new THREE.MeshStandardMaterial({color: 0x1E3E3E, roughness: 0.5})
+);
+megalodonFin.position.set(0, 0.5, -1);
+megalodonFin.rotateX(-Math.PI / 2);
+megalodonGroup.add(megalodonFin);
+// Giant teeth
+for(let i = 0; i < 10; i++) {
+  const tooth = new THREE.Mesh(
+    new THREE.ConeGeometry(0.08, 0.3, 4),
+    new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.2})
+  );
+  tooth.position.set(-0.5 + (i * 0.11), 0, 2.2);
+  tooth.rotateX(Math.PI / 2);
+  megalodonGroup.add(tooth);
+}
+tropicalFishModels.Megalodon = megalodonGroup;
+
+// Kraken - More terrifying
+const krakenGroup = new THREE.Group();
+// Body
+const krakenBody = new THREE.Mesh(
+  new THREE.SphereGeometry(0.8, 32, 32),
+  new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.6, emissive: 0x330000, emissiveIntensity: 0.2})
+);
+krakenGroup.add(krakenBody);
+// Tentacles
+for(let i = 0; i < 8; i++) {
+  const angle = (i / 8) * Math.PI * 2;
+  const tentacle = new THREE.Mesh(
+    new THREE.ConeGeometry(0.15, 3.0, 8),
+    new THREE.MeshStandardMaterial({color: 0x660000, roughness: 0.5})
+  );
+  tentacle.position.set(Math.cos(angle) * 1.0, 0, Math.sin(angle) * 1.0);
+  tentacle.rotateX(Math.PI / 2);
+  // Curve tentacle
+  tentacle.rotation.y = angle + Math.PI / 2;
+  tentacle.rotation.x = Math.PI / 6;
+  krakenGroup.add(tentacle);
+}
+// Glowing eyes
+const krakenEye = new THREE.SphereGeometry(0.15, 16, 16);
+const krakenEyeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFF0000,
+  emissive: 0xFF0000,
+  emissiveIntensity: 0.8,
+  roughness: 0.1
+});
+for(let i = 0; i < 2; i++) {
+  const eye = new THREE.Mesh(krakenEye, krakenEyeMaterial);
+  eye.position.set(i === 0 ? 0.4 : -0.4, 0.3, 0.5);
+  krakenGroup.add(eye);
+}
+tropicalFishModels.Kraken = krakenGroup;
+
+/* FISH MODELS - SNOWY (IMPROVED DESIGNS) */
 const snowyFishModels = {};
 
-// Arctic Char
-const arcticCharGeometry = new THREE.ConeGeometry(0.4, 1.2, 8);
-arcticCharGeometry.rotateX(Math.PI / 2);
-snowyFishModels.ArcticChar = new THREE.Mesh(arcticCharGeometry, new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.3}));
+// Arctic Char - Icy fish
+const arcticCharGroup = new THREE.Group();
+// Body
+const arcticCharBody = new THREE.Mesh(
+  new THREE.ConeGeometry(0.35, 1.0, 8),
+  new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.3})
+);
+arcticCharBody.rotateX(Math.PI / 2);
+arcticCharGroup.add(arcticCharBody);
+// Ice fins
+const arcticCharFin = new THREE.Mesh(
+  new THREE.ConeGeometry(0.1, 0.25, 4),
+  new THREE.MeshStandardMaterial({color: 0xA0D2FF, roughness: 0.2})
+);
+arcticCharFin.position.set(0, 0.15, -0.2);
+arcticCharFin.rotateX(Math.PI / 2);
+arcticCharGroup.add(arcticCharFin);
+// Icy tail
+const arcticCharTail = new THREE.Mesh(
+  new THREE.BoxGeometry(0.05, 0.3, 0.25),
+  new THREE.MeshStandardMaterial({color: 0xA0D2FF, roughness: 0.2})
+);
+arcticCharTail.position.set(0, 0, 0.6);
+arcticCharGroup.add(arcticCharTail);
+snowyFishModels.ArcticChar = arcticCharGroup;
 
-// Snow Trout
-const snowTroutGeometry = new THREE.CapsuleGeometry(0.25, 1.0, 4, 8);
-snowTroutGeometry.rotateZ(Math.PI / 2);
-snowyFishModels.SnowTrout = new THREE.Mesh(snowTroutGeometry, new THREE.MeshStandardMaterial({color: 0xB0E0E6, roughness: 0.4}));
+// Snow Trout - More detailed
+const snowTroutGroup = new THREE.Group();
+// Body
+const snowTroutBody = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.2, 0.8, 4, 8),
+  new THREE.MeshStandardMaterial({color: 0xB0E0E6, roughness: 0.4})
+);
+snowTroutBody.rotateZ(Math.PI / 2);
+snowTroutGroup.add(snowTroutBody);
+// Pattern
+for(let i = 0; i < 4; i++) {
+  const spot = new THREE.Mesh(
+    new THREE.CircleGeometry(0.05, 6),
+    new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.5})
+  );
+  spot.position.set(0, 0.15, -0.3 + i * 0.2);
+  spot.rotateX(Math.PI / 2);
+  snowTroutGroup.add(spot);
+}
+snowyFishModels.SnowTrout = snowTroutGroup;
 
-// Ice Shark
-const iceSharkGeometry = new THREE.ConeGeometry(0.5, 2.2, 8);
-iceSharkGeometry.rotateX(Math.PI / 2);
-snowyFishModels.IceShark = new THREE.Mesh(iceSharkGeometry, new THREE.MeshStandardMaterial({color: 0xADD8E6, roughness: 0.2}));
+// Ice Shark - Icy version
+const iceSharkGroup = new THREE.Group();
+// Body
+const iceSharkBody = new THREE.Mesh(
+  new THREE.ConeGeometry(0.45, 2.0, 8),
+  new THREE.MeshStandardMaterial({color: 0xADD8E6, roughness: 0.2})
+);
+iceSharkBody.rotateX(Math.PI / 2);
+iceSharkGroup.add(iceSharkBody);
+// Ice dorsal fin
+const iceSharkFin = new THREE.Mesh(
+  new THREE.ConeGeometry(0.2, 0.45, 4),
+  new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.1})
+);
+iceSharkFin.position.set(0, 0.3, -0.4);
+iceSharkFin.rotateX(-Math.PI / 2);
+iceSharkGroup.add(iceSharkFin);
+// Icy teeth
+for(let i = 0; i < 6; i++) {
+  const tooth = new THREE.Mesh(
+    new THREE.ConeGeometry(0.06, 0.2, 4),
+    new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.1})
+  );
+  tooth.position.set(-0.25 + (i * 0.1), 0, 0.9);
+  tooth.rotateX(Math.PI / 2);
+  iceSharkGroup.add(tooth);
+}
+snowyFishModels.IceShark = iceSharkGroup;
 
-// Frost Puffer
-const frostPufferGeometry = new THREE.SphereGeometry(0.7, 16, 16);
-snowyFishModels.FrostPuffer = new THREE.Mesh(frostPufferGeometry, new THREE.MeshStandardMaterial({color: 0xE0FFFF, roughness: 0.6}));
+// Frost Puffer - Icy pufferfish
+const frostPufferGroup = new THREE.Group();
+// Body
+const frostPufferBody = new THREE.Mesh(
+  new THREE.SphereGeometry(0.6, 16, 16),
+  new THREE.MeshStandardMaterial({color: 0xE0FFFF, roughness: 0.6})
+);
+frostPufferGroup.add(frostPufferBody);
+// Ice spikes
+for(let i = 0; i < 15; i++) {
+  const phi = Math.acos(-1 + (2 * i) / 15);
+  const theta = Math.sqrt(15 * Math.PI) * phi;
+  
+  const spike = new THREE.Mesh(
+    new THREE.ConeGeometry(0.06, 0.35, 4),
+    new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.3})
+  );
+  spike.position.set(
+    Math.cos(theta) * Math.sin(phi) * 0.7,
+    Math.sin(theta) * Math.sin(phi) * 0.7,
+    Math.cos(phi) * 0.7
+  );
+  spike.lookAt(0, 0, 0);
+  frostPufferGroup.add(spike);
+}
+// Blue eyes
+const frostEye = new THREE.SphereGeometry(0.07, 8, 8);
+const frostEyeMaterial = new THREE.MeshStandardMaterial({
+  color: 0x0000FF,
+  emissive: 0x0000FF,
+  emissiveIntensity: 0.3
+});
+const frostLeftEye = new THREE.Mesh(frostEye, frostEyeMaterial);
+frostLeftEye.position.set(0.25, 0.25, 0.45);
+frostPufferGroup.add(frostLeftEye);
+const frostRightEye = new THREE.Mesh(frostEye, frostEyeMaterial);
+frostRightEye.position.set(-0.25, 0.25, 0.45);
+frostPufferGroup.add(frostRightEye);
+snowyFishModels.FrostPuffer = frostPufferGroup;
 
-// Glacier Whale
-const glacierWhaleGeometry = new THREE.CapsuleGeometry(0.8, 3.5, 8, 16);
-glacierWhaleGeometry.rotateZ(Math.PI / 2);
-snowyFishModels.GlacierWhale = new THREE.Mesh(glacierWhaleGeometry, new THREE.MeshStandardMaterial({color: 0xF0F8FF, roughness: 0.5}));
+// Glacier Whale - Massive icy whale
+const glacierWhaleGroup = new THREE.Group();
+// Body
+const glacierWhaleBody = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.7, 3.0, 8, 16),
+  new THREE.MeshStandardMaterial({color: 0xF0F8FF, roughness: 0.5})
+);
+glacierWhaleBody.rotateZ(Math.PI / 2);
+glacierWhaleGroup.add(glacierWhaleBody);
+// Tail fin
+const glacierWhaleTail = new THREE.Mesh(
+  new THREE.BoxGeometry(0.1, 1.0, 0.8),
+  new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.4})
+);
+glacierWhaleTail.position.set(0, 0, 1.8);
+glacierWhaleGroup.add(glacierWhaleTail);
+// Dorsal fin
+const glacierWhaleFin = new THREE.Mesh(
+  new THREE.ConeGeometry(0.3, 0.6, 6),
+  new THREE.MeshStandardMaterial({color: 0xA0D2FF, roughness: 0.4})
+);
+glacierWhaleFin.position.set(0, 0.4, -0.5);
+glacierWhaleFin.rotateX(-Math.PI / 2);
+glacierWhaleGroup.add(glacierWhaleFin);
+snowyFishModels.GlacierWhale = glacierWhaleGroup;
 
-// Yeti Crab
-const yetiCrabGeometry = new THREE.BoxGeometry(1.0, 0.5, 1.2);
-snowyFishModels.YetiCrab = new THREE.Mesh(yetiCrabGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.8}));
+// Yeti Crab - Hairy crab
+const yetiCrabGroup = new THREE.Group();
+// Body
+const yetiCrabBody = new THREE.Mesh(
+  new THREE.BoxGeometry(0.9, 0.4, 1.1),
+  new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.8})
+);
+yetiCrabGroup.add(yetiCrabBody);
+// Legs
+for(let i = 0; i < 6; i++) {
+  const leg = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.05, 0.05, 0.6, 6),
+    new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.8})
+  );
+  const x = i < 3 ? -0.4 : 0.4;
+  const z = -0.4 + (i % 3) * 0.4;
+  leg.position.set(x, -0.3, z);
+  leg.rotation.x = Math.PI / 4;
+  yetiCrabGroup.add(leg);
+}
+// Claws
+const claw = new THREE.Mesh(
+  new THREE.BoxGeometry(0.2, 0.1, 0.4),
+  new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.8})
+);
+claw.position.set(0.6, 0, -0.5);
+yetiCrabGroup.add(claw);
+const claw2 = claw.clone();
+claw2.position.set(-0.6, 0, -0.5);
+yetiCrabGroup.add(claw2);
+// Eyes
+const yetiEye = new THREE.SphereGeometry(0.05, 8, 8);
+const yetiLeftEye = new THREE.Mesh(yetiEye, new THREE.MeshStandardMaterial({color: 0x000000}));
+yetiLeftEye.position.set(0.3, 0.25, 0.5);
+yetiCrabGroup.add(yetiLeftEye);
+const yetiRightEye = new THREE.Mesh(yetiEye, new THREE.MeshStandardMaterial({color: 0x000000}));
+yetiRightEye.position.set(-0.3, 0.25, 0.5);
+yetiCrabGroup.add(yetiRightEye);
+snowyFishModels.YetiCrab = yetiCrabGroup;
 
-// Ice Dragon
-const iceDragonGeometry = new THREE.ConeGeometry(0.7, 4.0, 12);
-iceDragonGeometry.rotateX(Math.PI / 2);
-snowyFishModels.IceDragon = new THREE.Mesh(iceDragonGeometry, new THREE.MeshStandardMaterial({
-  color: 0x00FFFF,
-  emissive: 0x00FFFF,
-  emissiveIntensity: 0.3,
-  roughness: 0.1,
-  metalness: 0.8
-}));
+// Ice Dragon - Mythical creature
+const iceDragonGroup = new THREE.Group();
+// Body
+const iceDragonBody = new THREE.Mesh(
+  new THREE.ConeGeometry(0.6, 3.5, 12),
+  new THREE.MeshStandardMaterial({
+    color: 0x00FFFF,
+    emissive: 0x00FFFF,
+    emissiveIntensity: 0.3,
+    roughness: 0.1,
+    metalness: 0.8
+  })
+);
+iceDragonBody.rotateX(Math.PI / 2);
+iceDragonGroup.add(iceDragonBody);
+// Wings
+for(let i = 0; i < 2; i++) {
+  const wing = new THREE.Mesh(
+    new THREE.ConeGeometry(0.8, 0.1, 4),
+    new THREE.MeshStandardMaterial({
+      color: 0x00FFFF,
+      emissive: 0x00FFFF,
+      emissiveIntensity: 0.2,
+      roughness: 0.2,
+      transparent: true,
+      opacity: 0.7
+    })
+  );
+  wing.position.set(i === 0 ? 0.5 : -0.5, 0.2, -0.5);
+  wing.rotateX(Math.PI / 2);
+  wing.rotateY(i === 0 ? -Math.PI / 4 : Math.PI / 4);
+  iceDragonGroup.add(wing);
+}
+// Horns
+for(let i = 0; i < 2; i++) {
+  const horn = new THREE.Mesh(
+    new THREE.ConeGeometry(0.1, 0.4, 4),
+    new THREE.MeshStandardMaterial({
+      color: 0xFFFFFF,
+      emissive: 0xFFFFFF,
+      emissiveIntensity: 0.2,
+      roughness: 0.1
+    })
+  );
+  horn.position.set(i === 0 ? 0.2 : -0.2, 0.3, 1.5);
+  horn.rotateX(Math.PI / 2);
+  iceDragonGroup.add(horn);
+}
+// Glowing eyes
+const dragonEye = new THREE.SphereGeometry(0.1, 16, 16);
+const dragonEyeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFFFFFF,
+  emissive: 0xFFFFFF,
+  emissiveIntensity: 0.8,
+  roughness: 0.1
+});
+const dragonLeftEye = new THREE.Mesh(dragonEye, dragonEyeMaterial);
+dragonLeftEye.position.set(0.3, 0.2, 1);
+iceDragonGroup.add(dragonLeftEye);
+const dragonRightEye = new THREE.Mesh(dragonEye, dragonEyeMaterial);
+dragonRightEye.position.set(-0.3, 0.2, 1);
+iceDragonGroup.add(dragonRightEye);
+snowyFishModels.IceDragon = iceDragonGroup;
 
 // Make all fish cast shadows
 Object.values(tropicalFishModels).forEach(fish => {
-  fish.castShadow = true;
-  fish.receiveShadow = true;
+  fish.traverse(child => {
+    if(child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
 });
 
 Object.values(snowyFishModels).forEach(fish => {
-  fish.castShadow = true;
-  fish.receiveShadow = true;
+  fish.traverse(child => {
+    if(child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
 });
 
 /* ENHANCED TREES */
@@ -1466,6 +1955,232 @@ jump.addEventListener("touchstart", () => {
    grounded = false;
  }
 });
+
+/* ===== ENHANCED ROD SYSTEM WITH SWINGING ANIMATION ===== */
+let rod = null;
+let rodGroup = null;
+let line = null;
+let bobber = null;
+let isSwinging = false;
+let swingProgress = 0;
+
+// Create Roblox-style rod
+function createRobloxRod() {
+  const rodGroup = new THREE.Group();
+  
+  // Rod handle (brown)
+  const handle = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.04, 0.06, 0.4, 8),
+    new THREE.MeshStandardMaterial({color: 0x8B4513, roughness: 0.7})
+  );
+  handle.position.set(0.3, -0.3, -1);
+  rodGroup.add(handle);
+  
+  // Rod shaft (light brown)
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.02, 0.03, 1.2, 8),
+    new THREE.MeshStandardMaterial({color: 0xD2B48C, roughness: 0.6})
+  );
+  shaft.position.set(0.3, 0.2, -1.6);
+  shaft.rotation.z = Math.PI / 3.5;
+  rodGroup.add(shaft);
+  
+  // Reel (silver)
+  const reel = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06, 0.06, 0.1, 12),
+    new THREE.MeshStandardMaterial({color: 0xC0C0C0, roughness: 0.3, metalness: 0.8})
+  );
+  reel.position.set(0.45, -0.2, -1.1);
+  reel.rotation.z = Math.PI / 6;
+  rodGroup.add(reel);
+  
+  // Fishing line (thin white)
+  const lineGeometry = new THREE.BufferGeometry();
+  const linePositions = new Float32Array(6);
+  lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+  
+  const lineMaterial = new THREE.LineBasicMaterial({
+    color: 0xFFFFFF,
+    linewidth: 1,
+    transparent: true,
+    opacity: 0.8
+  });
+  
+  const fishingLine = new THREE.Line(lineGeometry, lineMaterial);
+  rodGroup.add(fishingLine);
+  
+  // Bobber (red and white)
+  const bobberMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.05, 8, 8),
+    new THREE.MeshStandardMaterial({color: 0xFF0000, roughness: 0.5})
+  );
+  bobberMesh.position.set(0, -0.8, -2);
+  rodGroup.add(bobberMesh);
+  
+  return {
+    group: rodGroup,
+    line: fishingLine,
+    bobber: bobberMesh,
+    shaft: shaft,
+    handle: handle,
+    reel: reel
+  };
+}
+
+// Create standard rod
+function createStandardRod(color = 0x8b4513, emissive = 0x000000) {
+  const rodGroup = new THREE.Group();
+  
+  const rodMesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8),
+    new THREE.MeshStandardMaterial({color: color, emissive: emissive, emissiveIntensity: 0.5, roughness: 0.5})
+  );
+  rodMesh.position.set(0.4, -0.3, -1.2);
+  rodMesh.rotation.z = Math.PI / 3.5;
+  rodGroup.add(rodMesh);
+  
+  return {
+    group: rodGroup,
+    shaft: rodMesh
+  };
+}
+
+function updateRod() {
+  const currentRod = inventory[selected];
+  const tropicalRodTypes = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod", "Roblox Rod"];
+  const snowyRodTypes = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
+  const allRodTypes = tropicalRodTypes.concat(snowyRodTypes);
+  
+  if(allRodTypes.includes(currentRod)) {
+    if(!rodGroup) {
+      if(currentRod === "Roblox Rod") {
+        const robloxRod = createRobloxRod();
+        rodGroup = robloxRod.group;
+        line = robloxRod.line;
+        bobber = robloxRod.bobber;
+        camera.add(rodGroup);
+      } else {
+        let color, emissive;
+        switch(currentRod) {
+          case "Sun Rod": 
+            color = 0xffcc00; 
+            emissive = 0xff9900;
+            break;
+          case "Moon Rod": 
+            color = 0x8a2be2; 
+            emissive = 0x4b0082;
+            break;
+          case "Ocean Rod": 
+            color = 0x00bfff; 
+            emissive = 0x0088cc;
+            break;
+          case "Glacier Rod":
+            color = 0x87CEEB;
+            emissive = 0x00BFFF;
+            break;
+          case "Frostfire Rod":
+            color = 0xFF6347;
+            emissive = 0xFF4500;
+            break;
+          case "Aurora Rod":
+            color = 0x9370DB;
+            emissive = 0xBA55D3;
+            break;
+          default: 
+            color = 0x8b4513; 
+            emissive = 0x000000;
+        }
+        const standardRod = createStandardRod(color, emissive);
+        rodGroup = standardRod.group;
+        camera.add(rodGroup);
+      }
+    } else {
+      // Update existing rod appearance
+      if(currentRod !== "Roblox Rod" && rodGroup.children[0]?.isMesh) {
+        let color, emissive;
+        switch(currentRod) {
+          case "Sun Rod": 
+            color = 0xffcc00; 
+            emissive = 0xff9900;
+            break;
+          case "Moon Rod": 
+            color = 0x8a2be2; 
+            emissive = 0x4b0082;
+            break;
+          case "Ocean Rod": 
+            color = 0x00bfff; 
+            emissive = 0x0088cc;
+            break;
+          case "Glacier Rod":
+            color = 0x87CEEB;
+            emissive = 0x00BFFF;
+            break;
+          case "Frostfire Rod":
+            color = 0xFF6347;
+            emissive = 0xFF4500;
+            break;
+          case "Aurora Rod":
+            color = 0x9370DB;
+            emissive = 0xBA55D3;
+            break;
+          default: 
+            color = 0x8b4513; 
+            emissive = 0x000000;
+        }
+        rodGroup.children[0].material.color.set(color);
+        rodGroup.children[0].material.emissive.set(emissive);
+        rodGroup.children[0].material.emissiveIntensity = currentRod !== "Rod" ? 0.5 : 0;
+      }
+    }
+    
+    // Update portal activation if player gets Ocean Rod
+    if(currentRod === "Ocean Rod" && !hasOceanRod) {
+      hasOceanRod = true;
+      activatePortal();
+    }
+  } else if(rodGroup) {
+    camera.remove(rodGroup);
+    rodGroup = null;
+    line = null;
+    bobber = null;
+  }
+}
+
+// Swing animation for Roblox Rod
+function swingRod() {
+  if(!rodGroup || inventory[selected] !== "Roblox Rod") return;
+  
+  isSwinging = true;
+  swingProgress = 0;
+  
+  // Add swing animation class to message
+  msg.classList.add('swing-animation');
+  
+  // Animate the rod
+  const swing = () => {
+    if(!isSwinging || !rodGroup) return;
+    
+    swingProgress += 0.05;
+    const swingAmount = Math.sin(swingProgress * Math.PI * 2) * 0.5;
+    
+    // Rotate rod back and forth
+    rodGroup.rotation.z = Math.PI / 3.5 + swingAmount;
+    
+    // Bob up and down slightly
+    rodGroup.position.y = -0.3 + Math.sin(swingProgress * Math.PI) * 0.05;
+    
+    if(swingProgress < 1.6) {
+      requestAnimationFrame(swing);
+    } else {
+      isSwinging = false;
+      rodGroup.rotation.z = Math.PI / 3.5;
+      rodGroup.position.y = -0.3;
+      msg.classList.remove('swing-animation');
+    }
+  };
+  
+  swing();
+}
 
 /* ===== SECRET CODE SYSTEM ===== */
 const secretCodeButton = document.getElementById("secretCode");
@@ -1867,71 +2582,6 @@ function expandInventory(slots = 3) {
   savePlayerData();
 }
 
-/* ENHANCED ROD */
-let rod = null;
-function updateRod() {
-  const currentRod = inventory[selected];
-  const tropicalRodTypes = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
-  const snowyRodTypes = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
-  const allRodTypes = tropicalRodTypes.concat(snowyRodTypes);
-  
-  if(allRodTypes.includes(currentRod)) {
-    if(!rod) {
-      rod = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8),
-        new THREE.MeshStandardMaterial({color: 0x8b4513, roughness: 0.5})
-      );
-      rod.position.set(0.4, -0.3, -1.2);
-      rod.rotation.z = Math.PI / 3.5;
-      camera.add(rod);
-    }
-    
-    let color, emissive;
-    switch(currentRod) {
-      case "Sun Rod": 
-        color = 0xffcc00; 
-        emissive = 0xff9900;
-        break;
-      case "Moon Rod": 
-        color = 0x8a2be2; 
-        emissive = 0x4b0082;
-        break;
-      case "Ocean Rod": 
-        color = 0x00bfff; 
-        emissive = 0x0088cc;
-        break;
-      case "Glacier Rod":
-        color = 0x87CEEB;
-        emissive = 0x00BFFF;
-        break;
-      case "Frostfire Rod":
-        color = 0xFF6347;
-        emissive = 0xFF4500;
-        break;
-      case "Aurora Rod":
-        color = 0x9370DB;
-        emissive = 0xBA55D3;
-        break;
-      default: 
-        color = 0x8b4513; 
-        emissive = 0x000000;
-    }
-    
-    rod.material.color.set(color);
-    rod.material.emissive = new THREE.Color(emissive);
-    rod.material.emissiveIntensity = currentRod !== "Rod" ? 0.5 : 0;
-    
-    // Update portal activation if player gets Ocean Rod
-    if(currentRod === "Ocean Rod" && !hasOceanRod) {
-      hasOceanRod = true;
-      activatePortal();
-    }
-  } else if(rod) {
-    camera.remove(rod);
-    rod = null;
-  }
-}
-
 /* PORTAL SYSTEM - ALWAYS VISIBLE BUT NEED OCEAN ROD */
 function activatePortal() {
   // Change portal to active colors
@@ -2103,7 +2753,7 @@ addEventListener("touchstart", e => {
 document.getElementById('buySunRod').onclick = () => {
  if(money < 1000) return alert("Not enough money");
  for(let i = 0; i < inventory.length; i++) {
-  if(inventory[i] === "Rod" || inventory[i] === "Moon Rod" || inventory[i] === "Ocean Rod") {
+  if(inventory[i] === "Rod" || inventory[i] === "Moon Rod" || inventory[i] === "Ocean Rod" || inventory[i] === "Roblox Rod") {
     inventory[i] = "Sun Rod"; 
     renderInv(); 
     money -= 1000; 
@@ -2128,7 +2778,7 @@ document.getElementById('buySunRod').onclick = () => {
 document.getElementById('buyMoonRod').onclick = () => {
  if(money < 10000) return alert("Not enough money");
  for(let i = 0; i < inventory.length; i++) {
-  if(inventory[i] === "Rod" || inventory[i] === "Sun Rod" || inventory[i] === "Ocean Rod") {
+  if(inventory[i] === "Rod" || inventory[i] === "Sun Rod" || inventory[i] === "Ocean Rod" || inventory[i] === "Roblox Rod") {
     inventory[i] = "Moon Rod"; 
     renderInv(); 
     money -= 10000; 
@@ -2153,7 +2803,7 @@ document.getElementById('buyMoonRod').onclick = () => {
 document.getElementById('buyOceanRod').onclick = () => {
  if(money < 100000) return alert("Not enough money");
  for(let i = 0; i < inventory.length; i++) {
-  if(inventory[i] === "Rod" || inventory[i] === "Sun Rod" || inventory[i] === "Moon Rod") {
+  if(inventory[i] === "Rod" || inventory[i] === "Sun Rod" || inventory[i] === "Moon Rod" || inventory[i] === "Roblox Rod") {
     inventory[i] = "Ocean Rod"; 
     renderInv(); 
     money -= 100000; 
@@ -2166,6 +2816,31 @@ document.getElementById('buyOceanRod').onclick = () => {
   if(inventory[i] === "") {
     inventory[i] = "Ocean Rod"; 
     money -= 100000; 
+    updateStats();
+    renderInv(); 
+    savePlayerData();
+    return;
+  }
+ }
+ alert("Inventory full!");
+};
+
+document.getElementById('buyRobloxRod').onclick = () => {
+ if(money < 50000) return alert("Not enough money");
+ for(let i = 0; i < inventory.length; i++) {
+  if(inventory[i].includes("Rod")) {
+    inventory[i] = "Roblox Rod"; 
+    renderInv(); 
+    money -= 50000; 
+    updateStats();
+    savePlayerData();
+    return;
+  }
+ }
+ for(let i = 0; i < inventory.length; i++) {
+  if(inventory[i] === "") {
+    inventory[i] = "Roblox Rod"; 
+    money -= 50000; 
     updateStats();
     renderInv(); 
     savePlayerData();
@@ -2403,13 +3078,13 @@ function animatePortal() {
   }
 }
 
-/* ===== ENHANCED FISHING SYSTEM ===== */
+/* ===== ENHANCED FISHING SYSTEM WITH SWINGING ===== */
 let holding = false, holdTime = 0, fishing = false, taps = 0, requiredTaps = 10, fishTimer = null;
 let progressInterval = null;
 
 addEventListener("touchstart", (e) => {
   const currentRod = inventory[selected];
-  const tropicalRods = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
+  const tropicalRods = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod", "Roblox Rod"];
   const snowyRods = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
   const allRods = tropicalRods.concat(snowyRods);
   
@@ -2420,6 +3095,12 @@ addEventListener("touchstart", (e) => {
        e.target.id !== "fishButton") {
       holding = true; 
       holdTime = 0;
+      
+      // Swing animation for Roblox Rod
+      if(currentRod === "Roblox Rod") {
+        swingRod();
+      }
+      
       // Show casting progress bar
       document.getElementById("castProgress").style.display = "block";
       document.getElementById("castProgressFill").style.width = "0%";
@@ -2447,6 +3128,18 @@ addEventListener("touchend", () => {
   document.getElementById("castProgress").style.display = "none";
 });
 
+// Rod multiplier system (updated with Roblox Rod)
+const rodMultipliers = {
+  "Rod": 1,
+  "Sun Rod": 2,
+  "Moon Rod": 4,
+  "Ocean Rod": 8,
+  "Roblox Rod": 12,
+  "Glacier Rod": 16,
+  "Frostfire Rod": 32,
+  "Aurora Rod": 64
+};
+
 // Base probabilities for Tropical Island
 const tropicalBaseProbabilities = {
   Kraken: 0.01,
@@ -2470,17 +3163,6 @@ const snowyBaseProbabilities = {
   IceShark: 0.10,
   SnowTrout: 0.25,
   ArcticChar: 0.564
-};
-
-// Rod multiplier system
-const rodMultipliers = {
-  "Rod": 1,
-  "Sun Rod": 2,
-  "Moon Rod": 4,
-  "Ocean Rod": 8,
-  "Glacier Rod": 16,
-  "Frostfire Rod": 32,
-  "Aurora Rod": 64
 };
 
 function randomFish(currentRod) {
@@ -2552,7 +3234,7 @@ function createFishButton() {
 
 function startFishing() {
  const currentRod = inventory[selected];
- const tropicalRods = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
+ const tropicalRods = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod", "Roblox Rod"];
  const snowyRods = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
  const allRods = tropicalRods.concat(snowyRods);
  
