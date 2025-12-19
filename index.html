@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -443,10 +442,12 @@ sun.shadow.mapSize.width = 2048;
 sun.shadow.mapSize.height = 2048;
 scene.add(sun);
 
-/* SIMPLE GREEN OCEAN */
-const oceanGeometry = new THREE.PlaneGeometry(5000, 5000, 128, 128);
-const oceanMaterial = new THREE.MeshLambertMaterial({
+/* ENHANCED OCEAN WITH BETTER TEXTURE AND WAVES */
+const oceanGeometry = new THREE.PlaneGeometry(5000, 5000, 256, 256);
+const oceanMaterial = new THREE.MeshStandardMaterial({
   color: 0x1e90ff,
+  roughness: 0.1,
+  metalness: 0.2,
   side: THREE.DoubleSide
 });
 const ocean = new THREE.Mesh(oceanGeometry, oceanMaterial);
@@ -455,15 +456,102 @@ ocean.position.y = -1;
 ocean.receiveShadow = true;
 scene.add(ocean);
 
-/* SIMPLE GREEN ISLAND - NO GRASS TOP */
-const islandGeometry = new THREE.CylinderGeometry(20, 25, 3, 32);
-const islandMaterial = new THREE.MeshLambertMaterial({
-  color: 0x228b22
+/* ENHANCED ISLAND WITH MORE DETAILS */
+const island = new THREE.Group();
+
+// Base island shape with texture
+const baseGeometry = new THREE.CylinderGeometry(20, 25, 3, 64);
+const baseMaterial = new THREE.MeshStandardMaterial({
+  color: 0x2d7a2d,
+  roughness: 0.8,
+  metalness: 0.1
 });
-const island = new THREE.Mesh(islandGeometry, islandMaterial);
-island.position.set(0, 1.5, 0);
-island.castShadow = true;
-island.receiveShadow = true;
+const islandBase = new THREE.Mesh(baseGeometry, baseMaterial);
+islandBase.position.set(0, 1.5, 0);
+islandBase.castShadow = true;
+islandBase.receiveShadow = true;
+island.add(islandBase);
+
+// Island details - rocky edges
+const rockCount = 16;
+for(let i = 0; i < rockCount; i++) {
+  const angle = (i / rockCount) * Math.PI * 2;
+  const radius = 22 + Math.random() * 2;
+  
+  const rockGeometry = new THREE.SphereGeometry(1.5 + Math.random() * 1, 8, 6);
+  const rockMaterial = new THREE.MeshStandardMaterial({
+    color: 0x5d4037,
+    roughness: 0.9,
+    metalness: 0
+  });
+  const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+  
+  rock.position.set(
+    Math.cos(angle) * radius,
+    2 + Math.random() * 1,
+    Math.sin(angle) * radius
+  );
+  rock.rotation.set(
+    Math.random() * 0.5,
+    Math.random() * 0.5,
+    Math.random() * 0.5
+  );
+  rock.castShadow = true;
+  island.add(rock);
+}
+
+// Island details - small hills/mounds
+const hillCount = 8;
+for(let i = 0; i < hillCount; i++) {
+  const angle = (i / hillCount) * Math.PI * 2;
+  const radius = 8 + Math.random() * 10;
+  
+  const hillGeometry = new THREE.ConeGeometry(
+    3 + Math.random() * 2,
+    2 + Math.random() * 1.5,
+    16
+  );
+  const hillMaterial = new THREE.MeshStandardMaterial({
+    color: 0x3a9e3a,
+    roughness: 0.8,
+    metalness: 0
+  });
+  const hill = new THREE.Mesh(hillGeometry, hillMaterial);
+  
+  hill.position.set(
+    Math.cos(angle) * radius,
+    2.5,
+    Math.sin(angle) * radius
+  );
+  hill.castShadow = true;
+  hill.receiveShadow = true;
+  island.add(hill);
+}
+
+// Island details - sandy beach patches
+const sandPatchCount = 6;
+for(let i = 0; i < sandPatchCount; i++) {
+  const angle = (i / sandPatchCount) * Math.PI * 2;
+  const radius = 18 + Math.random() * 4;
+  
+  const sandGeometry = new THREE.CircleGeometry(3 + Math.random() * 2, 16);
+  const sandMaterial = new THREE.MeshStandardMaterial({
+    color: 0xf4e4a6,
+    roughness: 0.9,
+    metalness: 0,
+    side: THREE.DoubleSide
+  });
+  const sand = new THREE.Mesh(sandGeometry, sandMaterial);
+  
+  sand.position.set(
+    Math.cos(angle) * radius,
+    2.01,
+    Math.sin(angle) * radius
+  );
+  sand.rotation.x = -Math.PI / 2;
+  island.add(sand);
+}
+
 scene.add(island);
 
 /* FISHERMAN NPC */
@@ -472,7 +560,7 @@ fisherman.position.set(-8, 2, 8);
 
 const body = new THREE.Mesh(
   new THREE.CylinderGeometry(0.6, 0.6, 1.8, 12),
-  new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+  new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 })
 );
 body.position.y = 0.9;
 body.castShadow = true;
@@ -480,7 +568,7 @@ fisherman.add(body);
 
 const head = new THREE.Mesh(
   new THREE.SphereGeometry(0.5, 16, 16),
-  new THREE.MeshLambertMaterial({ color: 0xf0c8a0 })
+  new THREE.MeshStandardMaterial({ color: 0xf0c8a0, roughness: 0.7 })
 );
 head.position.y = 2.2;
 head.castShadow = true;
@@ -488,14 +576,14 @@ fisherman.add(head);
 
 const hat = new THREE.Mesh(
   new THREE.ConeGeometry(0.8, 0.4, 12),
-  new THREE.MeshLambertMaterial({ color: 0x8b0000 })
+  new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.6 })
 );
 hat.position.y = 2.6;
 fisherman.add(hat);
 
 const npcRod = new THREE.Mesh(
   new THREE.CylinderGeometry(0.04, 0.04, 2.5, 8),
-  new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+  new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.5 })
 );
 npcRod.position.set(0.7, 1.5, -0.6);
 npcRod.rotation.z = Math.PI / 6;
@@ -509,7 +597,7 @@ upgradesNPC.position.set(8, 2, -8);
 
 const upgradesBody = new THREE.Mesh(
   new THREE.CylinderGeometry(0.6, 0.6, 1.8, 12),
-  new THREE.MeshLambertMaterial({ color: 0x2e8b57 })
+  new THREE.MeshStandardMaterial({ color: 0x2e8b57, roughness: 0.8 })
 );
 upgradesBody.position.y = 0.9;
 upgradesBody.castShadow = true;
@@ -517,7 +605,7 @@ upgradesNPC.add(upgradesBody);
 
 const upgradesHead = new THREE.Mesh(
   new THREE.SphereGeometry(0.5, 16, 16),
-  new THREE.MeshLambertMaterial({ color: 0xf0c8a0 })
+  new THREE.MeshStandardMaterial({ color: 0xf0c8a0, roughness: 0.7 })
 );
 upgradesHead.position.y = 2.2;
 upgradesHead.castShadow = true;
@@ -525,7 +613,7 @@ upgradesNPC.add(upgradesHead);
 
 const wizardHat = new THREE.Mesh(
   new THREE.ConeGeometry(0.9, 1.0, 12),
-  new THREE.MeshLambertMaterial({ color: 0x4b0082 })
+  new THREE.MeshStandardMaterial({ color: 0x4b0082, roughness: 0.5 })
 );
 wizardHat.position.y = 2.8;
 upgradesNPC.add(wizardHat);
@@ -538,56 +626,56 @@ const fishModels = {};
 // Clownfish
 const clownfishGeometry = new THREE.ConeGeometry(0.5, 1.5, 8);
 clownfishGeometry.rotateX(Math.PI / 2);
-fishModels.Clownfish = new THREE.Mesh(clownfishGeometry, new THREE.MeshLambertMaterial({color: 0xFF6B35}));
+fishModels.Clownfish = new THREE.Mesh(clownfishGeometry, new THREE.MeshStandardMaterial({color: 0xFF6B35, roughness: 0.4}));
 
 // Tuna
 const tunaGeometry = new THREE.CapsuleGeometry(0.3, 1.2, 4, 8);
 tunaGeometry.rotateZ(Math.PI / 2);
-fishModels.Tuna = new THREE.Mesh(tunaGeometry, new THREE.MeshLambertMaterial({color: 0x4682B4}));
+fishModels.Tuna = new THREE.Mesh(tunaGeometry, new THREE.MeshStandardMaterial({color: 0x4682B4, roughness: 0.3}));
 
 // Shark
 const sharkGeometry = new THREE.ConeGeometry(0.4, 2.0, 8);
 sharkGeometry.rotateX(Math.PI / 2);
-fishModels.Shark = new THREE.Mesh(sharkGeometry, new THREE.MeshLambertMaterial({color: 0x708090}));
+fishModels.Shark = new THREE.Mesh(sharkGeometry, new THREE.MeshStandardMaterial({color: 0x708090, roughness: 0.5}));
 
 // Pufferfish
 const pufferfishGeometry = new THREE.SphereGeometry(0.6, 16, 16);
-fishModels.Pufferfish = new THREE.Mesh(pufferfishGeometry, new THREE.MeshLambertMaterial({color: 0x32CD32}));
+fishModels.Pufferfish = new THREE.Mesh(pufferfishGeometry, new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7}));
 
 // Sea Turtle
 const turtleGeometry = new THREE.BoxGeometry(1.2, 0.4, 1.5);
-fishModels.SeaTurtle = new THREE.Mesh(turtleGeometry, new THREE.MeshLambertMaterial({color: 0x228B22}));
+fishModels.SeaTurtle = new THREE.Mesh(turtleGeometry, new THREE.MeshStandardMaterial({color: 0x228B22, roughness: 0.6}));
 
 // Manta Ray
 const mantaGeometry = new THREE.ConeGeometry(1.5, 0.3, 4);
 mantaGeometry.rotateX(Math.PI / 2);
-fishModels.MantaRay = new THREE.Mesh(mantaGeometry, new THREE.MeshLambertMaterial({color: 0x483D8B}));
+fishModels.MantaRay = new THREE.Mesh(mantaGeometry, new THREE.MeshStandardMaterial({color: 0x483D8B, roughness: 0.4}));
 
 // Great White Shark
 const greatWhiteGeometry = new THREE.ConeGeometry(0.6, 3.0, 12);
 greatWhiteGeometry.rotateX(Math.PI / 2);
-fishModels.GreatWhiteShark = new THREE.Mesh(greatWhiteGeometry, new THREE.MeshLambertMaterial({color: 0xFFFFFF}));
+fishModels.GreatWhiteShark = new THREE.Mesh(greatWhiteGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.3}));
 
 // Terrorshark
 const terrorsharkGeometry = new THREE.ConeGeometry(0.8, 3.5, 12);
 terrorsharkGeometry.rotateX(Math.PI / 2);
-fishModels.Terrorshark = new THREE.Mesh(terrorsharkGeometry, new THREE.MeshLambertMaterial({color: 0xFF0000}));
+fishModels.Terrorshark = new THREE.Mesh(terrorsharkGeometry, new THREE.MeshStandardMaterial({color: 0xFF0000, roughness: 0.2}));
 
 // Megalodon
 const megalodonGeometry = new THREE.ConeGeometry(1.2, 5.0, 16);
 megalodonGeometry.rotateX(Math.PI / 2);
-fishModels.Megalodon = new THREE.Mesh(megalodonGeometry, new THREE.MeshLambertMaterial({color: 0x2F4F4F}));
+fishModels.Megalodon = new THREE.Mesh(megalodonGeometry, new THREE.MeshStandardMaterial({color: 0x2F4F4F, roughness: 0.4}));
 
 // Kraken
 const krakenGeometry = new THREE.SphereGeometry(1.0, 32, 32);
 for(let i = 0; i < 8; i++) {
   const tentacle = new THREE.ConeGeometry(0.2, 3.0, 8);
   tentacle.rotateX(Math.PI / 2);
-  const tentacleMesh = new THREE.Mesh(tentacle, new THREE.MeshLambertMaterial({color: 0x8B0000}));
+  const tentacleMesh = new THREE.Mesh(tentacle, new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.5}));
   tentacleMesh.position.set(Math.cos(i * Math.PI / 4) * 1.2, 0, Math.sin(i * Math.PI / 4) * 1.2);
   krakenGeometry.merge(tentacleMesh.geometry, tentacleMesh.matrix);
 }
-fishModels.Kraken = new THREE.Mesh(krakenGeometry, new THREE.MeshLambertMaterial({color: 0x8B0000}));
+fishModels.Kraken = new THREE.Mesh(krakenGeometry, new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.6}));
 
 Object.values(fishModels).forEach(fish => {
   fish.castShadow = true;
@@ -600,55 +688,76 @@ const vegetation = new THREE.Group();
 function createTree(x, z) {
   const tree = new THREE.Group();
   
-  // Trunk
+  // Trunk with bark texture
   const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.4, 0.6, 8, 8),
-    new THREE.MeshLambertMaterial({ color: 0x8b5a2b })
+    new THREE.CylinderGeometry(0.5, 0.7, 9, 12),
+    new THREE.MeshStandardMaterial({ 
+      color: 0x8b5a2b,
+      roughness: 0.9,
+      metalness: 0
+    })
   );
-  trunk.position.y = 4;
+  trunk.position.y = 4.5;
+  trunk.castShadow = true;
   tree.add(trunk);
   
-  // Multiple layers of leaves (3 layers for fuller look)
-  const leafColors = [0x228B22, 0x32CD32, 0x3CB371];
+  // Multiple layers of leaves with different greens
+  const leafColors = [0x1e7a1e, 0x2d9e2d, 0x3cb371];
   
-  // Bottom layer - largest
+  // Bottom layer - largest and darkest
   const leaves1 = new THREE.Mesh(
-    new THREE.ConeGeometry(3.5, 3.0, 10),
-    new THREE.MeshLambertMaterial({ color: leafColors[0] })
+    new THREE.ConeGeometry(4.0, 3.5, 12),
+    new THREE.MeshStandardMaterial({ 
+      color: leafColors[0],
+      roughness: 0.8,
+      metalness: 0
+    })
   );
-  leaves1.position.y = 7;
+  leaves1.position.y = 8;
+  leaves1.castShadow = true;
   tree.add(leaves1);
   
   // Middle layer - medium
   const leaves2 = new THREE.Mesh(
-    new THREE.ConeGeometry(2.8, 2.5, 10),
-    new THREE.MeshLambertMaterial({ color: leafColors[1] })
+    new THREE.ConeGeometry(3.2, 3.0, 12),
+    new THREE.MeshStandardMaterial({ 
+      color: leafColors[1],
+      roughness: 0.8,
+      metalness: 0
+    })
   );
-  leaves2.position.y = 8.5;
+  leaves2.position.y = 10;
+  leaves2.castShadow = true;
   tree.add(leaves2);
   
-  // Top layer - smallest
+  // Top layer - smallest and lightest
   const leaves3 = new THREE.Mesh(
-    new THREE.ConeGeometry(2.0, 2.0, 10),
-    new THREE.MeshLambertMaterial({ color: leafColors[2] })
+    new THREE.ConeGeometry(2.4, 2.5, 12),
+    new THREE.MeshStandardMaterial({ 
+      color: leafColors[2],
+      roughness: 0.8,
+      metalness: 0
+    })
   );
-  leaves3.position.y = 9.8;
+  leaves3.position.y = 11.5;
+  leaves3.castShadow = true;
   tree.add(leaves3);
   
-  // Add some random branches (small cones)
-  for(let i = 0; i < 4; i++) {
-    const branch = new THREE.Mesh(
-      new THREE.ConeGeometry(0.8, 1.5, 6),
-      new THREE.MeshLambertMaterial({ color: 0x228B22 })
-    );
-    branch.position.set(
-      (Math.random() - 0.5) * 2,
-      5 + Math.random() * 2,
-      (Math.random() - 0.5) * 2
-    );
-    branch.rotation.x = Math.random() * 0.5;
-    branch.rotation.z = Math.random() * 0.5;
-    tree.add(branch);
+  // Palm trees for tropical look
+  if(Math.random() > 0.7) {
+    for(let i = 0; i < 4; i++) {
+      const palmLeaf = new THREE.Mesh(
+        new THREE.ConeGeometry(0.1, 3, 6),
+        new THREE.MeshStandardMaterial({ color: 0x228B22 })
+      );
+      palmLeaf.position.set(
+        Math.cos(i * Math.PI / 2) * 2,
+        9,
+        Math.sin(i * Math.PI / 2) * 2
+      );
+      palmLeaf.rotation.x = Math.PI / 4;
+      tree.add(palmLeaf);
+    }
   }
   
   tree.position.set(x, 1.5, z);
@@ -656,13 +765,13 @@ function createTree(x, z) {
   return tree;
 }
 
-// Place trees
-for(let i = 0; i < 12; i++) {
+// Place trees around the island
+for(let i = 0; i < 15; i++) {
   const angle = Math.random() * Math.PI * 2;
-  const radius = 10 + Math.random() * 15;
+  const radius = 10 + Math.random() * 12;
   const tree = createTree(Math.cos(angle) * radius, Math.sin(angle) * radius);
   
-  // Check distance from NPCs to avoid placing trees on them
+  // Check distance from NPCs
   const distFromFisherman = Math.sqrt(
     Math.pow(tree.position.x - fisherman.position.x, 2) +
     Math.pow(tree.position.z - fisherman.position.z, 2)
@@ -673,31 +782,35 @@ for(let i = 0; i < 12; i++) {
     Math.pow(tree.position.z - upgradesNPC.position.z, 2)
   );
   
-  if(distFromFisherman > 5 && distFromUpgradesNPC > 5) {
+  if(distFromFisherman > 6 && distFromUpgradesNPC > 6) {
     vegetation.add(tree);
   }
 }
 
 scene.add(vegetation);
 
-/* WATER EFFECTS */
+/* ENHANCED WATER EFFECTS WITH OCEAN PARTICLES */
 const waterCanvas = document.getElementById('waterCanvas');
 const waterCtx = waterCanvas.getContext('2d');
 waterCanvas.width = window.innerWidth;
 waterCanvas.height = window.innerHeight;
 
 const waterDrops = [];
+const oceanBubbles = [];
+
 class WaterDrop {
   constructor() {
     this.x = Math.random() * waterCanvas.width;
     this.y = Math.random() * waterCanvas.height;
-    this.size = Math.random() * 3 + 1;
-    this.speed = Math.random() * 2 + 1;
-    this.opacity = Math.random() * 0.5 + 0.3;
+    this.size = Math.random() * 4 + 1;
+    this.speed = Math.random() * 3 + 1;
+    this.opacity = Math.random() * 0.6 + 0.3;
+    this.wiggle = Math.random() * 2;
   }
   
   update() {
     this.y += this.speed;
+    this.x += Math.sin(Date.now() * 0.001 + this.y * 0.01) * this.wiggle;
     if(this.y > waterCanvas.height) {
       this.y = 0;
       this.x = Math.random() * waterCanvas.width;
@@ -707,21 +820,77 @@ class WaterDrop {
   draw() {
     waterCtx.beginPath();
     waterCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    waterCtx.fillStyle = `rgba(173, 216, 230, ${this.opacity})`;
+    waterCtx.fillStyle = `rgba(135, 206, 250, ${this.opacity})`;
     waterCtx.fill();
   }
 }
 
-for(let i = 0; i < 100; i++) {
+class OceanBubble {
+  constructor() {
+    this.x = Math.random() * waterCanvas.width;
+    this.y = waterCanvas.height + Math.random() * 100;
+    this.size = Math.random() * 5 + 2;
+    this.speed = Math.random() * 0.5 + 0.3;
+    this.opacity = Math.random() * 0.4 + 0.2;
+    this.wobble = Math.random() * 1;
+  }
+  
+  update() {
+    this.y -= this.speed;
+    this.x += Math.sin(Date.now() * 0.001 + this.y * 0.02) * this.wobble;
+    if(this.y < -50) {
+      this.y = waterCanvas.height + Math.random() * 100;
+      this.x = Math.random() * waterCanvas.width;
+    }
+  }
+  
+  draw() {
+    waterCtx.beginPath();
+    waterCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    waterCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+    waterCtx.fill();
+  }
+}
+
+for(let i = 0; i < 150; i++) {
   waterDrops.push(new WaterDrop());
+}
+
+for(let i = 0; i < 50; i++) {
+  oceanBubbles.push(new OceanBubble());
 }
 
 function animateWater() {
   waterCtx.clearRect(0, 0, waterCanvas.width, waterCanvas.height);
+  
+  // Draw water surface effect
+  waterCtx.fillStyle = 'rgba(30, 144, 255, 0.05)';
+  waterCtx.fillRect(0, 0, waterCanvas.width, waterCanvas.height);
+  
+  // Draw ocean ripples
+  const time = Date.now() * 0.001;
+  for(let i = 0; i < 20; i++) {
+    const x = Math.sin(time + i * 0.5) * 100 + waterCanvas.width / 2;
+    const y = Math.cos(time * 0.7 + i) * 50 + waterCanvas.height / 3;
+    const radius = 20 + Math.sin(time + i) * 10;
+    
+    waterCtx.beginPath();
+    waterCtx.arc(x, y, radius, 0, Math.PI * 2);
+    waterCtx.strokeStyle = `rgba(255, 255, 255, 0.1)`;
+    waterCtx.lineWidth = 1;
+    waterCtx.stroke();
+  }
+  
   waterDrops.forEach(drop => {
     drop.update();
     drop.draw();
   });
+  
+  oceanBubbles.forEach(bubble => {
+    bubble.update();
+    bubble.draw();
+  });
+  
   requestAnimationFrame(animateWater);
 }
 animateWater();
@@ -969,22 +1138,35 @@ function updateRod() {
     if(!rod) {
       rod = new THREE.Mesh(
         new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8),
-        new THREE.MeshLambertMaterial({color: 0x8b4513})
+        new THREE.MeshStandardMaterial({color: 0x8b4513, roughness: 0.5})
       );
       rod.position.set(0.4, -0.3, -1.2);
       rod.rotation.z = Math.PI / 3.5;
       camera.add(rod);
     }
     
-    let color;
+    let color, emissive;
     switch(currentRod) {
-      case "Sun Rod": color = 0xffcc00; break;
-      case "Moon Rod": color = 0x8a2be2; break;
-      case "Ocean Rod": color = 0x00bfff; break;
-      default: color = 0x8b4513;
+      case "Sun Rod": 
+        color = 0xffcc00; 
+        emissive = 0xff9900;
+        break;
+      case "Moon Rod": 
+        color = 0x8a2be2; 
+        emissive = 0x4b0082;
+        break;
+      case "Ocean Rod": 
+        color = 0x00bfff; 
+        emissive = 0x0088cc;
+        break;
+      default: 
+        color = 0x8b4513; 
+        emissive = 0x000000;
     }
     
     rod.material.color.set(color);
+    rod.material.emissive = new THREE.Color(emissive);
+    rod.material.emissiveIntensity = currentRod !== "Rod" ? 0.3 : 0;
   } else if(rod) {
     camera.remove(rod);
     rod = null;
@@ -1432,14 +1614,16 @@ let oceanTime = 0;
 function animate() {
  requestAnimationFrame(animate);
  
- // Update ocean waves
+ // Enhanced ocean waves with multiple frequencies
  oceanTime += 0.02;
  const oceanPosition = ocean.geometry.attributes.position;
  for(let i = 0; i < oceanPosition.count; i++) {
    const x = oceanPosition.getX(i);
    const y = oceanPosition.getY(i);
-   const wave = Math.sin(x * 0.05 + oceanTime) * Math.cos(y * 0.05 + oceanTime) * 0.3;
-   oceanPosition.setZ(i, wave);
+   const wave1 = Math.sin(x * 0.02 + oceanTime * 1.2) * 0.5;
+   const wave2 = Math.cos(y * 0.03 + oceanTime * 0.8) * 0.3;
+   const wave3 = Math.sin(x * 0.05 + y * 0.05 + oceanTime * 0.5) * 0.2;
+   oceanPosition.setZ(i, (wave1 + wave2 + wave3) * 0.5);
  }
  oceanPosition.needsUpdate = true;
  
@@ -1473,8 +1657,6 @@ function animate() {
  // Animate NPCs
  animateFisherman();
  animateUpgradesNPC();
-
- // REMOVED: vegetation.rotation.y += 0.0005; - Island no longer moves or turns
 
  renderer.render(scene, camera);
 }
