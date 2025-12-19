@@ -190,7 +190,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 }
 
 /* SHOPS */
-#shop, #upgradesShop{
+#shop, #upgradesShop, #snowyShop, #snowyUpgradesShop{
  position:fixed;
  top:50%;left:50%;
  transform:translate(-50%,-50%);
@@ -206,12 +206,23 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  border:3px solid #00a8ff;
  box-shadow:0 0 40px rgba(0,168,255,0.5);
 }
-#shop h3, #upgradesShop h3{
+#snowyShop{
+ background:linear-gradient(to bottom, rgba(30,50,70,0.95), rgba(50,80,120,0.95));
+ border:3px solid #a0d2ff;
+}
+#snowyUpgradesShop{
+ background:linear-gradient(to bottom, rgba(40,60,80,0.95), rgba(60,90,130,0.95));
+ border:3px solid #a0d2ff;
+}
+#shop h3, #upgradesShop h3, #snowyShop h3, #snowyUpgradesShop h3{
  color:#00a8ff;
  margin-bottom:20px;
  font-size:22px;
 }
-#shop button, #upgradesShop button{
+#snowyShop h3, #snowyUpgradesShop h3{
+ color:#a0d2ff;
+}
+#shop button, #upgradesShop button, #snowyShop button, #snowyUpgradesShop button{
  margin:8px;
  padding:12px 20px;
  font-size:16px;
@@ -224,10 +235,10 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  min-width:200px;
  transition:transform 0.2s;
 }
-#shop button:hover, #upgradesShop button:hover{
+#shop button:hover, #upgradesShop button:hover, #snowyShop button:hover, #snowyUpgradesShop button:hover{
  transform:translateY(-2px);
 }
-#shop button:disabled, #upgradesShop button:disabled{
+#shop button:disabled, #upgradesShop button:disabled, #snowyShop button:disabled, #snowyUpgradesShop button:disabled{
  opacity:0.6;
  cursor:not-allowed;
  transform:none;
@@ -314,7 +325,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 /* FISH BUTTON */
 #fishButton {
  position: fixed;
- z-index: 1000 !important; /* FIX: Ensure it's above everything */
+ z-index: 1000 !important;
  border-radius: 15px;
  background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f);
  color: black;
@@ -361,6 +372,30 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  transition: width 0.1s;
  border-radius: 8px;
 }
+
+/* PORTAL */
+#portalWarning {
+ position: fixed;
+ top: 50%;
+ left: 50%;
+ transform: translate(-50%, -50%);
+ background: rgba(0,0,0,0.95);
+ color: white;
+ padding: 30px;
+ border-radius: 15px;
+ text-align: center;
+ border: 3px solid #00ffff;
+ box-shadow: 0 0 50px #00ffff;
+ display: none;
+ z-index: 70;
+ width: 90%;
+ max-width: 400px;
+}
+#portalWarning h3 {
+ color: #00ffff;
+ margin-bottom: 15px;
+ font-size: 24px;
+}
 </style>
 </head>
 <body>
@@ -392,7 +427,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  • A "Press Here" button will spawn randomly<br>
  • Tap it within 1 second, 10 times to catch the fish<br><br>
 
- 🐟 <b>Fish Chances</b><br>
+ 🌴 <b>Tropical Island Fish</b><br>
  • Clownfish – ~25%<br>
  • Tuna – ~25%<br>
  • Shark – ~50%<br>
@@ -404,6 +439,15 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  • Megalodon – 1/50<br>
  • Kraken – 1/100<br><br>
 
+ ❄️ <b>Snowy Island Fish (Unlock with Ocean Rod)</b><br>
+ • Arctic Char – Common<br>
+ • Snow Trout – Common<br>
+ • Ice Shark – Rare<br>
+ • Frost Puffer – Rare<br>
+ • Glacier Whale – Very Rare<br>
+ • Yeti Crab – Legendary<br>
+ • Ice Dragon – Mythical<br><br>
+
  💰 <b>Selling</b><br>
  • Tap fish once to preview<br>
  • Tap twice to sell<br><br>
@@ -412,11 +456,19 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  • Basic Rod – Normal chances<br>
  • Sun Rod – 2x better rare fish<br>
  • Moon Rod – 4x better rare fish<br>
- • Ocean Rod – 8x better rare fish<br><br>
+ • Ocean Rod – 8x better rare fish<br>
+ • Glacier Rod (Snowy) – 16x better<br>
+ • Frostfire Rod (Snowy) – 32x better<br>
+ • Aurora Rod (Snowy) – 64x better<br><br>
 
  ⚡ <b>Upgrades</b><br>
  • Bigger Button – Makes fish button 50% larger<br>
  • Faster Fishing – 1.5s time limit instead of 1s<br><br>
+
+ 🌐 <b>Portal System</b><br>
+ • Unlock portal with Ocean Rod<br>
+ • Travel between Tropical and Snowy islands<br>
+ • Each island has unique fish and shops<br><br>
 
  📈 <b>Level System</b><br>
  • Gain XP by catching fish<br>
@@ -448,6 +500,14 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  <button onclick="levelUp.style.display='none'" style="margin-top:20px;padding:10px 20px;background:linear-gradient(to right, #00a8ff, #0097e6);color:white;border:none;border-radius:8px;cursor:pointer;">CONTINUE</button>
 </div>
 
+<!-- PORTAL WARNING -->
+<div id="portalWarning">
+ <h3>🌐 PORTAL UNLOCKED!</h3>
+ <p>You've unlocked the portal to the Snowy Island!</p>
+ <p>Find the glowing portal in the center of the island to travel.</p>
+ <button onclick="portalWarning.style.display='none'" style="margin-top:20px;padding:10px 20px;background:linear-gradient(to right, #00a8ff, #0097e6);color:white;border:none;border-radius:8px;cursor:pointer;">CONTINUE</button>
+</div>
+
 <div id="msg"></div>
 <button id="fishButton">🎯 PRESS HERE! 🎯</button>
 
@@ -463,10 +523,10 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  <button onclick="fishPreview.style.display='none'">CLOSE</button>
 </div>
 
-<!-- FISHERMAN SHOP -->
+<!-- TROPICAL ISLAND SHOPS -->
 <div id="shop">
  <h3>🎣 Fisherman's Shop</h3>
- <p style="font-size:14px;color:#ccc;margin-bottom:20px;">"Welcome to my shop! I have the best fishing gear on the island!"</p>
+ <p style="font-size:14px;color:#ccc;margin-bottom:20px;" id="shopDialogue"></p>
  <button id="buySunRod">Buy Sun Rod ($1000)</button><br>
  <button id="buyMoonRod">Buy Moon Rod ($10,000)</button><br>
  <button id="buyOceanRod">Buy Ocean Rod ($100,000)</button><br>
@@ -476,10 +536,10 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  <button onclick="shop.style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CLOSE</button>
 </div>
 
-<!-- UPGRADES SHOP -->
+<!-- TROPICAL UPGRADES SHOP -->
 <div id="upgradesShop">
  <h3>⚡ Fishing Upgrades</h3>
- <p style="font-size:14px;color:#ccc;margin-bottom:20px;">"Make fishing easier with these upgrades!"</p>
+ <p style="font-size:14px;color:#ccc;margin-bottom:20px;" id="upgradesDialogue"></p>
  
  <button id="buyBiggerButton">
    <div style="font-weight:bold;color:white">🎯 Bigger Button</div>
@@ -493,19 +553,51 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
    <div style="font-size:12px;color:gold">Price: $10,000</div>
  </button><br>
  
+ <br>
+ <button onclick="upgradesShop.style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CLOSE</button>
+</div>
+
+<!-- SNOWY ISLAND SHOPS -->
+<div id="snowyShop">
+ <h3>❄️ Snowy Island Shop</h3>
+ <p style="font-size:14px;color:#ccc;margin-bottom:20px;" id="snowyShopDialogue">"Brrr... Cold here! Need special gear for icy waters!"</p>
+ <button id="buyGlacierRod">Buy Glacier Rod ($500,000)</button><br>
+ <button id="buyFrostfireRod">Buy Frostfire Rod ($2,000,000)</button><br>
+ <button id="buyAuroraRod">Buy Aurora Rod ($10,000,000)</button><br>
+ <button id="buySnowyInventory">Buy 5 Inventory Slots ($2,000)</button><br>
+ <button id="openSnowyUpgrades">❄️ Snowy Upgrades</button><br>
+ <br>
+ <button onclick="snowyShop.style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CLOSE</button>
+</div>
+
+<!-- SNOWY UPGRADES SHOP -->
+<div id="snowyUpgradesShop">
+ <h3>❄️ Snowy Upgrades</h3>
+ <p style="font-size:14px;color:#ccc;margin-bottom:20px;">"Special upgrades for the frozen waters!"</p>
+ 
  <button id="buyAutoTap">
-   <div style="font-weight:bold;color:white">🤖 Auto-Tap (Coming Soon)</div>
-   <div class="upgrade-desc">Automatically taps some buttons for you</div>
-   <div style="font-size:12px;color:silver">Price: $25,000</div>
+   <div style="font-weight:bold;color:white">🤖 Auto-Tap</div>
+   <div class="upgrade-desc">Automatically taps 3 buttons for you</div>
+   <div style="font-size:12px;color:gold">Price: $50,000</div>
+ </button><br>
+ 
+ <button id="buyDoubleTaps">
+   <div style="font-weight:bold;color:white">⚡ Double Taps</div>
+   <div class="upgrade-desc">Each tap counts as 2</div>
+   <div style="font-size:12px;color:gold">Price: $100,000</div>
  </button><br>
  
  <br>
- <button onclick="upgradesShop.style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CLOSE</button>
+ <button onclick="snowyUpgradesShop.style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CLOSE</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script>
 /* ===== ENHANCED SCENE ===== */
+let currentIsland = 'tropical'; // 'tropical' or 'snowy'
+let portalUnlocked = false;
+let portal = null;
+
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x87CEEB, 50, 500);
 
@@ -543,103 +635,275 @@ ocean.position.y = -1;
 ocean.receiveShadow = true;
 scene.add(ocean);
 
-/* ENHANCED ISLAND WITH MORE DETAILS */
-const island = new THREE.Group();
+/* CREATE TROPICAL ISLAND */
+function createTropicalIsland() {
+  const island = new THREE.Group();
 
-// Base island shape with texture
-const baseGeometry = new THREE.CylinderGeometry(20, 25, 3, 64);
-const baseMaterial = new THREE.MeshStandardMaterial({
-  color: 0x2d7a2d,
-  roughness: 0.8,
-  metalness: 0.1
-});
-const islandBase = new THREE.Mesh(baseGeometry, baseMaterial);
-islandBase.position.set(0, 1.5, 0);
-islandBase.castShadow = true;
-islandBase.receiveShadow = true;
-island.add(islandBase);
-
-// Island details - rocky edges
-const rockCount = 16;
-for(let i = 0; i < rockCount; i++) {
-  const angle = (i / rockCount) * Math.PI * 2;
-  const radius = 22 + Math.random() * 2;
-  
-  const rockGeometry = new THREE.SphereGeometry(1.5 + Math.random() * 1, 8, 6);
-  const rockMaterial = new THREE.MeshStandardMaterial({
-    color: 0x5d4037,
-    roughness: 0.9,
-    metalness: 0
-  });
-  const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-  
-  rock.position.set(
-    Math.cos(angle) * radius,
-    2 + Math.random() * 1,
-    Math.sin(angle) * radius
-  );
-  rock.rotation.set(
-    Math.random() * 0.5,
-    Math.random() * 0.5,
-    Math.random() * 0.5
-  );
-  rock.castShadow = true;
-  island.add(rock);
-}
-
-// Island details - small hills/mounds
-const hillCount = 8;
-for(let i = 0; i < hillCount; i++) {
-  const angle = (i / hillCount) * Math.PI * 2;
-  const radius = 8 + Math.random() * 10;
-  
-  const hillGeometry = new THREE.ConeGeometry(
-    3 + Math.random() * 2,
-    2 + Math.random() * 1.5,
-    16
-  );
-  const hillMaterial = new THREE.MeshStandardMaterial({
-    color: 0x3a9e3a,
+  // Base island shape with texture
+  const baseGeometry = new THREE.CylinderGeometry(20, 25, 3, 64);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2d7a2d,
     roughness: 0.8,
-    metalness: 0
+    metalness: 0.1
   });
-  const hill = new THREE.Mesh(hillGeometry, hillMaterial);
-  
-  hill.position.set(
-    Math.cos(angle) * radius,
-    2.5,
-    Math.sin(angle) * radius
-  );
-  hill.castShadow = true;
-  hill.receiveShadow = true;
-  island.add(hill);
+  const islandBase = new THREE.Mesh(baseGeometry, baseMaterial);
+  islandBase.position.set(0, 1.5, 0);
+  islandBase.castShadow = true;
+  islandBase.receiveShadow = true;
+  island.add(islandBase);
+
+  // Island details - rocky edges
+  const rockCount = 16;
+  for(let i = 0; i < rockCount; i++) {
+    const angle = (i / rockCount) * Math.PI * 2;
+    const radius = 22 + Math.random() * 2;
+    
+    const rockGeometry = new THREE.SphereGeometry(1.5 + Math.random() * 1, 8, 6);
+    const rockMaterial = new THREE.MeshStandardMaterial({
+      color: 0x5d4037,
+      roughness: 0.9,
+      metalness: 0
+    });
+    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+    
+    rock.position.set(
+      Math.cos(angle) * radius,
+      2 + Math.random() * 1,
+      Math.sin(angle) * radius
+    );
+    rock.rotation.set(
+      Math.random() * 0.5,
+      Math.random() * 0.5,
+      Math.random() * 0.5
+    );
+    rock.castShadow = true;
+    island.add(rock);
+  }
+
+  // Island details - small hills/mounds
+  const hillCount = 8;
+  for(let i = 0; i < hillCount; i++) {
+    const angle = (i / hillCount) * Math.PI * 2;
+    const radius = 8 + Math.random() * 10;
+    
+    const hillGeometry = new THREE.ConeGeometry(
+      3 + Math.random() * 2,
+      2 + Math.random() * 1.5,
+      16
+    );
+    const hillMaterial = new THREE.MeshStandardMaterial({
+      color: 0x3a9e3a,
+      roughness: 0.8,
+      metalness: 0
+    });
+    const hill = new THREE.Mesh(hillGeometry, hillMaterial);
+    
+    hill.position.set(
+      Math.cos(angle) * radius,
+      2.5,
+      Math.sin(angle) * radius
+    );
+    hill.castShadow = true;
+    hill.receiveShadow = true;
+    island.add(hill);
+  }
+
+  // Island details - sandy beach patches
+  const sandPatchCount = 6;
+  for(let i = 0; i < sandPatchCount; i++) {
+    const angle = (i / sandPatchCount) * Math.PI * 2;
+    const radius = 18 + Math.random() * 4;
+    
+    const sandGeometry = new THREE.CircleGeometry(3 + Math.random() * 2, 16);
+    const sandMaterial = new THREE.MeshStandardMaterial({
+      color: 0xf4e4a6,
+      roughness: 0.9,
+      metalness: 0,
+      side: THREE.DoubleSide
+    });
+    const sand = new THREE.Mesh(sandGeometry, sandMaterial);
+    
+    sand.position.set(
+      Math.cos(angle) * radius,
+      2.01,
+      Math.sin(angle) * radius
+    );
+    sand.rotation.x = -Math.PI / 2;
+    island.add(sand);
+  }
+
+  return island;
 }
 
-// Island details - sandy beach patches
-const sandPatchCount = 6;
-for(let i = 0; i < sandPatchCount; i++) {
-  const angle = (i / sandPatchCount) * Math.PI * 2;
-  const radius = 18 + Math.random() * 4;
-  
-  const sandGeometry = new THREE.CircleGeometry(3 + Math.random() * 2, 16);
-  const sandMaterial = new THREE.MeshStandardMaterial({
-    color: 0xf4e4a6,
+/* CREATE SNOWY ISLAND */
+function createSnowyIsland() {
+  const island = new THREE.Group();
+
+  // Base island shape with snow texture
+  const baseGeometry = new THREE.CylinderGeometry(20, 25, 3, 64);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: 0xf0f8ff,
     roughness: 0.9,
-    metalness: 0,
+    metalness: 0.2
+  });
+  const islandBase = new THREE.Mesh(baseGeometry, baseMaterial);
+  islandBase.position.set(0, 1.5, 0);
+  islandBase.castShadow = true;
+  islandBase.receiveShadow = true;
+  island.add(islandBase);
+
+  // Snowy hills
+  const hillCount = 10;
+  for(let i = 0; i < hillCount; i++) {
+    const angle = (i / hillCount) * Math.PI * 2;
+    const radius = 8 + Math.random() * 12;
+    
+    const hillGeometry = new THREE.ConeGeometry(
+      2.5 + Math.random() * 1.5,
+      3 + Math.random() * 2,
+      16
+    );
+    const hillMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.8,
+      metalness: 0.1
+    });
+    const hill = new THREE.Mesh(hillGeometry, hillMaterial);
+    
+    hill.position.set(
+      Math.cos(angle) * radius,
+      2.5,
+      Math.sin(angle) * radius
+    );
+    hill.castShadow = true;
+    hill.receiveShadow = true;
+    island.add(hill);
+  }
+
+  // Ice patches
+  const icePatchCount = 8;
+  for(let i = 0; i < icePatchCount; i++) {
+    const angle = (i / icePatchCount) * Math.PI * 2;
+    const radius = 15 + Math.random() * 8;
+    
+    const iceGeometry = new THREE.CircleGeometry(2 + Math.random() * 2, 16);
+    const iceMaterial = new THREE.MeshStandardMaterial({
+      color: 0xa0d2ff,
+      roughness: 0.2,
+      metalness: 0.8,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.7
+    });
+    const ice = new THREE.Mesh(iceGeometry, iceMaterial);
+    
+    ice.position.set(
+      Math.cos(angle) * radius,
+      2.01,
+      Math.sin(angle) * radius
+    );
+    ice.rotation.x = -Math.PI / 2;
+    island.add(ice);
+  }
+
+  // Snowy rocks
+  const rockCount = 12;
+  for(let i = 0; i < rockCount; i++) {
+    const angle = (i / rockCount) * Math.PI * 2;
+    const radius = 20 + Math.random() * 5;
+    
+    const rockGeometry = new THREE.DodecahedronGeometry(1 + Math.random(), 0);
+    const rockMaterial = new THREE.MeshStandardMaterial({
+      color: 0xcccccc,
+      roughness: 0.7,
+      metalness: 0.3
+    });
+    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+    
+    rock.position.set(
+      Math.cos(angle) * radius,
+      2.5 + Math.random(),
+      Math.sin(angle) * radius
+    );
+    rock.castShadow = true;
+    island.add(rock);
+  }
+
+  return island;
+}
+
+// Create islands
+let tropicalIsland = createTropicalIsland();
+let snowyIsland = createSnowyIsland();
+scene.add(tropicalIsland);
+
+/* PORTAL CREATION */
+function createPortal() {
+  const portalGroup = new THREE.Group();
+  
+  // Portal ring
+  const ringGeometry = new THREE.TorusGeometry(3, 0.3, 16, 100);
+  const ringMaterial = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    emissive: 0x00ffff,
+    emissiveIntensity: 0.5,
+    roughness: 0.1,
+    metalness: 0.9
+  });
+  const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+  ring.rotation.x = Math.PI / 2;
+  portalGroup.add(ring);
+  
+  // Portal effect (particles)
+  const particleCount = 500;
+  const particleGeometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  
+  for(let i = 0; i < particleCount * 3; i += 3) {
+    const radius = 2.5;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.random() * Math.PI;
+    
+    positions[i] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i + 1] = radius * Math.cos(phi);
+    positions[i + 2] = radius * Math.sin(phi) * Math.sin(theta);
+  }
+  
+  particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  
+  const particleMaterial = new THREE.PointsMaterial({
+    color: 0x00ffff,
+    size: 0.1,
+    transparent: true,
+    opacity: 0.8
+  });
+  
+  const particles = new THREE.Points(particleGeometry, particleMaterial);
+  portalGroup.add(particles);
+  
+  // Portal center (vortex)
+  const vortexGeometry = new THREE.CylinderGeometry(0.5, 2, 0.1, 32);
+  const vortexMaterial = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    emissive: 0x00ffff,
+    emissiveIntensity: 1,
+    transparent: true,
+    opacity: 0.7,
     side: THREE.DoubleSide
   });
-  const sand = new THREE.Mesh(sandGeometry, sandMaterial);
+  const vortex = new THREE.Mesh(vortexGeometry, vortexMaterial);
+  vortex.rotation.x = Math.PI / 2;
+  portalGroup.add(vortex);
   
-  sand.position.set(
-    Math.cos(angle) * radius,
-    2.01,
-    Math.sin(angle) * radius
-  );
-  sand.rotation.x = -Math.PI / 2;
-  island.add(sand);
+  portalGroup.position.set(0, 3, 0);
+  
+  return {
+    group: portalGroup,
+    particles: particles,
+    vortex: vortex,
+    ring: ring
+  };
 }
-
-scene.add(island);
 
 /* FISHERMAN NPC */
 const fisherman = new THREE.Group();
@@ -707,51 +971,137 @@ upgradesNPC.add(wizardHat);
 
 scene.add(upgradesNPC);
 
-/* FISH MODELS */
-const fishModels = {};
+/* SNOWY ISLAND NPCS */
+let snowyFisherman = null;
+let snowyUpgradesNPC = null;
+
+function createSnowyFisherman() {
+  const npc = new THREE.Group();
+  npc.position.set(-8, 2, 8);
+  
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.6, 0.6, 1.8, 12),
+    new THREE.MeshStandardMaterial({ color: 0x4a708b, roughness: 0.8 })
+  );
+  body.position.y = 0.9;
+  body.castShadow = true;
+  npc.add(body);
+  
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.5, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xf0c8a0, roughness: 0.7 })
+  );
+  head.position.y = 2.2;
+  head.castShadow = true;
+  npc.add(head);
+  
+  const furHat = new THREE.Mesh(
+    new THREE.SphereGeometry(0.7, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
+  );
+  furHat.position.y = 2.7;
+  furHat.scale.y = 0.5;
+  npc.add(furHat);
+  
+  const coat = new THREE.Mesh(
+    new THREE.ConeGeometry(0.8, 1.2, 12),
+    new THREE.MeshStandardMaterial({ color: 0x2f4f4f, roughness: 0.8 })
+  );
+  coat.position.y = 0.4;
+  npc.add(coat);
+  
+  return npc;
+}
+
+function createSnowyUpgradesNPC() {
+  const npc = new THREE.Group();
+  npc.position.set(8, 2, -8);
+  
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.6, 0.6, 1.8, 12),
+    new THREE.MeshStandardMaterial({ color: 0x4682b4, roughness: 0.8 })
+  );
+  body.position.y = 0.9;
+  body.castShadow = true;
+  npc.add(body);
+  
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.5, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xf0c8a0, roughness: 0.7 })
+  );
+  head.position.y = 2.2;
+  head.castShadow = true;
+  npc.add(head);
+  
+  const iceCrown = new THREE.Mesh(
+    new THREE.TorusGeometry(0.6, 0.1, 8, 12),
+    new THREE.MeshStandardMaterial({ 
+      color: 0x00ffff,
+      emissive: 0x00ffff,
+      emissiveIntensity: 0.3,
+      roughness: 0.1,
+      metalness: 0.9
+    })
+  );
+  iceCrown.position.y = 2.6;
+  iceCrown.rotation.x = Math.PI / 2;
+  npc.add(iceCrown);
+  
+  const robe = new THREE.Mesh(
+    new THREE.ConeGeometry(0.9, 1.5, 12),
+    new THREE.MeshStandardMaterial({ color: 0x191970, roughness: 0.7 })
+  );
+  robe.position.y = 0.3;
+  npc.add(robe);
+  
+  return npc;
+}
+
+/* FISH MODELS - TROPICAL */
+const tropicalFishModels = {};
 
 // Clownfish
 const clownfishGeometry = new THREE.ConeGeometry(0.5, 1.5, 8);
 clownfishGeometry.rotateX(Math.PI / 2);
-fishModels.Clownfish = new THREE.Mesh(clownfishGeometry, new THREE.MeshStandardMaterial({color: 0xFF6B35, roughness: 0.4}));
+tropicalFishModels.Clownfish = new THREE.Mesh(clownfishGeometry, new THREE.MeshStandardMaterial({color: 0xFF6B35, roughness: 0.4}));
 
 // Tuna
 const tunaGeometry = new THREE.CapsuleGeometry(0.3, 1.2, 4, 8);
 tunaGeometry.rotateZ(Math.PI / 2);
-fishModels.Tuna = new THREE.Mesh(tunaGeometry, new THREE.MeshStandardMaterial({color: 0x4682B4, roughness: 0.3}));
+tropicalFishModels.Tuna = new THREE.Mesh(tunaGeometry, new THREE.MeshStandardMaterial({color: 0x4682B4, roughness: 0.3}));
 
 // Shark
 const sharkGeometry = new THREE.ConeGeometry(0.4, 2.0, 8);
 sharkGeometry.rotateX(Math.PI / 2);
-fishModels.Shark = new THREE.Mesh(sharkGeometry, new THREE.MeshStandardMaterial({color: 0x708090, roughness: 0.5}));
+tropicalFishModels.Shark = new THREE.Mesh(sharkGeometry, new THREE.MeshStandardMaterial({color: 0x708090, roughness: 0.5}));
 
 // Pufferfish
 const pufferfishGeometry = new THREE.SphereGeometry(0.6, 16, 16);
-fishModels.Pufferfish = new THREE.Mesh(pufferfishGeometry, new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7}));
+tropicalFishModels.Pufferfish = new THREE.Mesh(pufferfishGeometry, new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7}));
 
 // Sea Turtle
 const turtleGeometry = new THREE.BoxGeometry(1.2, 0.4, 1.5);
-fishModels.SeaTurtle = new THREE.Mesh(turtleGeometry, new THREE.MeshStandardMaterial({color: 0x228B22, roughness: 0.6}));
+tropicalFishModels.SeaTurtle = new THREE.Mesh(turtleGeometry, new THREE.MeshStandardMaterial({color: 0x228B22, roughness: 0.6}));
 
 // Manta Ray
 const mantaGeometry = new THREE.ConeGeometry(1.5, 0.3, 4);
 mantaGeometry.rotateX(Math.PI / 2);
-fishModels.MantaRay = new THREE.Mesh(mantaGeometry, new THREE.MeshStandardMaterial({color: 0x483D8B, roughness: 0.4}));
+tropicalFishModels.MantaRay = new THREE.Mesh(mantaGeometry, new THREE.MeshStandardMaterial({color: 0x483D8B, roughness: 0.4}));
 
 // Great White Shark
 const greatWhiteGeometry = new THREE.ConeGeometry(0.6, 3.0, 12);
 greatWhiteGeometry.rotateX(Math.PI / 2);
-fishModels.GreatWhiteShark = new THREE.Mesh(greatWhiteGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.3}));
+tropicalFishModels.GreatWhiteShark = new THREE.Mesh(greatWhiteGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.3}));
 
 // Terrorshark
 const terrorsharkGeometry = new THREE.ConeGeometry(0.8, 3.5, 12);
 terrorsharkGeometry.rotateX(Math.PI / 2);
-fishModels.Terrorshark = new THREE.Mesh(terrorsharkGeometry, new THREE.MeshStandardMaterial({color: 0xFF0000, roughness: 0.2}));
+tropicalFishModels.Terrorshark = new THREE.Mesh(terrorsharkGeometry, new THREE.MeshStandardMaterial({color: 0xFF0000, roughness: 0.2}));
 
 // Megalodon
 const megalodonGeometry = new THREE.ConeGeometry(1.2, 5.0, 16);
 megalodonGeometry.rotateX(Math.PI / 2);
-fishModels.Megalodon = new THREE.Mesh(megalodonGeometry, new THREE.MeshStandardMaterial({color: 0x2F4F4F, roughness: 0.4}));
+tropicalFishModels.Megalodon = new THREE.Mesh(megalodonGeometry, new THREE.MeshStandardMaterial({color: 0x2F4F4F, roughness: 0.4}));
 
 // Kraken
 const krakenGeometry = new THREE.SphereGeometry(1.0, 32, 32);
@@ -762,24 +1112,72 @@ for(let i = 0; i < 8; i++) {
   tentacleMesh.position.set(Math.cos(i * Math.PI / 4) * 1.2, 0, Math.sin(i * Math.PI / 4) * 1.2);
   krakenGeometry.merge(tentacleMesh.geometry, tentacleMesh.matrix);
 }
-fishModels.Kraken = new THREE.Mesh(krakenGeometry, new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.6}));
+tropicalFishModels.Kraken = new THREE.Mesh(krakenGeometry, new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.6}));
 
-Object.values(fishModels).forEach(fish => {
+/* FISH MODELS - SNOWY */
+const snowyFishModels = {};
+
+// Arctic Char
+const arcticCharGeometry = new THREE.ConeGeometry(0.4, 1.2, 8);
+arcticCharGeometry.rotateX(Math.PI / 2);
+snowyFishModels.ArcticChar = new THREE.Mesh(arcticCharGeometry, new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.3}));
+
+// Snow Trout
+const snowTroutGeometry = new THREE.CapsuleGeometry(0.25, 1.0, 4, 8);
+snowTroutGeometry.rotateZ(Math.PI / 2);
+snowyFishModels.SnowTrout = new THREE.Mesh(snowTroutGeometry, new THREE.MeshStandardMaterial({color: 0xB0E0E6, roughness: 0.4}));
+
+// Ice Shark
+const iceSharkGeometry = new THREE.ConeGeometry(0.5, 2.2, 8);
+iceSharkGeometry.rotateX(Math.PI / 2);
+snowyFishModels.IceShark = new THREE.Mesh(iceSharkGeometry, new THREE.MeshStandardMaterial({color: 0xADD8E6, roughness: 0.2}));
+
+// Frost Puffer
+const frostPufferGeometry = new THREE.SphereGeometry(0.7, 16, 16);
+snowyFishModels.FrostPuffer = new THREE.Mesh(frostPufferGeometry, new THREE.MeshStandardMaterial({color: 0xE0FFFF, roughness: 0.6}));
+
+// Glacier Whale
+const glacierWhaleGeometry = new THREE.CapsuleGeometry(0.8, 3.5, 8, 16);
+glacierWhaleGeometry.rotateZ(Math.PI / 2);
+snowyFishModels.GlacierWhale = new THREE.Mesh(glacierWhaleGeometry, new THREE.MeshStandardMaterial({color: 0xF0F8FF, roughness: 0.5}));
+
+// Yeti Crab
+const yetiCrabGeometry = new THREE.BoxGeometry(1.0, 0.5, 1.2);
+snowyFishModels.YetiCrab = new THREE.Mesh(yetiCrabGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.8}));
+
+// Ice Dragon (special fish)
+const iceDragonGeometry = new THREE.ConeGeometry(0.7, 4.0, 12);
+iceDragonGeometry.rotateX(Math.PI / 2);
+snowyFishModels.IceDragon = new THREE.Mesh(iceDragonGeometry, new THREE.MeshStandardMaterial({
+  color: 0x00FFFF,
+  emissive: 0x00FFFF,
+  emissiveIntensity: 0.3,
+  roughness: 0.1,
+  metalness: 0.8
+}));
+
+// Make all fish cast shadows
+Object.values(tropicalFishModels).forEach(fish => {
   fish.castShadow = true;
   fish.receiveShadow = true;
 });
 
-/* ENHANCED TREES WITH MULTIPLE LAYERS */
+Object.values(snowyFishModels).forEach(fish => {
+  fish.castShadow = true;
+  fish.receiveShadow = true;
+});
+
+/* ENHANCED TREES */
 const vegetation = new THREE.Group();
 
-function createTree(x, z) {
+function createTree(x, z, isSnowy = false) {
   const tree = new THREE.Group();
   
-  // Trunk with bark texture
+  // Trunk
   const trunk = new THREE.Mesh(
     new THREE.CylinderGeometry(0.5, 0.7, 9, 12),
     new THREE.MeshStandardMaterial({ 
-      color: 0x8b5a2b,
+      color: isSnowy ? 0x8B7355 : 0x8b5a2b,
       roughness: 0.9,
       metalness: 0
     })
@@ -788,63 +1186,82 @@ function createTree(x, z) {
   trunk.castShadow = true;
   tree.add(trunk);
   
-  // Multiple layers of leaves with different greens
-  const leafColors = [0x1e7a1e, 0x2d9e2d, 0x3cb371];
-  
-  // Bottom layer - largest and darkest
-  const leaves1 = new THREE.Mesh(
-    new THREE.ConeGeometry(4.0, 3.5, 12),
-    new THREE.MeshStandardMaterial({ 
-      color: leafColors[0],
-      roughness: 0.8,
-      metalness: 0
-    })
-  );
-  leaves1.position.y = 8;
-  leaves1.castShadow = true;
-  tree.add(leaves1);
-  
-  // Middle layer - medium
-  const leaves2 = new THREE.Mesh(
-    new THREE.ConeGeometry(3.2, 3.0, 12),
-    new THREE.MeshStandardMaterial({ 
-      color: leafColors[1],
-      roughness: 0.8,
-      metalness: 0
-    })
-  );
-  leaves2.position.y = 10;
-  leaves2.castShadow = true;
-  tree.add(leaves2);
-  
-  // Top layer - smallest and lightest
-  const leaves3 = new THREE.Mesh(
-    new THREE.ConeGeometry(2.4, 2.5, 12),
-    new THREE.MeshStandardMaterial({ 
-      color: leafColors[2],
-      roughness: 0.8,
-      metalness: 0
-    })
-  );
-  leaves3.position.y = 11.5;
-  leaves3.castShadow = true;
-  tree.add(leaves3);
-  
-  // Palm trees for tropical look
-  if(Math.random() > 0.7) {
-    for(let i = 0; i < 4; i++) {
-      const palmLeaf = new THREE.Mesh(
-        new THREE.ConeGeometry(0.1, 3, 6),
-        new THREE.MeshStandardMaterial({ color: 0x228B22 })
-      );
-      palmLeaf.position.set(
-        Math.cos(i * Math.PI / 2) * 2,
-        9,
-        Math.sin(i * Math.PI / 2) * 2
-      );
-      palmLeaf.rotation.x = Math.PI / 4;
-      tree.add(palmLeaf);
+  if(isSnowy) {
+    // Snowy tree - pine style
+    const pineLayers = 4;
+    for(let i = 0; i < pineLayers; i++) {
+      const size = 3.5 - (i * 0.7);
+      const height = 2.5 - (i * 0.4);
+      const yPos = 6 + (i * 1.8);
+      
+      const pineGeometry = new THREE.ConeGeometry(size, height, 8);
+      const pineMaterial = new THREE.MeshStandardMaterial({
+        color: 0x2E8B57,
+        roughness: 0.8,
+        metalness: 0
+      });
+      const pineLayer = new THREE.Mesh(pineGeometry, pineMaterial);
+      pineLayer.position.y = yPos;
+      pineLayer.castShadow = true;
+      tree.add(pineLayer);
+      
+      // Snow on branches
+      const snowGeometry = new THREE.SphereGeometry(size * 0.3, 8, 6);
+      const snowMaterial = new THREE.MeshStandardMaterial({
+        color: 0xFFFFFF,
+        roughness: 0.9,
+        metalness: 0
+      });
+      for(let j = 0; j < 4; j++) {
+        const snow = new THREE.Mesh(snowGeometry, snowMaterial);
+        const angle = (j / 4) * Math.PI * 2;
+        snow.position.set(
+          Math.cos(angle) * size * 0.7,
+          yPos - 0.5,
+          Math.sin(angle) * size * 0.7
+        );
+        tree.add(snow);
+      }
     }
+  } else {
+    // Tropical tree
+    const leafColors = [0x1e7a1e, 0x2d9e2d, 0x3cb371];
+    
+    const leaves1 = new THREE.Mesh(
+      new THREE.ConeGeometry(4.0, 3.5, 12),
+      new THREE.MeshStandardMaterial({ 
+        color: leafColors[0],
+        roughness: 0.8,
+        metalness: 0
+      })
+    );
+    leaves1.position.y = 8;
+    leaves1.castShadow = true;
+    tree.add(leaves1);
+    
+    const leaves2 = new THREE.Mesh(
+      new THREE.ConeGeometry(3.2, 3.0, 12),
+      new THREE.MeshStandardMaterial({ 
+        color: leafColors[1],
+        roughness: 0.8,
+        metalness: 0
+      })
+    );
+    leaves2.position.y = 10;
+    leaves2.castShadow = true;
+    tree.add(leaves2);
+    
+    const leaves3 = new THREE.Mesh(
+      new THREE.ConeGeometry(2.4, 2.5, 12),
+      new THREE.MeshStandardMaterial({ 
+        color: leafColors[2],
+        roughness: 0.8,
+        metalness: 0
+      })
+    );
+    leaves3.position.y = 11.5;
+    leaves3.castShadow = true;
+    tree.add(leaves3);
   }
   
   tree.position.set(x, 1.5, z);
@@ -852,13 +1269,12 @@ function createTree(x, z) {
   return tree;
 }
 
-// Place trees around the island
+// Place tropical trees
 for(let i = 0; i < 15; i++) {
   const angle = Math.random() * Math.PI * 2;
   const radius = 10 + Math.random() * 12;
-  const tree = createTree(Math.cos(angle) * radius, Math.sin(angle) * radius);
+  const tree = createTree(Math.cos(angle) * radius, Math.sin(angle) * radius, false);
   
-  // Check distance from NPCs
   const distFromFisherman = Math.sqrt(
     Math.pow(tree.position.x - fisherman.position.x, 2) +
     Math.pow(tree.position.z - fisherman.position.z, 2)
@@ -876,7 +1292,7 @@ for(let i = 0; i < 15; i++) {
 
 scene.add(vegetation);
 
-/* ENHANCED WATER EFFECTS WITH OCEAN PARTICLES */
+/* ENHANCED WATER EFFECTS */
 const waterCanvas = document.getElementById('waterCanvas');
 const waterCtx = waterCanvas.getContext('2d');
 waterCanvas.width = window.innerWidth;
@@ -951,7 +1367,7 @@ function animateWater() {
   waterCtx.clearRect(0, 0, waterCanvas.width, waterCanvas.height);
   
   // Draw water surface effect
-  waterCtx.fillStyle = 'rgba(30, 144, 255, 0.05)';
+  waterCtx.fillStyle = currentIsland === 'tropical' ? 'rgba(30, 144, 255, 0.05)' : 'rgba(135, 206, 250, 0.05)';
   waterCtx.fillRect(0, 0, waterCanvas.width, waterCanvas.height);
   
   // Draw ocean ripples
@@ -999,6 +1415,7 @@ addEventListener("touchstart", e => {
     e.target.id === "book" || e.target.closest("#shop") || 
     e.target.closest("#upgradesShop") || e.target.closest("#rules") || 
     e.target.closest("#login") || e.target.closest("#fishPreview") ||
+    e.target.closest("#snowyShop") || e.target.closest("#snowyUpgradesShop") ||
     e.target.id === "fishButton") return;
  looking = true;
  lastX = e.touches[0].clientX;
@@ -1055,8 +1472,8 @@ let playerLevel = 1;
 let playerExp = 0;
 let expToNextLevel = 100;
 
-// Fish XP values (rarer fish = more XP)
-const fishXP = {
+// Fish XP values
+const tropicalFishXP = {
   Clownfish: 5,
   Tuna: 10,
   Shark: 15,
@@ -1069,7 +1486,17 @@ const fishXP = {
   Kraken: 500
 };
 
-const prices = {
+const snowyFishXP = {
+  ArcticChar: 20,
+  SnowTrout: 30,
+  IceShark: 75,
+  FrostPuffer: 100,
+  GlacierWhale: 300,
+  YetiCrab: 500,
+  IceDragon: 1000
+};
+
+const tropicalPrices = {
   Clownfish: 5, 
   Tuna: 10, 
   Shark: 25, 
@@ -1082,15 +1509,27 @@ const prices = {
   Kraken: 5000
 };
 
-// Calculate XP needed for next level (exponential scaling)
+const snowyPrices = {
+  ArcticChar: 100,
+  SnowTrout: 200,
+  IceShark: 500,
+  FrostPuffer: 750,
+  GlacierWhale: 2500,
+  YetiCrab: 5000,
+  IceDragon: 10000
+};
+
+// Calculate XP needed for next level
 function getExpForLevel(level) {
-  // Base 100, increases by 20% each level
   return Math.floor(100 * Math.pow(1.2, level - 1));
 }
 
 // Add XP and check for level up
 function addXP(fishName) {
-  const xpGained = fishXP[fishName] || 0;
+  const xpGained = currentIsland === 'tropical' ? 
+    (tropicalFishXP[fishName] || 0) : 
+    (snowyFishXP[fishName] || 0);
+  
   playerExp += xpGained;
   
   // Show XP gain message
@@ -1164,7 +1603,6 @@ function updateStats() {
 }
 
 /* ENHANCED INVENTORY SYSTEM */
-// Start with 9 slots
 let inventory = ["Rod", "", "", "", "", "", "", "", ""];
 let selected = 0;
 const inv = document.getElementById("inventory");
@@ -1174,7 +1612,8 @@ let lastTapTime = 0;
 let playerUpgrades = {
   biggerButton: false,
   fasterFishing: false,
-  autoTap: false
+  autoTap: false,
+  doubleTaps: false
 };
 
 // Parse item stacks
@@ -1216,12 +1655,16 @@ function slotTap(index) {
   renderInv();
   updateRod();
 
-  if(!name || name === "Rod" || name === "Sun Rod" || name === "Moon Rod" || name === "Ocean Rod") return;
+  if(!name || name.includes("Rod")) return;
 
   const now = Date.now();
   if(lastTapTime && now - lastTapTime < 500 && selected === index) {
     // Double tap → sell
-    money += (prices[name] || 0) * count;
+    const price = currentIsland === 'tropical' ? 
+      (tropicalPrices[name] || 0) : 
+      (snowyPrices[name] || 0);
+    
+    money += price * count;
     document.getElementById("money").textContent = `$${money}`;
     inventory[index] = "";
     renderInv();
@@ -1257,8 +1700,16 @@ function showFishPreview(fishName, count) {
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
   previewScene.add(ambientLight);
   
-  // Clone fish model
-  const fishModel = fishModels[fishName].clone();
+  // Get correct fish model based on current island
+  let fishModel;
+  if(currentIsland === 'tropical') {
+    fishModel = tropicalFishModels[fishName] ? tropicalFishModels[fishName].clone() : null;
+  } else {
+    fishModel = snowyFishModels[fishName] ? snowyFishModels[fishName].clone() : null;
+  }
+  
+  if(!fishModel) return;
+  
   previewScene.add(fishModel);
   
   // Animate preview
@@ -1273,12 +1724,21 @@ function showFishPreview(fishName, count) {
   
   // Show preview
   fishPreview.style.display = 'block';
+  
+  const price = currentIsland === 'tropical' ? 
+    (tropicalPrices[fishName] || 0) : 
+    (snowyPrices[fishName] || 0);
+  
+  const xpValue = currentIsland === 'tropical' ? 
+    (tropicalFishXP[fishName] || 0) : 
+    (snowyFishXP[fishName] || 0);
+  
   document.getElementById('fishStats').innerHTML = `
     <div style="margin:10px 0;color:gold;font-size:16px">
       <b>${fishName}</b><br>
       Quantity: ${count}<br>
-      Value: $${prices[fishName] * count}<br>
-      XP Value: ${fishXP[fishName] || 0} XP<br>
+      Value: $${price * count}<br>
+      XP Value: ${xpValue} XP<br>
       <small style="color:#ccc">Double tap to sell all</small>
     </div>
   `;
@@ -1320,9 +1780,11 @@ function expandInventory(slots = 3) {
 let rod = null;
 function updateRod() {
   const currentRod = inventory[selected];
-  const rodTypes = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
+  const tropicalRodTypes = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
+  const snowyRodTypes = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
+  const allRodTypes = tropicalRodTypes.concat(snowyRodTypes);
   
-  if(rodTypes.includes(currentRod)) {
+  if(allRodTypes.includes(currentRod)) {
     if(!rod) {
       rod = new THREE.Mesh(
         new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8),
@@ -1347,6 +1809,18 @@ function updateRod() {
         color = 0x00bfff; 
         emissive = 0x0088cc;
         break;
+      case "Glacier Rod":
+        color = 0x87CEEB;
+        emissive = 0x00BFFF;
+        break;
+      case "Frostfire Rod":
+        color = 0xFF6347;
+        emissive = 0xFF4500;
+        break;
+      case "Aurora Rod":
+        color = 0x9370DB;
+        emissive = 0xBA55D3;
+        break;
       default: 
         color = 0x8b4513; 
         emissive = 0x000000;
@@ -1354,10 +1828,99 @@ function updateRod() {
     
     rod.material.color.set(color);
     rod.material.emissive = new THREE.Color(emissive);
-    rod.material.emissiveIntensity = currentRod !== "Rod" ? 0.3 : 0;
+    rod.material.emissiveIntensity = currentRod !== "Rod" ? 0.5 : 0;
+    
+    // Check if Ocean Rod unlocks portal
+    if(currentRod === "Ocean Rod" && !portalUnlocked) {
+      unlockPortal();
+    }
   } else if(rod) {
     camera.remove(rod);
     rod = null;
+  }
+}
+
+/* PORTAL SYSTEM */
+function unlockPortal() {
+  portalUnlocked = true;
+  portal = createPortal();
+  scene.add(portal.group);
+  
+  // Show portal unlocked message
+  document.getElementById("portalWarning").style.display = "block";
+  
+  savePlayerData();
+}
+
+function usePortal() {
+  if(!portalUnlocked || !portal) return;
+  
+  // Calculate distance to portal
+  const distance = Math.sqrt(
+    Math.pow(player.position.x - portal.group.position.x, 2) +
+    Math.pow(player.position.z - portal.group.position.z, 2)
+  );
+  
+  if(distance < 5) {
+    // Switch islands
+    if(currentIsland === 'tropical') {
+      // Go to snowy island
+      scene.remove(tropicalIsland);
+      scene.remove(fisherman);
+      scene.remove(upgradesNPC);
+      scene.remove(vegetation);
+      
+      scene.add(snowyIsland);
+      
+      // Create snowy NPCs if not already created
+      if(!snowyFisherman) {
+        snowyFisherman = createSnowyFisherman();
+      }
+      if(!snowyUpgradesNPC) {
+        snowyUpgradesNPC = createSnowyUpgradesNPC();
+      }
+      
+      scene.add(snowyFisherman);
+      scene.add(snowyUpgradesNPC);
+      
+      // Update ocean color
+      ocean.material.color.set(0x87CEEB);
+      
+      currentIsland = 'snowy';
+      
+      msg.style.display = "block";
+      msg.textContent = "❄️ Welcome to the Snowy Island!";
+      msg.style.color = "#a0d2ff";
+      setTimeout(() => msg.style.display = "none", 2000);
+    } else {
+      // Go back to tropical island
+      scene.remove(snowyIsland);
+      scene.remove(snowyFisherman);
+      scene.remove(snowyUpgradesNPC);
+      
+      scene.add(tropicalIsland);
+      scene.add(fisherman);
+      scene.add(upgradesNPC);
+      scene.add(vegetation);
+      
+      // Update ocean color
+      ocean.material.color.set(0x1e90ff);
+      
+      currentIsland = 'tropical';
+      
+      msg.style.display = "block";
+      msg.textContent = "🌴 Welcome back to the Tropical Island!";
+      msg.style.color = "#4CAF50";
+      setTimeout(() => msg.style.display = "none", 2000);
+    }
+    
+    // Update shops
+    shop.style.display = "none";
+    upgradesShop.style.display = "none";
+    snowyShop.style.display = "none";
+    snowyUpgradesShop.style.display = "none";
+    
+    savePlayerData();
   }
 }
 
@@ -1369,47 +1932,86 @@ addEventListener("touchstart", e => {
  touchVec.y = -(e.touches[0].clientY / innerHeight) * 2 + 1;
  raycaster.setFromCamera(touchVec, camera);
  
- // Check if clicking on NPCs
- let hitFisherman = false;
- let hitUpgradesNPC = false;
- 
- const intersects = raycaster.intersectObjects([fisherman, upgradesNPC], true);
- intersects.forEach(intersect => {
-   if(fisherman.children.includes(intersect.object) || intersect.object === fisherman) {
-     hitFisherman = true;
+ if(currentIsland === 'tropical') {
+   // Check tropical NPCs
+   let hitFisherman = false;
+   let hitUpgradesNPC = false;
+   
+   const intersects = raycaster.intersectObjects([fisherman, upgradesNPC], true);
+   intersects.forEach(intersect => {
+     if(fisherman.children.includes(intersect.object) || intersect.object === fisherman) {
+       hitFisherman = true;
+     }
+     if(upgradesNPC.children.includes(intersect.object) || intersect.object === upgradesNPC) {
+       hitUpgradesNPC = true;
+     }
+   });
+   
+   if(hitFisherman) {
+     shop.style.display = "block";
+     const dialogues = [
+       "Welcome back! Need some gear?",
+       "Ah, a fellow angler! What can I get you?",
+       "The fish are biting today!",
+       "I've got the best rods on the island!"
+     ];
+     document.getElementById("shopDialogue").textContent = `"${dialogues[Math.floor(Math.random() * dialogues.length)]}"`;
    }
-   if(upgradesNPC.children.includes(intersect.object) || intersect.object === upgradesNPC) {
-     hitUpgradesNPC = true;
+   
+   if(hitUpgradesNPC) {
+     upgradesShop.style.display = "block";
+     const dialogues = [
+       "Seeking power? I have just what you need!",
+       "Enhance your fishing with my magical upgrades!",
+       "Make fishing easier with these enchantments!",
+       "Upgrade your abilities for greater catches!"
+     ];
+     document.getElementById("upgradesDialogue").textContent = `"${dialogues[Math.floor(Math.random() * dialogues.length)]}"`;
+     updateUpgradeButtons();
    }
- });
- 
- if(hitFisherman) {
-   shop.style.display = "block";
-   const dialogues = [
-     "Welcome back! Need some gear?",
-     "Ah, a fellow angler! What can I get you?",
-     "The fish are biting today!",
-     "I've got the best rods on the island!"
-   ];
-   const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
-   document.querySelector("#shop p").textContent = `"${randomDialogue}"`;
+ } else {
+   // Check snowy NPCs
+   if(!snowyFisherman || !snowyUpgradesNPC) return;
+   
+   let hitSnowyFisherman = false;
+   let hitSnowyUpgradesNPC = false;
+   
+   const intersects = raycaster.intersectObjects([snowyFisherman, snowyUpgradesNPC], true);
+   intersects.forEach(intersect => {
+     if(snowyFisherman.children.includes(intersect.object) || intersect.object === snowyFisherman) {
+       hitSnowyFisherman = true;
+     }
+     if(snowyUpgradesNPC.children.includes(intersect.object) || intersect.object === snowyUpgradesNPC) {
+       hitSnowyUpgradesNPC = true;
+     }
+   });
+   
+   if(hitSnowyFisherman) {
+     snowyShop.style.display = "block";
+     const dialogues = [
+       "Brrr... It's cold here! Need special gear?",
+       "Fishing in icy waters requires special rods!",
+       "The fish here are worth more but harder to catch!",
+       "Welcome to the frozen fishing grounds!"
+     ];
+     document.getElementById("snowyShopDialogue").textContent = `"${dialogues[Math.floor(Math.random() * dialogues.length)]}"`;
+   }
+   
+   if(hitSnowyUpgradesNPC) {
+     snowyUpgradesShop.style.display = "block";
+   }
  }
  
- if(hitUpgradesNPC) {
-   upgradesShop.style.display = "block";
-   const dialogues = [
-     "Seeking power? I have just what you need!",
-     "Enhance your fishing with my magical upgrades!",
-     "Make fishing easier with these enchantments!",
-     "Upgrade your abilities for greater catches!"
-   ];
-   const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
-   document.querySelector("#upgradesShop p").textContent = `"${randomDialogue}"`;
-   updateUpgradeButtons();
+ // Check portal click
+ if(portalUnlocked && portal) {
+   const portalIntersects = raycaster.intersectObject(portal.group, true);
+   if(portalIntersects.length > 0) {
+     usePortal();
+   }
  }
 });
 
-/* SHOP BUTTONS */
+/* TROPICAL SHOP BUTTONS */
 document.getElementById('buySunRod').onclick = () => {
  if(money < 1000) return alert("Not enough money");
  for(let i = 0; i < inventory.length; i++) {
@@ -1499,10 +2101,101 @@ document.getElementById('openUpgrades').onclick = () => {
   updateUpgradeButtons();
 };
 
+/* SNOWY SHOP BUTTONS */
+document.getElementById('buyGlacierRod').onclick = () => {
+ if(money < 500000) return alert("Not enough money");
+ for(let i = 0; i < inventory.length; i++) {
+  if(inventory[i].includes("Rod")) {
+    inventory[i] = "Glacier Rod"; 
+    renderInv(); 
+    money -= 500000; 
+    updateStats();
+    savePlayerData();
+    return;
+  }
+ }
+ for(let i = 0; i < inventory.length; i++) {
+  if(inventory[i] === "") {
+    inventory[i] = "Glacier Rod"; 
+    money -= 500000; 
+    updateStats();
+    renderInv(); 
+    savePlayerData();
+    return;
+  }
+ }
+ alert("Inventory full!");
+};
+
+document.getElementById('buyFrostfireRod').onclick = () => {
+ if(money < 2000000) return alert("Not enough money");
+ for(let i = 0; i < inventory.length; i++) {
+  if(inventory[i].includes("Rod")) {
+    inventory[i] = "Frostfire Rod"; 
+    renderInv(); 
+    money -= 2000000; 
+    updateStats();
+    savePlayerData();
+    return;
+  }
+ }
+ for(let i = 0; i < inventory.length; i++) {
+  if(inventory[i] === "") {
+    inventory[i] = "Frostfire Rod"; 
+    money -= 2000000; 
+    updateStats();
+    renderInv(); 
+    savePlayerData();
+    return;
+  }
+ }
+ alert("Inventory full!");
+};
+
+document.getElementById('buyAuroraRod').onclick = () => {
+ if(money < 10000000) return alert("Not enough money");
+ for(let i = 0; i < inventory.length; i++) {
+  if(inventory[i].includes("Rod")) {
+    inventory[i] = "Aurora Rod"; 
+    renderInv(); 
+    money -= 10000000; 
+    updateStats();
+    savePlayerData();
+    return;
+  }
+ }
+ for(let i = 0; i < inventory.length; i++) {
+  if(inventory[i] === "") {
+    inventory[i] = "Aurora Rod"; 
+    money -= 10000000; 
+    updateStats();
+    renderInv(); 
+    savePlayerData();
+    return;
+  }
+ }
+ alert("Inventory full!");
+};
+
+document.getElementById('buySnowyInventory').onclick = () => {
+  if(money < 2000) return alert("Not enough money");
+  money -= 2000;
+  updateStats();
+  expandInventory(5);
+  savePlayerData();
+};
+
+document.getElementById('openSnowyUpgrades').onclick = () => {
+  snowyShop.style.display = "none";
+  snowyUpgradesShop.style.display = "block";
+};
+
 /* UPGRADES SHOP BUTTONS */
 function updateUpgradeButtons() {
   const biggerBtn = document.getElementById('buyBiggerButton');
   const fasterBtn = document.getElementById('buyFasterFishing');
+  const autoTapBtn = document.getElementById('buyAutoTap');
+  const doubleTapsBtn = document.getElementById('buyDoubleTaps');
   
   if(playerUpgrades.biggerButton) {
     biggerBtn.innerHTML = `
@@ -1522,6 +2215,26 @@ function updateUpgradeButtons() {
     `;
     fasterBtn.disabled = true;
     fasterBtn.style.opacity = "0.7";
+  }
+  
+  if(playerUpgrades.autoTap) {
+    autoTapBtn.innerHTML = `
+      <div style="font-weight:bold;color:lightgreen">✓ Auto-Tap</div>
+      <div class="upgrade-desc">Automatically taps 3 buttons for you</div>
+      <div style="font-size:12px;color:lightgreen">PURCHASED</div>
+    `;
+    autoTapBtn.disabled = true;
+    autoTapBtn.style.opacity = "0.7";
+  }
+  
+  if(playerUpgrades.doubleTaps) {
+    doubleTapsBtn.innerHTML = `
+      <div style="font-weight:bold;color:lightgreen">✓ Double Taps</div>
+      <div class="upgrade-desc">Each tap counts as 2</div>
+      <div style="font-size:12px;color:lightgreen">PURCHASED</div>
+    `;
+    doubleTapsBtn.disabled = true;
+    doubleTapsBtn.style.opacity = "0.7";
   }
 }
 
@@ -1565,14 +2278,61 @@ document.getElementById('buyFasterFishing').onclick = () => {
   savePlayerData();
 };
 
+document.getElementById('buyAutoTap').onclick = () => {
+  if(playerUpgrades.autoTap) return;
+  if(money < 50000) return alert("Not enough money!");
+  
+  money -= 50000;
+  updateStats();
+  playerUpgrades.autoTap = true;
+  
+  msg.style.display = "block";
+  msg.textContent = "✓ Auto-Tap Purchased!";
+  msg.style.color = "lightgreen";
+  setTimeout(() => {
+    msg.style.display = "none";
+    msg.style.color = "white";
+  }, 2000);
+  
+  updateUpgradeButtons();
+  savePlayerData();
+};
+
+document.getElementById('buyDoubleTaps').onclick = () => {
+  if(playerUpgrades.doubleTaps) return;
+  if(money < 100000) return alert("Not enough money!");
+  
+  money -= 100000;
+  updateStats();
+  playerUpgrades.doubleTaps = true;
+  
+  msg.style.display = "block";
+  msg.textContent = "✓ Double Taps Purchased!";
+  msg.style.color = "lightgreen";
+  setTimeout(() => {
+    msg.style.display = "none";
+    msg.style.color = "white";
+  }, 2000);
+  
+  updateUpgradeButtons();
+  savePlayerData();
+};
+
 /* ===== ENHANCED FISHING SYSTEM ===== */
 let holding = false, holdTime = 0, fishing = false, taps = 0, requiredTaps = 10, fishTimer = null;
 let progressInterval = null;
 
 addEventListener("touchstart", (e) => {
   const currentRod = inventory[selected];
-  if(["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"].includes(currentRod)) {
-    if(!fishing && !joy && !e.target.closest("#shop") && !e.target.closest("#upgradesShop") && !e.target.closest("#rules") && !e.target.closest("#fishPreview") && e.target.id !== "fishButton") {
+  const tropicalRods = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
+  const snowyRods = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
+  const allRods = tropicalRods.concat(snowyRods);
+  
+  if(allRods.includes(currentRod)) {
+    if(!fishing && !joy && !e.target.closest("#shop") && !e.target.closest("#upgradesShop") && 
+       !e.target.closest("#snowyShop") && !e.target.closest("#snowyUpgradesShop") && 
+       !e.target.closest("#rules") && !e.target.closest("#fishPreview") && 
+       e.target.id !== "fishButton") {
       holding = true; 
       holdTime = 0;
       // Show casting progress bar
@@ -1602,8 +2362,8 @@ addEventListener("touchend", () => {
   document.getElementById("castProgress").style.display = "none";
 });
 
-// Base probabilities for Basic Rod
-const baseProbabilities = {
+// Base probabilities for Tropical Island
+const tropicalBaseProbabilities = {
   Kraken: 0.01,
   Terrorshark: 0.02,
   Megalodon: 0.02,
@@ -1616,31 +2376,59 @@ const baseProbabilities = {
   Shark: 0.4134
 };
 
+// Base probabilities for Snowy Island
+const snowyBaseProbabilities = {
+  IceDragon: 0.005,
+  YetiCrab: 0.01,
+  GlacierWhale: 0.02,
+  FrostPuffer: 0.05,
+  IceShark: 0.10,
+  SnowTrout: 0.25,
+  ArcticChar: 0.564
+};
+
 // Rod multiplier system
 const rodMultipliers = {
   "Rod": 1,
   "Sun Rod": 2,
   "Moon Rod": 4,
-  "Ocean Rod": 8
+  "Ocean Rod": 8,
+  "Glacier Rod": 16,
+  "Frostfire Rod": 32,
+  "Aurora Rod": 64
 };
 
 function randomFish(currentRod) {
   const multiplier = rodMultipliers[currentRod] || 1;
   const r = Math.random();
   
+  let probabilities, fishList;
+  
+  if(currentIsland === 'tropical') {
+    probabilities = tropicalBaseProbabilities;
+    fishList = Object.keys(tropicalBaseProbabilities);
+  } else {
+    probabilities = snowyBaseProbabilities;
+    fishList = Object.keys(snowyBaseProbabilities);
+  }
+  
   // Adjust probabilities based on rod multiplier
   let adjustedProbabilities = {};
   let total = 0;
   
-  for(const fish in baseProbabilities) {
-    let prob = baseProbabilities[fish];
+  for(const fish in probabilities) {
+    let prob = probabilities[fish];
     
-    const isRare = ["Kraken", "Terrorshark", "Megalodon", "GreatWhiteShark", "MantaRay", "SeaTurtle"].includes(fish);
-    if(isRare && multiplier > 1) {
-      prob = prob * multiplier;
-      if(prob > 0.5) prob = 0.5;
+    // Apply multiplier to rare fish
+    const isVeryRare = currentIsland === 'tropical' ? 
+      ["Kraken", "Terrorshark", "Megalodon", "GreatWhiteShark", "MantaRay", "SeaTurtle"].includes(fish) :
+      ["IceDragon", "YetiCrab", "GlacierWhale", "FrostPuffer"].includes(fish);
+    
+    if(isVeryRare && multiplier > 1) {
+      prob = prob * Math.sqrt(multiplier);
+      if(prob > 0.3) prob = 0.3;
     } else {
-      prob = prob / Math.pow(multiplier, 0.5);
+      prob = prob / Math.pow(multiplier, 0.3);
     }
     
     adjustedProbabilities[fish] = prob;
@@ -1663,7 +2451,7 @@ function randomFish(currentRod) {
     }
   }
   
-  return "Shark";
+  return currentIsland === 'tropical' ? "Shark" : "ArcticChar";
 }
 
 // Enhanced fish button
@@ -1688,7 +2476,11 @@ function createFishButton() {
 
 function startFishing() {
  const currentRod = inventory[selected];
- if(!["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"].includes(currentRod)) return;
+ const tropicalRods = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
+ const snowyRods = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
+ const allRods = tropicalRods.concat(snowyRods);
+ 
+ if(!allRods.includes(currentRod)) return;
  
  fishing = true;
  holding = false;
@@ -1700,7 +2492,7 @@ function startFishing() {
 
  setTimeout(() => {
    const fish = randomFish(currentRod);
-   const multiplier = rodMultipliers[currentRod];
+   const multiplier = rodMultipliers[currentRod] || 1;
    msg.textContent = `${fish}! Catch it by pressing the button! (Rod: ${multiplier}x)`;
    
    function failFish() {
@@ -1713,15 +2505,28 @@ function startFishing() {
 
    function nextTap() {
      if(taps >= requiredTaps) {
-       const isRare = ["Kraken", "Terrorshark", "GreatWhiteShark", "Megalodon", "MantaRay", "SeaTurtle"].includes(fish);
-       const isUltraRare = ["Kraken", "Terrorshark", "GreatWhiteShark"].includes(fish);
+       const isMythical = fish === "IceDragon" || fish === "Kraken";
+       const isLegendary = fish === "YetiCrab" || fish === "Terrorshark" || fish === "GreatWhiteShark";
+       const isRare = ["GlacierWhale", "FrostPuffer", "Megalodon", "MantaRay", "SeaTurtle"].includes(fish);
        
-       msg.style.color = isUltraRare ? "#ff00ff" : (isRare ? "gold" : "white");
-       msg.style.fontSize = isUltraRare ? "32px" : (isRare ? "28px" : "24px");
-       msg.textContent = (isUltraRare ? "🔥 ULTRA RARE! " : (isRare ? "🎉 RARE! " : "")) + "Caught " + fish + "! 🎣";
+       msg.style.color = isMythical ? "#ff00ff" : (isLegendary ? "gold" : (isRare ? "#00ffff" : "white"));
+       msg.style.fontSize = isMythical ? "32px" : (isLegendary ? "28px" : (isRare ? "26px" : "24px"));
+       msg.textContent = (isMythical ? "🔥 MYTHICAL! " : (isLegendary ? "🌟 LEGENDARY! " : (isRare ? "🎉 RARE! " : ""))) + "Caught " + fish + "! 🎣";
        
        // Add XP for catching fish
        addXP(fish);
+       
+       // Apply Auto-Tap upgrade
+       let autoTaps = 0;
+       if(playerUpgrades.autoTap && taps < requiredTaps) {
+         autoTaps = Math.min(3, requiredTaps - taps);
+         taps += autoTaps;
+       }
+       
+       // Apply Double Taps upgrade
+       if(playerUpgrades.doubleTaps) {
+         taps *= 2;
+       }
        
        // Show fish model briefly
        showFishPreview(fish, 1);
@@ -1737,7 +2542,7 @@ function startFishing() {
          msg.style.display = "none";
          msg.style.color = "white";
          msg.style.fontSize = "22px";
-       }, isUltraRare ? 4000 : 3000);
+       }, isMythical ? 4000 : 3000);
        savePlayerData();
        return;
      }
@@ -1748,7 +2553,8 @@ function startFishing() {
      fishTimer = setTimeout(failFish, timeLimit);
      
      document.getElementById("fishButton").onclick = () => {
-       taps++;
+       // Apply Double Taps upgrade
+       taps += playerUpgrades.doubleTaps ? 2 : 1;
        clearTimeout(fishTimer);
        document.getElementById("fishButton").style.display = "none";
        nextTap();
@@ -1778,9 +2584,35 @@ function loadPlayerData(name) {
   inventory.splice(0, inventory.length, ...(parsed.inventory || inventory));
   selected = parsed.selected || 0;
   if(parsed.upgrades) playerUpgrades = parsed.upgrades;
+  if(parsed.portalUnlocked) portalUnlocked = parsed.portalUnlocked;
+  if(parsed.currentIsland) currentIsland = parsed.currentIsland;
   
   // Calculate XP needed for current level
   expToNextLevel = getExpForLevel(playerLevel);
+  
+  // If portal was unlocked, create it
+  if(portalUnlocked && !portal) {
+    portal = createPortal();
+    scene.add(portal.group);
+  }
+  
+  // If player was on snowy island, load it
+  if(currentIsland === 'snowy') {
+    scene.remove(tropicalIsland);
+    scene.remove(fisherman);
+    scene.remove(upgradesNPC);
+    scene.remove(vegetation);
+    
+    scene.add(snowyIsland);
+    
+    if(!snowyFisherman) snowyFisherman = createSnowyFisherman();
+    if(!snowyUpgradesNPC) snowyUpgradesNPC = createSnowyUpgradesNPC();
+    
+    scene.add(snowyFisherman);
+    scene.add(snowyUpgradesNPC);
+    
+    ocean.material.color.set(0x87CEEB);
+  }
  }
  updateStats();
  renderInv();
@@ -1795,7 +2627,9 @@ function savePlayerData() {
    exp: playerExp,
    inventory,
    selected,
-   upgrades: playerUpgrades
+   upgrades: playerUpgrades,
+   portalUnlocked,
+   currentIsland
  }));
 }
 
@@ -1813,6 +2647,8 @@ setInterval(savePlayerData, 5000);
 /* ===== ENHANCED NPC ANIMATIONS ===== */
 let fishermanTime = 0;
 let upgradesNPCTime = 0;
+let snowyFishermanTime = 0;
+let snowyUpgradesNPCTime = 0;
 
 function animateFisherman() {
   fishermanTime += 0.01;
@@ -1828,6 +2664,60 @@ function animateUpgradesNPC() {
   upgradesNPCTime += 0.01;
   upgradesNPC.position.y = 2 + Math.sin(upgradesNPCTime * 0.5) * 0.03;
   upgradesNPC.rotation.y = Math.sin(upgradesNPCTime * 0.25) * 0.3;
+}
+
+function animateSnowyFisherman() {
+  if(!snowyFisherman) return;
+  snowyFishermanTime += 0.01;
+  snowyFisherman.position.y = 2 + Math.sin(snowyFishermanTime * 0.5) * 0.03;
+  snowyFisherman.rotation.y = Math.sin(snowyFishermanTime * 0.2) * 0.15;
+}
+
+function animateSnowyUpgradesNPC() {
+  if(!snowyUpgradesNPC) return;
+  snowyUpgradesNPCTime += 0.01;
+  snowyUpgradesNPC.position.y = 2 + Math.sin(snowyUpgradesNPCTime * 0.5) * 0.03;
+  snowyUpgradesNPC.rotation.y = Math.sin(snowyUpgradesNPCTime * 0.3) * 0.25;
+}
+
+/* ===== PORTAL ANIMATION ===== */
+let portalTime = 0;
+function animatePortal() {
+  if(!portal) return;
+  
+  portalTime += 0.02;
+  
+  // Rotate ring
+  portal.ring.rotation.y = portalTime * 0.5;
+  
+  // Animate particles
+  const positions = portal.particles.geometry.attributes.position.array;
+  for(let i = 0; i < positions.length; i += 3) {
+    const x = positions[i];
+    const y = positions[i + 1];
+    const z = positions[i + 2];
+    
+    // Spiral motion
+    const radius = Math.sqrt(x*x + z*z);
+    const angle = Math.atan2(z, x) + portalTime * 2;
+    
+    positions[i] = radius * Math.cos(angle);
+    positions[i + 2] = radius * Math.sin(angle);
+    
+    // Bob up and down
+    positions[i + 1] = y + Math.sin(portalTime * 3 + i) * 0.05;
+  }
+  portal.particles.geometry.attributes.position.needsUpdate = true;
+  
+  // Pulse vortex
+  portal.vortex.scale.y = 1 + Math.sin(portalTime * 3) * 0.2;
+  
+  // Color cycle
+  const hue = (portalTime * 20) % 360;
+  const color = new THREE.Color(`hsl(${hue}, 100%, 50%)`);
+  portal.ring.material.emissive = color;
+  portal.particles.material.color = color;
+  portal.vortex.material.emissive = color;
 }
 
 /* ===== ENHANCED MAIN LOOP ===== */
@@ -1868,8 +2758,16 @@ function animate() {
  }
 
  // Animate NPCs
- animateFisherman();
- animateUpgradesNPC();
+ if(currentIsland === 'tropical') {
+   animateFisherman();
+   animateUpgradesNPC();
+ } else {
+   animateSnowyFisherman();
+   animateSnowyUpgradesNPC();
+ }
+ 
+ // Animate portal
+ animatePortal();
 
  renderer.render(scene, camera);
 }
