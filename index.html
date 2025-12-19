@@ -69,6 +69,25 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  transition:transform 0.2s;
 }
 #book:hover{transform:scale(1.1);}
+#secretCode{
+ position:fixed;top:10px;left:70px;
+ font-size:32px;cursor:pointer;
+ z-index:10;
+ background:rgba(0,0,0,.7);
+ border-radius:50%;
+ width:50px;height:50px;
+ display:flex;align-items:center;justify-content:center;
+ border:2px solid #ff00ff;
+ box-shadow:0 0 10px rgba(255,0,255,0.3);
+ transition:transform 0.2s;
+ animation:pulseSecret 2s infinite;
+}
+@keyframes pulseSecret {
+ 0% { transform:scale(1); box-shadow:0 0 10px rgba(255,0,255,0.3); }
+ 50% { transform:scale(1.1); box-shadow:0 0 20px rgba(255,0,255,0.6); }
+ 100% { transform:scale(1); box-shadow:0 0 10px rgba(255,0,255,0.3); }
+}
+#secretCode:hover{transform:scale(1.2);}
 #rules{
  position:fixed;top:50%;left:50%;
  transform:translate(-50%,-50%);
@@ -81,6 +100,8 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  border:3px solid #00a8ff;
  box-shadow:0 0 40px rgba(0,168,255,0.5);
  font-family:'Arial',sans-serif;
+ max-height:80vh;
+ overflow-y:auto;
 }
 #rules h2{
  color:#00a8ff;
@@ -392,6 +413,42 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  margin-bottom: 15px;
  font-size: 24px;
 }
+
+/* SECRET CODE INPUT */
+#secretCodeInput {
+ position: fixed;
+ top: 50%;
+ left: 50%;
+ transform: translate(-50%, -50%);
+ background: linear-gradient(to bottom, rgba(40,0,60,0.95), rgba(80,0,120,0.95));
+ color: white;
+ padding: 30px;
+ border-radius: 15px;
+ text-align: center;
+ border: 3px solid #ff00ff;
+ box-shadow: 0 0 50px #ff00ff;
+ display: none;
+ z-index: 80;
+ width: 90%;
+ max-width: 400px;
+}
+#secretCodeInput h3 {
+ color: #ff00ff;
+ margin-bottom: 15px;
+ font-size: 24px;
+}
+#secretCodeInput input {
+ padding: 12px;
+ font-size: 16px;
+ margin-bottom: 15px;
+ width: 250px;
+ border-radius: 8px;
+ border: 2px solid #ff00ff;
+ background: rgba(0,0,0,0.5);
+ color: white;
+ text-align: center;
+ font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -407,69 +464,137 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 </div>
 
 <div id="book">📘</div>
+<div id="secretCode">🐙</div>
 <div id="rules">
- <h2>Fishing Game Rules</h2>
+ <h2>🎣 FISHING GAME - COMPLETE GUIDE 🎣</h2>
  <div style="text-align:left;line-height:1.6;">
+ <h3 style="color:#4CAF50">🎮 CONTROLS</h3>
  <p>
- 🎮 <b>Controls</b><br>
- • Move with left joystick<br>
- • Swipe screen to look<br>
- • Jump with jump button<br><br>
+ • <b>Movement:</b> Use the left joystick to move around<br>
+ • <b>Camera:</b> Swipe anywhere on screen to look around<br>
+ • <b>Jump:</b> Press the green JUMP button<br>
+ • <b>Interact:</b> Walk up to NPCs or objects and tap them
+ </p>
+ 
+ <h3 style="color:#00a8ff">🎣 FISHING MECHANICS</h3>
+ <p>
+ <b>Step 1 - Equip Rod:</b><br>
+ • Select a fishing rod from your inventory<br>
+ • You start with a Basic Rod<br>
+ • Better rods = better fish chances<br><br>
 
- 🎣 <b>Fishing</b><br>
- • Equip Rod from inventory<br>
- • Hold screen 2 seconds to cast<br>
- • Wait for fish<br>
- • A "Press Here" button will spawn randomly<br>
- • Tap it within 1 second, 10 times to catch the fish<br><br>
+ <b>Step 2 - Cast Line:</b><br>
+ • Hold your finger anywhere on screen for 2 seconds<br>
+ • Progress bar will show casting progress<br>
+ • Release when bar is full to cast<br><br>
 
- 🌴 <b>Tropical Island Fish</b><br>
- • Clownfish – ~25%<br>
- • Tuna – ~25%<br>
- • Shark – ~50%<br>
- • Pufferfish – 1/3<br>
- • Sea Turtle – 1/5<br>
- • Manta Ray – 1/25<br>
- • Great White Shark – 1/75<br>
- • Terrorshark – 1/50<br>
- • Megalodon – 1/50<br>
- • Kraken – 1/100<br><br>
+ <b>Step 3 - Catch Fish:</b><br>
+ • Wait for fish to bite (1-2.5 seconds)<br>
+ • A "PRESS HERE" button will appear randomly<br>
+ • Tap it within 1 second<br>
+ • Repeat 10 times to catch the fish<br>
+ • Rarer fish are harder to catch!
+ </p>
+ 
+ <h3 style="color:#FF9800">🐟 FISH TYPES & VALUES</h3>
+ <p>
+ <b>🌴 TROPICAL ISLAND FISH:</b><br>
+ • <span style="color:#ccc">Clownfish</span> – Common – $5 – 5 XP<br>
+ • <span style="color:#ccc">Tuna</span> – Common – $10 – 10 XP<br>
+ • <span style="color:#ccc">Shark</span – Common – $25 – 15 XP<br>
+ • <span style="color:#4CAF50">Pufferfish</span> – Uncommon – $25 – 25 XP<br>
+ • <span style="color:#4CAF50">Sea Turtle</span> – Uncommon – $50 – 50 XP<br>
+ • <span style="color:#00a8ff">Manta Ray</span> – Rare – $500 – 100 XP<br>
+ • <span style="color:#FF9800">Great White Shark</span> – Epic – $1,500 – 150 XP<br>
+ • <span style="color:#FF9800">Terrorshark</span> – Epic – $2,000 – 200 XP<br>
+ • <span style="color:#E91E63">Megalodon</span> – Legendary – $1,000 – 250 XP<br>
+ • <span style="color:#FF00FF">Kraken</span> – Mythical – $5,000 – 500 XP<br><br>
 
- ❄️ <b>Snowy Island Fish (Unlock with Ocean Rod)</b><br>
- • Arctic Char – Common<br>
- • Snow Trout – Common<br>
- • Ice Shark – Rare<br>
- • Frost Puffer – Rare<br>
- • Glacier Whale – Very Rare<br>
- • Yeti Crab – Legendary<br>
- • Ice Dragon – Mythical<br><br>
+ <b>❄️ SNOWY ISLAND FISH:</b><br>
+ • <span style="color:#ccc">Arctic Char</span> – Common – $100 – 20 XP<br>
+ • <span style="color:#ccc">Snow Trout</span> – Common – $200 – 30 XP<br>
+ • <span style="color:#4CAF50">Ice Shark</span> – Uncommon – $500 – 75 XP<br>
+ • <span style="color:#4CAF50">Frost Puffer</span> – Uncommon – $750 – 100 XP<br>
+ • <span style="color:#00a8ff">Glacier Whale</span> – Rare – $2,500 – 300 XP<br>
+ • <span style="color:#FF9800">Yeti Crab</span> – Epic – $5,000 – 500 XP<br>
+ • <span style="color:#FF00FF">Ice Dragon</span> – Mythical – $10,000 – 1000 XP
+ </p>
+ 
+ <h3 style="color:#9C27B0">🎣 FISHING RODS</h3>
+ <p>
+ <b>TIER SYSTEM (Each tier is 2x better):</b><br>
+ • <span style="color:#8B4513">Basic Rod</span> – Starter rod – Normal chances<br>
+ • <span style="color:#ffcc00">Sun Rod</span> – $1,000 – 2x better rare fish<br>
+ • <span style="color:#8a2be2">Moon Rod</span> – $10,000 – 4x better rare fish<br>
+ • <span style="color:#00bfff">Ocean Rod</span> – $100,000 – 8x better rare fish<br>
+ • <span style="color:#87CEEB">Glacier Rod</span> – $500,000 – 16x better<br>
+ • <span style="color:#FF6347">Frostfire Rod</span> – $2,000,000 – 32x better<br>
+ • <span style="color:#9370DB">Aurora Rod</span> – $10,000,000 – 64x better<br><br>
 
- 💰 <b>Selling</b><br>
- • Tap fish once to preview<br>
- • Tap twice to sell<br><br>
+ <b>IMPORTANT:</b> Ocean Rod unlocks portal to Snowy Island!
+ </p>
+ 
+ <h3 style="color:#00bcd4">🌐 PORTAL SYSTEM</h3>
+ <p>
+ • Portal is always visible in the center of the island<br>
+ • Appears gray/dark when inactive<br>
+ • Glows bright cyan when activated<br>
+ • <b>REQUIREMENT:</b> Must have Ocean Rod to access<br>
+ • Travel between Tropical and Snowy islands<br>
+ • Each island has unique fish and shops
+ </p>
+ 
+ <h3 style="color:#FF5722">💰 ECONOMY & SHOPS</h3>
+ <p>
+ <b>Tropical Fisherman (Left side of island):</b><br>
+ • Sells Sun, Moon, and Ocean rods<br>
+ • Sells inventory expansions<br>
+ • Gives fishing tips<br><br>
 
- 🎣 <b>Rods (2x Better Each Tier)</b><br>
- • Basic Rod – Normal chances<br>
- • Sun Rod – 2x better rare fish<br>
- • Moon Rod – 4x better rare fish<br>
- • Ocean Rod – 8x better rare fish<br>
- • Glacier Rod (Snowy) – 16x better<br>
- • Frostfire Rod (Snowy) – 32x better<br>
- • Aurora Rod (Snowy) – 64x better<br><br>
+ <b>Snowy Fisherman (Left side of snowy island):</b><br>
+ • Sells Glacier, Frostfire, and Aurora rods<br>
+ • Sells larger inventory expansions<br>
+ • Specialized for icy waters<br><br>
 
- 🌐 <b>Portal System</b><br>
- • Portal is always visible in the center<br>
- • Need Ocean Rod to access it<br>
- • Travel to Snowy Island for better fish<br><br>
-
- 📈 <b>Level System</b><br>
+ <b>INVENTORY MANAGEMENT:</b><br>
+ • Start with 9 slots<br>
+ • Expand at either shop<br>
+ • Fish stack up to 99<br>
+ • Tap once to preview fish<br>
+ • Double-tap to sell all of that fish type
+ </p>
+ 
+ <h3 style="color:#4CAF50">📈 LEVEL SYSTEM</h3>
+ <p>
  • Gain XP by catching fish<br>
  • Rarer fish = more XP<br>
- • Higher levels need more XP<br>
- • Level up to unlock new features!
+ • Level up increases max XP needed<br>
+ • <b>Level Rewards:</b><br>
+   - Level 2: $100 + New fishing spot<br>
+   - Level 5: $500 + Better fish chances<br>
+   - Level 10: $2,000 + Legendary fish unlocked<br>
+   - Every 5 levels: Bonus money!
  </p>
+ 
+ <h3 style="color:#FF00FF">🎯 PRO TIPS</h3>
+ <p>
+ 1. Start with Basic Rod to earn initial money<br>
+ 2. Buy Sun Rod as soon as possible<br>
+ 3. Save fish to sell in bulk for better money management<br>
+ 4. Always check fish previews before selling<br>
+ 5. Work towards Ocean Rod to unlock Snowy Island<br>
+ 6. Snowy Island fish are worth more but harder to catch<br>
+ 7. Higher level = better overall fishing chances<br>
+ 8. Visit both island shops for best gear options
+ </p>
+ 
+ <div style="text-align:center;margin-top:20px;padding:10px;background:rgba(255,215,0,0.1);border-radius:10px;border:1px solid gold;">
+ <small style="color:#ccc">Game saves automatically every 5 seconds</small><br>
+ <small style="color:#ccc">Different username = different save file</small><br>
+ <small style="color:#ff00ff">Secret: Try tapping the 🐙 button!</small>
  </div>
- <button onclick="rules.style.display='none'">CLOSE</button>
+ </div>
+ <button onclick="rules.style.display='none'">CLOSE GUIDE</button>
 </div>
 
 <!-- STATS CONTAINER -->
@@ -499,6 +624,15 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  <button onclick="portalMessage.style.display='none'" style="margin-top:20px;padding:10px 20px;background:linear-gradient(to right, #00a8ff, #0097e6);color:white;border:none;border-radius:8px;cursor:pointer;">CONTINUE</button>
 </div>
 
+<!-- SECRET CODE INPUT -->
+<div id="secretCodeInput">
+ <h3>🐙 SECRET CODE 🐙</h3>
+ <p>Enter the secret code to receive a reward!</p>
+ <input type="text" id="codeInput" placeholder="Enter code..." maxlength="10"><br>
+ <button id="submitCode" style="margin-top:10px;padding:10px 20px;background:linear-gradient(to right, #ff00ff, #cc00cc);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">SUBMIT</button>
+ <button onclick="secretCodeInput.style.display='none'" style="margin-top:10px;padding:10px 20px;background:linear-gradient(to right, #f44336, #d32f2f);color:white;border:none;border-radius:8px;cursor:pointer;">CANCEL</button>
+</div>
+
 <div id="msg"></div>
 <button id="fishButton">🎯 PRESS HERE! 🎯</button>
 
@@ -518,7 +652,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 <div id="shop">
  <h3>🎣 Fisherman's Shop</h3>
  <p style="font-size:14px;color:#ccc;margin-bottom:20px;" id="shopDialogue">"Welcome! Need fishing gear?"</p>
- <button id="buySunRod">Buy Sun Rod ($1000)</button><br>
+ <button id="buySunRod">Buy Sun Rod ($1,000)</button><br>
  <button id="buyMoonRod">Buy Moon Rod ($10,000)</button><br>
  <button id="buyOceanRod">Buy Ocean Rod ($100,000)</button><br>
  <button id="buyInventory">Buy 3 Inventory Slots ($500)</button><br>
@@ -1283,7 +1417,7 @@ addEventListener("touchstart", e => {
     e.target.id === "book" || e.target.closest("#shop") || 
     e.target.closest("#rules") || e.target.closest("#login") || 
     e.target.closest("#fishPreview") || e.target.closest("#snowyShop") ||
-    e.target.id === "fishButton") return;
+    e.target.id === "fishButton" || e.target.id === "secretCode") return;
  looking = true;
  lastX = e.touches[0].clientX;
  lastY = e.touches[0].clientY;
@@ -1331,6 +1465,94 @@ jump.addEventListener("touchstart", () => {
    velocityY = 0.2;
    grounded = false;
  }
+});
+
+/* ===== SECRET CODE SYSTEM ===== */
+const secretCodeButton = document.getElementById("secretCode");
+const secretCodeInput = document.getElementById("secretCodeInput");
+const codeInput = document.getElementById("codeInput");
+const submitCodeButton = document.getElementById("submitCode");
+
+// Secret code click handler
+secretCodeButton.onclick = () => {
+  secretCodeInput.style.display = "block";
+  codeInput.value = "";
+  codeInput.focus();
+};
+
+// Submit code handler
+submitCodeButton.onclick = () => {
+  const enteredCode = codeInput.value.trim().toUpperCase();
+  
+  if(enteredCode === "KYAN") {
+    // Give $100,000 reward
+    money += 100000;
+    updateStats();
+    
+    // Show success message
+    msg.style.display = "block";
+    msg.textContent = "🎉 SECRET CODE ACCEPTED! +$100,000!";
+    msg.style.color = "#ff00ff";
+    msg.style.fontSize = "28px";
+    
+    // Special effects
+    secretCodeButton.style.animation = "none";
+    setTimeout(() => {
+      secretCodeButton.style.animation = "pulseSecret 2s infinite";
+    }, 100);
+    
+    // Close input and show message
+    secretCodeInput.style.display = "none";
+    
+    // Save game
+    savePlayerData();
+    
+    // Hide message after 3 seconds
+    setTimeout(() => {
+      msg.style.display = "none";
+      msg.style.color = "white";
+      msg.style.fontSize = "22px";
+    }, 3000);
+  } else {
+    // Show error message
+    msg.style.display = "block";
+    msg.textContent = "❌ Invalid code! Try again.";
+    msg.style.color = "#ff4444";
+    
+    // Shake animation
+    codeInput.style.animation = "none";
+    setTimeout(() => {
+      codeInput.style.animation = "shake 0.5s";
+    }, 10);
+    
+    // Clear input
+    codeInput.value = "";
+    codeInput.focus();
+    
+    // Hide message after 2 seconds
+    setTimeout(() => {
+      msg.style.display = "none";
+      msg.style.color = "white";
+    }, 2000);
+  }
+};
+
+// Add shake animation for invalid code
+const style = document.createElement('style');
+style.textContent = `
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+`;
+document.head.appendChild(style);
+
+// Enter key support for code input
+codeInput.addEventListener("keypress", (e) => {
+  if(e.key === "Enter") {
+    submitCodeButton.click();
+  }
 });
 
 /* ===== LEVELING SYSTEM ===== */
@@ -2194,6 +2416,7 @@ addEventListener("touchstart", (e) => {
   if(allRods.includes(currentRod)) {
     if(!fishing && !joy && !e.target.closest("#shop") && !e.target.closest("#snowyShop") && 
        !e.target.closest("#rules") && !e.target.closest("#fishPreview") && 
+       !e.target.closest("#secretCodeInput") &&
        e.target.id !== "fishButton") {
       holding = true; 
       holdTime = 0;
