@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>3D Fishing Game - Enhanced</title>
+<title>3D Fishing Game - Realistic</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
 html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
@@ -286,9 +286,11 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  margin-bottom:15px;
 }
 #fishPreviewCanvas{
- width:200px;height:200px;
+ width:300px;height:300px;
  margin:10px auto;
  display:block;
+ background: linear-gradient(to bottom, #1e90ff, #87CEEB);
+ border-radius: 10px;
 }
 
 /* LOGIN */
@@ -602,7 +604,8 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
      <b>Step 2:</b> Hold to cast (2 seconds)<br>
      <b>Step 3:</b> When fish bites, tap the <b>PRESS HERE</b> button quickly!<br>
      <b>Step 4:</b> Tap 10 times to catch the fish<br><br>
-     <span style="color:#ffd700">TIP:</span> Better rods = better fish chances!
+     <span style="color:#ffd700">TIP:</span> Snowy Island fish give <b>10x MORE MONEY</b>!<br>
+     But you need Ocean Rod to access it!
    </p>
    <div class="tutorial-controls">
      <button onclick="prevSlide()">BACK</button>
@@ -614,9 +617,9 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
    <p style="font-size:18px;line-height:1.6;max-width:500px;">
      <b>Single tap</b> any fish in inventory → See preview<br>
      <b>Double tap</b> → Sell all of that fish type<br><br>
+     <span style="color:#00ffff">SNOWY ISLAND BONUS:</span> All fish give <b>10x MORE MONEY</b>!<br><br>
      Visit the <b>fisherman</b> to buy better rods!<br>
-     <span style="color:#00ffff">NEW:</span> Once you buy a rod, you own it forever!<br>
-     Find the portal in the center to access <b>Snowy Island</b> (need Ocean Rod)<br><br>
+     Once you buy a rod, you own it forever!<br><br>
      Good luck, and happy fishing!
    </p>
    <div class="tutorial-controls">
@@ -680,14 +683,15 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  • <span style="color:#E91E63">Megalodon</span> – Legendary – $10,000 – 250 XP<br>
  • <span style="color:#FF00FF">Kraken</span> – Mythical – $5,000 – 500 XP<br><br>
 
- <b>❄️ SNOWY ISLAND FISH:</b><br>
- • <span style="color:#ccc">Arctic Char</span> – Common – $100 – 20 XP<br>
- • <span style="color:#ccc">Snow Trout</span> – Common – $200 – 30 XP<br>
- • <span style="color:#4CAF50">Ice Shark</span> – Uncommon – $500 – 75 XP<br>
- • <span style="color:#4CAF50">Frost Puffer</span> – Uncommon – $750 – 100 XP<br>
- • <span style="color:#00a8ff">Glacier Whale</span> – Rare – $2,500 – 300 XP<br>
- • <span style="color:#FF9800">Yeti Crab</span> – Epic – $5,000 – 500 XP<br>
- • <span style="color:#FF00FF">Ice Dragon</span> – Mythical – $10,000 – 1000 XP
+ <b>❄️ SNOWY ISLAND FISH (10x MORE MONEY!):</b><br>
+ • <span style="color:#ccc">Arctic Char</span> – Common – $1,000 – 20 XP<br>
+ • <span style="color:#ccc">Snow Trout</span> – Common – $2,000 – 30 XP<br>
+ • <span style="color:#4CAF50">Ice Shark</span> – Uncommon – $5,000 – 75 XP<br>
+ • <span style="color:#4CAF50">Frost Puffer</span> – Uncommon – $7,500 – 100 XP<br>
+ • <span style="color:#00a8ff">Glacier Whale</span> – Rare – $25,000 – 300 XP<br>
+ • <span style="color:#FF9800">Yeti Crab</span> – Epic – $50,000 – 500 XP<br>
+ • <span style="color:#FF00FF">Ice Dragon</span> – Mythical – $100,000 – 1000 XP<br>
+ <span style="color:#00ffff">All Snowy Island fish give 10x the money!</span>
  </p>
  
  <h3 style="color:#9C27B0">🎣 FISHING RODS</h3>
@@ -754,7 +758,7 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  3. Save fish to sell in bulk for better money management<br>
  4. Always check fish previews before selling<br>
  5. Work towards Ocean Rod to unlock Snowy Island<br>
- 6. Snowy Island fish are worth more but harder to catch<br>
+ 6. <span style="color:#00ffff">SNOWY ISLAND = 10x MORE MONEY!</span><br>
  7. Higher level = better overall fishing chances<br>
  8. Visit both island shops for best gear options
  </p>
@@ -1103,12 +1107,12 @@ let tropicalIsland = createTropicalIsland();
 let snowyIsland = createSnowyIsland();
 scene.add(tropicalIsland);
 
-/* PORTAL CREATION - ALWAYS VISIBLE */
+/* ===== SMALLER PORTAL ===== */
 function createPortal() {
   const portalGroup = new THREE.Group();
   
-  // Portal ring
-  const ringGeometry = new THREE.TorusGeometry(3, 0.3, 16, 100);
+  // SMALLER Portal ring (was 3, now 2)
+  const ringGeometry = new THREE.TorusGeometry(2, 0.2, 12, 60);
   const ringMaterial = new THREE.MeshStandardMaterial({
     color: 0x666666,
     emissive: 0x333333,
@@ -1120,13 +1124,13 @@ function createPortal() {
   ring.rotation.x = Math.PI / 2;
   portalGroup.add(ring);
   
-  // Portal particles
-  const particleCount = 150;
+  // SMALLER Portal particles
+  const particleCount = 100;
   const particleGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
   
   for(let i = 0; i < particleCount * 3; i += 3) {
-    const radius = 2.5;
+    const radius = 1.8;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.random() * Math.PI;
     
@@ -1139,7 +1143,7 @@ function createPortal() {
   
   const particleMaterial = new THREE.PointsMaterial({
     color: 0x666666,
-    size: 0.08,
+    size: 0.06,
     transparent: true,
     opacity: 0.5
   });
@@ -1147,8 +1151,8 @@ function createPortal() {
   const particles = new THREE.Points(particleGeometry, particleMaterial);
   portalGroup.add(particles);
   
-  // Portal center
-  const vortexGeometry = new THREE.CylinderGeometry(0.5, 2, 0.1, 32);
+  // SMALLER Portal center
+  const vortexGeometry = new THREE.CylinderGeometry(0.3, 1.5, 0.08, 24);
   const vortexMaterial = new THREE.MeshStandardMaterial({
     color: 0x333333,
     emissive: 0x222222,
@@ -1161,7 +1165,8 @@ function createPortal() {
   vortex.rotation.x = Math.PI / 2;
   portalGroup.add(vortex);
   
-  portalGroup.position.set(0, 3, 0);
+  // Lower position to match smaller size
+  portalGroup.position.set(0, 2.5, 0);
   
   return {
     group: portalGroup,
@@ -1254,107 +1259,559 @@ function createSnowyFisherman() {
   return npc;
 }
 
-/* FISH MODELS - TROPICAL */
+/* ===== REALISTIC FISH MODELS - TROPICAL ===== */
 const tropicalFishModels = {};
 
-// Clownfish
-const clownfishGeometry = new THREE.ConeGeometry(0.5, 1.5, 8);
-clownfishGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Clownfish = new THREE.Mesh(clownfishGeometry, new THREE.MeshStandardMaterial({color: 0xFF6B35, roughness: 0.4}));
+// Clownfish - Realistic orange/white stripes
+const clownfishGeometry = new THREE.BoxGeometry(0.8, 0.4, 0.2);
+const clownfishMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFF6B35,
+  roughness: 0.4,
+  metalness: 0.1
+});
+const clownfish = new THREE.Mesh(clownfishGeometry, clownfishMaterial);
+clownfish.scale.set(1, 0.6, 2);
 
-// Tuna
-const tunaGeometry = new THREE.CapsuleGeometry(0.3, 1.2, 4, 8);
+// Add stripes
+const stripeGeometry = new THREE.BoxGeometry(0.02, 0.3, 0.21);
+const whiteMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.5 });
+for(let i = 0; i < 3; i++) {
+  const stripe = new THREE.Mesh(stripeGeometry, whiteMaterial);
+  stripe.position.set(-0.1 + i * 0.1, 0, 0);
+  clownfish.add(stripe);
+}
+tropicalFishModels.Clownfish = clownfish;
+
+// Tuna - Streamlined blue/silver
+const tunaGeometry = new THREE.CapsuleGeometry(0.2, 1.2, 4, 8);
 tunaGeometry.rotateZ(Math.PI / 2);
-tropicalFishModels.Tuna = new THREE.Mesh(tunaGeometry, new THREE.MeshStandardMaterial({color: 0x4682B4, roughness: 0.3}));
+const tunaMaterial = new THREE.MeshStandardMaterial({
+  color: 0x4682B4,
+  roughness: 0.3,
+  metalness: 0.4
+});
+const tuna = new THREE.Mesh(tunaGeometry, tunaMaterial);
+// Add silver belly
+const bellyGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1.1, 6);
+bellyGeometry.rotateZ(Math.PI / 2);
+const bellyMaterial = new THREE.MeshStandardMaterial({
+  color: 0xC0C0C0,
+  roughness: 0.2,
+  metalness: 0.6
+});
+const belly = new THREE.Mesh(bellyGeometry, bellyMaterial);
+belly.position.set(0, -0.05, 0);
+tuna.add(belly);
+tropicalFishModels.Tuna = tuna;
 
-// Shark
-const sharkGeometry = new THREE.ConeGeometry(0.4, 2.0, 8);
+// Shark - Realistic gray with fin
+const sharkGeometry = new THREE.ConeGeometry(0.3, 2.0, 8);
 sharkGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Shark = new THREE.Mesh(sharkGeometry, new THREE.MeshStandardMaterial({color: 0x708090, roughness: 0.5}));
+const sharkMaterial = new THREE.MeshStandardMaterial({
+  color: 0x708090,
+  roughness: 0.5,
+  metalness: 0.2
+});
+const shark = new THREE.Mesh(sharkGeometry, sharkMaterial);
 
-// Pufferfish
-const pufferfishGeometry = new THREE.SphereGeometry(0.6, 16, 16);
-tropicalFishModels.Pufferfish = new THREE.Mesh(pufferfishGeometry, new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7}));
+// Dorsal fin
+const finGeometry = new THREE.ConeGeometry(0.15, 0.4, 4);
+finGeometry.rotateX(-Math.PI / 2);
+const finMaterial = new THREE.MeshStandardMaterial({
+  color: 0x5A6268,
+  roughness: 0.6
+});
+const fin = new THREE.Mesh(finGeometry, finMaterial);
+fin.position.set(0, 0.2, 0.3);
+shark.add(fin);
 
-// Sea Turtle
-const turtleGeometry = new THREE.BoxGeometry(1.2, 0.4, 1.5);
-tropicalFishModels.SeaTurtle = new THREE.Mesh(turtleGeometry, new THREE.MeshStandardMaterial({color: 0x228B22, roughness: 0.6}));
+tropicalFishModels.Shark = shark;
 
-// Manta Ray
+// Pufferfish - Spiky sphere
+const pufferfishGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+// Create spikes
+const spikesGroup = new THREE.Group();
+for(let i = 0; i < 50; i++) {
+  const spike = new THREE.ConeGeometry(0.02, 0.15, 4);
+  spike.rotateX(Math.PI / 2);
+  const spikeMesh = new THREE.Mesh(spike, new THREE.MeshStandardMaterial({
+    color: 0x228B22,
+    roughness: 0.7
+  }));
+  
+  // Random position on sphere
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(2 * Math.random() - 1);
+  const radius = 0.5;
+  
+  spikeMesh.position.set(
+    radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  );
+  
+  // Point outward
+  spikeMesh.lookAt(new THREE.Vector3(0, 0, 0));
+  spikeMesh.rotateX(Math.PI / 2);
+  
+  spikesGroup.add(spikeMesh);
+}
+
+const pufferfishMaterial = new THREE.MeshStandardMaterial({
+  color: 0x32CD32,
+  roughness: 0.7,
+  metalness: 0
+});
+const pufferfish = new THREE.Mesh(pufferfishGeometry, pufferfishMaterial);
+pufferfish.add(spikesGroup);
+tropicalFishModels.Pufferfish = pufferfish;
+
+// Sea Turtle - Realistic turtle shape
+const turtleBody = new THREE.SphereGeometry(0.6, 16, 16);
+const turtleBodyMat = new THREE.MeshStandardMaterial({
+  color: 0x228B22,
+  roughness: 0.6
+});
+const turtle = new THREE.Mesh(turtleBody, turtleBodyMat);
+
+// Turtle shell
+const shellGeometry = new THREE.SphereGeometry(0.7, 16, 16);
+shellGeometry.scale(1, 0.4, 1);
+const shellMaterial = new THREE.MeshStandardMaterial({
+  color: 0x8B4513,
+  roughness: 0.8
+});
+const shell = new THREE.Mesh(shellGeometry, shellMaterial);
+shell.position.y = 0.15;
+turtle.add(shell);
+
+// Turtle flippers
+const flipperGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.2);
+for(let i = 0; i < 4; i++) {
+  const flipper = new THREE.Mesh(flipperGeometry, new THREE.MeshStandardMaterial({
+    color: 0x228B22,
+    roughness: 0.6
+  }));
+  const angle = (i * Math.PI / 2);
+  flipper.position.set(
+    Math.cos(angle) * 0.5,
+    -0.1,
+    Math.sin(angle) * 0.5
+  );
+  flipper.rotation.y = angle;
+  turtle.add(flipper);
+}
+
+// Turtle head
+const headGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+const head = new THREE.Mesh(headGeometry, turtleBodyMat);
+head.position.set(0.7, 0, 0);
+turtle.add(head);
+tropicalFishModels.SeaTurtle = turtle;
+
+// Manta Ray - Wing-like shape
 const mantaGeometry = new THREE.ConeGeometry(1.5, 0.3, 4);
 mantaGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.MantaRay = new THREE.Mesh(mantaGeometry, new THREE.MeshStandardMaterial({color: 0x483D8B, roughness: 0.4}));
+const mantaMaterial = new THREE.MeshStandardMaterial({
+  color: 0x483D8B,
+  roughness: 0.4,
+  metalness: 0.3
+});
+const mantaRay = new THREE.Mesh(mantaGeometry, mantaMaterial);
 
-// Great White Shark
-const greatWhiteGeometry = new THREE.ConeGeometry(0.6, 3.0, 12);
+// Tail
+const tailGeometry = new THREE.CylinderGeometry(0.05, 0.01, 1.5, 8);
+const tail = new THREE.Mesh(tailGeometry, mantaMaterial);
+tail.position.set(0, 0, -0.8);
+tail.rotation.x = Math.PI / 6;
+mantaRay.add(tail);
+tropicalFishModels.MantaRay = mantaRay;
+
+// Great White Shark - Realistic predator
+const greatWhiteGeometry = new THREE.ConeGeometry(0.5, 3.0, 12);
 greatWhiteGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.GreatWhiteShark = new THREE.Mesh(greatWhiteGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.3}));
+const greatWhiteMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFFFFFF,
+  roughness: 0.3,
+  metalness: 0.2
+});
+const greatWhiteShark = new THREE.Mesh(greatWhiteGeometry, greatWhiteMaterial);
 
-// Terrorshark
-const terrorsharkGeometry = new THREE.ConeGeometry(0.8, 3.5, 12);
+// Add dorsal fin
+const gwFinGeometry = new THREE.ConeGeometry(0.2, 0.6, 4);
+gwFinGeometry.rotateX(-Math.PI / 2);
+const gwFin = new THREE.Mesh(gwFinGeometry, new THREE.MeshStandardMaterial({
+  color: 0x5A6268
+}));
+gwFin.position.set(0, 0.3, 0.5);
+greatWhiteShark.add(gwFin);
+
+// Add pectoral fins
+for(let i = -1; i <= 1; i += 2) {
+  const pectoralGeometry = new THREE.ConeGeometry(0.15, 0.4, 4);
+  pectoralGeometry.rotateZ(Math.PI / 2);
+  const pectoral = new THREE.Mesh(pectoralGeometry, new THREE.MeshStandardMaterial({
+    color: 0x5A6268
+  }));
+  pectoral.position.set(i * 0.3, 0, 0.2);
+  pectoral.rotation.y = i * 0.3;
+  greatWhiteShark.add(pectoral);
+}
+tropicalFishModels.GreatWhiteShark = greatWhiteShark;
+
+// Terrorshark - Red aggressive shark
+const terrorsharkGeometry = new THREE.ConeGeometry(0.6, 3.5, 12);
 terrorsharkGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Terrorshark = new THREE.Mesh(terrorsharkGeometry, new THREE.MeshStandardMaterial({color: 0xFF0000, roughness: 0.2}));
+const terrorsharkMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFF0000,
+  roughness: 0.2,
+  metalness: 0.4,
+  emissive: 0x660000,
+  emissiveIntensity: 0.3
+});
+const terrorshark = new THREE.Mesh(terrorsharkGeometry, terrorsharkMaterial);
 
-// Megalodon
-const megalodonGeometry = new THREE.ConeGeometry(1.2, 5.0, 16);
+// Spiky dorsal fin
+const tsFinGeometry = new THREE.ConeGeometry(0.25, 0.8, 4);
+tsFinGeometry.rotateX(-Math.PI / 2);
+const tsFin = new THREE.Mesh(tsFinGeometry, new THREE.MeshStandardMaterial({
+  color: 0xCC0000,
+  emissive: 0x660000,
+  emissiveIntensity: 0.5
+}));
+tsFin.position.set(0, 0.4, 0.6);
+terrorshark.add(tsFin);
+tropicalFishModels.Terrorshark = terrorshark;
+
+// Megalodon - Huge prehistoric shark
+const megalodonGeometry = new THREE.ConeGeometry(1.0, 5.0, 16);
 megalodonGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Megalodon = new THREE.Mesh(megalodonGeometry, new THREE.MeshStandardMaterial({color: 0x2F4F4F, roughness: 0.4}));
+const megalodonMaterial = new THREE.MeshStandardMaterial({
+  color: 0x2F4F4F,
+  roughness: 0.4,
+  metalness: 0.3
+});
+const megalodon = new THREE.Mesh(megalodonGeometry, megalodonMaterial);
 
-// Kraken
-const krakenGeometry = new THREE.SphereGeometry(1.0, 32, 32);
-tropicalFishModels.Kraken = new THREE.Mesh(krakenGeometry, new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.6}));
+// Massive dorsal fin
+const megaFinGeometry = new THREE.ConeGeometry(0.4, 1.2, 6);
+megaFinGeometry.rotateX(-Math.PI / 2);
+const megaFin = new THREE.Mesh(megaFinGeometry, new THREE.MeshStandardMaterial({
+  color: 0x1E3A3A
+}));
+megaFin.position.set(0, 0.6, 1.0);
+megalodon.add(megaFin);
+tropicalFishModels.Megalodon = megalodon;
 
-/* FISH MODELS - SNOWY */
+// Kraken - Mythical octopus
+const krakenBody = new THREE.SphereGeometry(0.8, 32, 32);
+const krakenMaterial = new THREE.MeshStandardMaterial({
+  color: 0x8B0000,
+  roughness: 0.6,
+  emissive: 0x4B0000,
+  emissiveIntensity: 0.2
+});
+const kraken = new THREE.Mesh(krakenBody, krakenMaterial);
+
+// Tentacles
+for(let i = 0; i < 8; i++) {
+  const tentacle = new THREE.ConeGeometry(0.15, 3.0, 8);
+  tentacle.rotateX(Math.PI / 2);
+  const tentacleMesh = new THREE.Mesh(tentacle, krakenMaterial);
+  const angle = (i / 8) * Math.PI * 2;
+  tentacleMesh.position.set(
+    Math.cos(angle) * 1.0,
+    0,
+    Math.sin(angle) * 1.0
+  );
+  tentacleMesh.rotation.y = angle;
+  kraken.add(tentacleMesh);
+}
+
+// Glowing eyes
+const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+const eyeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFF0000,
+  emissive: 0xFF0000,
+  emissiveIntensity: 1.0
+});
+const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+leftEye.position.set(0.3, 0.3, 0.5);
+kraken.add(leftEye);
+
+const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+rightEye.position.set(-0.3, 0.3, 0.5);
+kraken.add(rightEye);
+tropicalFishModels.Kraken = kraken;
+
+/* ===== REALISTIC SNOWY ISLAND FISH ===== */
 const snowyFishModels = {};
 
-// Arctic Char
-const arcticCharGeometry = new THREE.ConeGeometry(0.4, 1.2, 8);
-arcticCharGeometry.rotateX(Math.PI / 2);
-snowyFishModels.ArcticChar = new THREE.Mesh(arcticCharGeometry, new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.3}));
+// Arctic Char - Silver/blue arctic fish
+const arcticCharGeometry = new THREE.BoxGeometry(0.6, 0.3, 0.15);
+arcticCharGeometry.scale(1, 0.7, 2);
+const arcticCharMaterial = new THREE.MeshStandardMaterial({
+  color: 0x87CEEB,
+  roughness: 0.3,
+  metalness: 0.5
+});
+const arcticChar = new THREE.Mesh(arcticCharGeometry, arcticCharMaterial);
 
-// Snow Trout
-const snowTroutGeometry = new THREE.CapsuleGeometry(0.25, 1.0, 4, 8);
+// Add icy sparkles
+const sparkleGeometry = new THREE.SphereGeometry(0.03, 6, 6);
+const sparkleMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFFFFFF,
+  emissive: 0xFFFFFF,
+  emissiveIntensity: 0.5,
+  roughness: 0.1
+});
+for(let i = 0; i < 10; i++) {
+  const sparkle = new THREE.Mesh(sparkleGeometry, sparkleMaterial);
+  sparkle.position.set(
+    (Math.random() - 0.5) * 0.5,
+    (Math.random() - 0.5) * 0.2,
+    (Math.random() - 0.5) * 1.0
+  );
+  arcticChar.add(sparkle);
+}
+snowyFishModels.ArcticChar = arcticChar;
+
+// Snow Trout - Icy trout
+const snowTroutGeometry = new THREE.CapsuleGeometry(0.2, 1.0, 4, 8);
 snowTroutGeometry.rotateZ(Math.PI / 2);
-snowyFishModels.SnowTrout = new THREE.Mesh(snowTroutGeometry, new THREE.MeshStandardMaterial({color: 0xB0E0E6, roughness: 0.4}));
+const snowTroutMaterial = new THREE.MeshStandardMaterial({
+  color: 0xB0E0E6,
+  roughness: 0.4,
+  metalness: 0.3
+});
+const snowTrout = new THREE.Mesh(snowTroutGeometry, snowTroutMaterial);
 
-// Ice Shark
-const iceSharkGeometry = new THREE.ConeGeometry(0.5, 2.2, 8);
+// Ice crystals on back
+for(let i = 0; i < 5; i++) {
+  const crystal = new THREE.ConeGeometry(0.05, 0.2, 4);
+  crystal.rotateX(Math.PI / 2);
+  const crystalMesh = new THREE.Mesh(crystal, new THREE.MeshStandardMaterial({
+    color: 0xE0FFFF,
+    roughness: 0.2,
+    metalness: 0.8
+  }));
+  crystalMesh.position.set(0, 0.15, -0.4 + i * 0.2);
+  snowTrout.add(crystalMesh);
+}
+snowyFishModels.SnowTrout = snowTrout;
+
+// Ice Shark - Blue icy shark
+const iceSharkGeometry = new THREE.ConeGeometry(0.4, 2.2, 8);
 iceSharkGeometry.rotateX(Math.PI / 2);
-snowyFishModels.IceShark = new THREE.Mesh(iceSharkGeometry, new THREE.MeshStandardMaterial({color: 0xADD8E6, roughness: 0.2}));
+const iceSharkMaterial = new THREE.MeshStandardMaterial({
+  color: 0xADD8E6,
+  roughness: 0.2,
+  metalness: 0.6
+});
+const iceShark = new THREE.Mesh(iceSharkGeometry, iceSharkMaterial);
 
-// Frost Puffer
-const frostPufferGeometry = new THREE.SphereGeometry(0.7, 16, 16);
-snowyFishModels.FrostPuffer = new THREE.Mesh(frostPufferGeometry, new THREE.MeshStandardMaterial({color: 0xE0FFFF, roughness: 0.6}));
-
-// Glacier Whale
-const glacierWhaleGeometry = new THREE.CapsuleGeometry(0.8, 3.5, 8, 16);
-glacierWhaleGeometry.rotateZ(Math.PI / 2);
-snowyFishModels.GlacierWhale = new THREE.Mesh(glacierWhaleGeometry, new THREE.MeshStandardMaterial({color: 0xF0F8FF, roughness: 0.5}));
-
-// Yeti Crab
-const yetiCrabGeometry = new THREE.BoxGeometry(1.0, 0.5, 1.2);
-snowyFishModels.YetiCrab = new THREE.Mesh(yetiCrabGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.8}));
-
-// Ice Dragon
-const iceDragonGeometry = new THREE.ConeGeometry(0.7, 4.0, 12);
-iceDragonGeometry.rotateX(Math.PI / 2);
-snowyFishModels.IceDragon = new THREE.Mesh(iceDragonGeometry, new THREE.MeshStandardMaterial({
-  color: 0x00FFFF,
-  emissive: 0x00FFFF,
-  emissiveIntensity: 0.3,
+// Ice fin
+const iceFinGeometry = new THREE.ConeGeometry(0.15, 0.5, 4);
+iceFinGeometry.rotateX(-Math.PI / 2);
+const iceFin = new THREE.Mesh(iceFinGeometry, new THREE.MeshStandardMaterial({
+  color: 0x87CEEB,
   roughness: 0.1,
-  metalness: 0.8
+  metalness: 0.7
 }));
+iceFin.position.set(0, 0.25, 0.4);
+iceShark.add(iceFin);
+snowyFishModels.IceShark = iceShark;
 
-// Make all fish cast shadows
+// Frost Puffer - Icy spiky ball
+const frostPufferGeometry = new THREE.SphereGeometry(0.6, 16, 16);
+const frostPufferMaterial = new THREE.MeshStandardMaterial({
+  color: 0xE0FFFF,
+  roughness: 0.6,
+  metalness: 0.3
+});
+const frostPuffer = new THREE.Mesh(frostPufferGeometry, frostPufferMaterial);
+
+// Ice spikes
+for(let i = 0; i < 40; i++) {
+  const iceSpike = new THREE.ConeGeometry(0.02, 0.2, 4);
+  iceSpike.rotateX(Math.PI / 2);
+  const iceSpikeMesh = new THREE.Mesh(iceSpike, new THREE.MeshStandardMaterial({
+    color: 0xFFFFFF,
+    roughness: 0.1,
+    metalness: 0.8
+  }));
+  
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(2 * Math.random() - 1);
+  const radius = 0.6;
+  
+  iceSpikeMesh.position.set(
+    radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  );
+  
+  iceSpikeMesh.lookAt(new THREE.Vector3(0, 0, 0));
+  iceSpikeMesh.rotateX(Math.PI / 2);
+  
+  frostPuffer.add(iceSpikeMesh);
+}
+snowyFishModels.FrostPuffer = frostPuffer;
+
+// Glacier Whale - Majestic white whale
+const glacierWhaleGeometry = new THREE.CapsuleGeometry(0.6, 3.5, 8, 16);
+glacierWhaleGeometry.rotateZ(Math.PI / 2);
+const glacierWhaleMaterial = new THREE.MeshStandardMaterial({
+  color: 0xF0F8FF,
+  roughness: 0.5,
+  metalness: 0.2
+});
+const glacierWhale = new THREE.Mesh(glacierWhaleGeometry, glacierWhaleMaterial);
+
+// Whale tail
+const tailGeometry2 = new THREE.ConeGeometry(0.3, 0.8, 8);
+tailGeometry2.rotateY(Math.PI / 2);
+const tail = new THREE.Mesh(tailGeometry2, glacierWhaleMaterial);
+tail.position.set(-1.8, 0, 0);
+glacierWhale.add(tail);
+
+// Snow particles around whale
+const snowGroup = new THREE.Group();
+for(let i = 0; i < 20; i++) {
+  const snow = new THREE.SphereGeometry(0.05, 6, 6);
+  const snowMesh = new THREE.Mesh(snow, new THREE.MeshStandardMaterial({
+    color: 0xFFFFFF,
+    roughness: 0.9
+  }));
+  snowMesh.position.set(
+    (Math.random() - 0.5) * 2,
+    (Math.random() - 0.5) * 1,
+    (Math.random() - 0.5) * 2
+  );
+  snowGroup.add(snowMesh);
+}
+glacierWhale.add(snowGroup);
+snowyFishModels.GlacierWhale = glacierWhale;
+
+// Yeti Crab - White furry crab
+const yetiCrabBody = new THREE.BoxGeometry(0.8, 0.4, 1.0);
+const yetiCrabMaterial = new THREE.MeshStandardMaterial({
+  color: 0xFFFFFF,
+  roughness: 0.9,
+  metalness: 0
+});
+const yetiCrab = new THREE.Mesh(yetiCrabBody, yetiCrabMaterial);
+
+// Crab legs
+for(let i = 0; i < 8; i++) {
+  const leg = new THREE.CylinderGeometry(0.05, 0.03, 0.5, 6);
+  const legMesh = new THREE.Mesh(leg, yetiCrabMaterial);
+  const side = i < 4 ? -1 : 1;
+  const legIndex = i % 4;
+  legMesh.position.set(
+    (side * 0.4),
+    -0.2,
+    (-0.3 + legIndex * 0.2)
+  );
+  legMesh.rotation.x = Math.PI / 4 * side;
+  yetiCrab.add(legMesh);
+}
+
+// Crab claws
+const clawGeometry = new THREE.BoxGeometry(0.15, 0.1, 0.3);
+for(let i = 0; i < 2; i++) {
+  const claw = new THREE.Mesh(clawGeometry, yetiCrabMaterial);
+  claw.position.set(
+    i === 0 ? -0.5 : 0.5,
+    0,
+    0.6
+  );
+  yetiCrab.add(claw);
+}
+snowyFishModels.YetiCrab = yetiCrab;
+
+// Ice Dragon - Mythical crystal dragon
+const iceDragonBody = new THREE.ConeGeometry(0.5, 4.0, 12);
+iceDragonBody.rotateX(Math.PI / 2);
+const iceDragonMaterial = new THREE.MeshStandardMaterial({
+  color: 0x00FFFF,
+  roughness: 0.1,
+  metalness: 0.8,
+  emissive: 0x00FFFF,
+  emissiveIntensity: 0.5,
+  transparent: true,
+  opacity: 0.9
+});
+const iceDragon = new THREE.Mesh(iceDragonBody, iceDragonMaterial);
+
+// Dragon wings (ice crystals)
+for(let i = 0; i < 2; i++) {
+  const wing = new THREE.ConeGeometry(0.4, 1.5, 4);
+  wing.rotateZ(Math.PI / 2);
+  const wingMesh = new THREE.Mesh(wing, iceDragonMaterial);
+  wingMesh.position.set(
+    i === 0 ? -0.8 : 0.8,
+    0,
+    0.5
+  );
+  wingMesh.rotation.y = i === 0 ? -0.5 : 0.5;
+  iceDragon.add(wingMesh);
+}
+
+// Dragon horns
+for(let i = 0; i < 2; i++) {
+  const horn = new THREE.ConeGeometry(0.1, 0.4, 6);
+  const hornMesh = new THREE.Mesh(horn, new THREE.MeshStandardMaterial({
+    color: 0xFFFFFF,
+    roughness: 0.1,
+    metalness: 0.9
+  }));
+  hornMesh.position.set(
+    i === 0 ? -0.2 : 0.2,
+    0.3,
+    1.8
+  );
+  iceDragon.add(hornMesh);
+}
+
+// Ice particles trail
+const iceParticles = new THREE.Group();
+for(let i = 0; i < 30; i++) {
+  const ice = new THREE.SphereGeometry(0.03 + Math.random() * 0.02, 6, 6);
+  const iceMesh = new THREE.Mesh(ice, new THREE.MeshStandardMaterial({
+    color: 0x00FFFF,
+    roughness: 0.1,
+    metalness: 0.8,
+    transparent: true,
+    opacity: 0.7
+  }));
+  iceMesh.position.set(
+    (Math.random() - 0.5) * 2,
+    (Math.random() - 0.5) * 1,
+    -2 + (Math.random() * 2)
+  );
+  iceParticles.add(iceMesh);
+}
+iceDragon.add(iceParticles);
+snowyFishModels.IceDragon = iceDragon;
+
+// Make all fish cast shadows and improve their appearance
 Object.values(tropicalFishModels).forEach(fish => {
-  fish.castShadow = true;
-  fish.receiveShadow = true;
+  fish.traverse(child => {
+    if(child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
 });
 
 Object.values(snowyFishModels).forEach(fish => {
-  fish.castShadow = true;
-  fish.receiveShadow = true;
+  fish.traverse(child => {
+    if(child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
 });
 
 /* ENHANCED TREES */
@@ -1801,7 +2258,7 @@ let playerLevel = 1;
 let playerExp = 0;
 let expToNextLevel = 100;
 
-// Fish XP values - FIXED
+// Fish XP values
 const tropicalFishXP = {
   Clownfish: 5,
   Tuna: 10,
@@ -1825,7 +2282,7 @@ const snowyFishXP = {
   IceDragon: 1000
 };
 
-// FIXED: Corrected prices to match guide
+// ===== SNOWY ISLAND FISH NOW GIVE 10x MORE MONEY! =====
 const tropicalPrices = {
   Clownfish: 5, 
   Tuna: 10, 
@@ -1835,18 +2292,18 @@ const tropicalPrices = {
   MantaRay: 500, 
   GreatWhiteShark: 1500,
   Terrorshark: 2000,
-  Megalodon: 10000, // FIXED: Was 1000, now 10000 to match guide
+  Megalodon: 10000,
   Kraken: 5000
 };
 
 const snowyPrices = {
-  ArcticChar: 100,
-  SnowTrout: 200,
-  IceShark: 500,
-  FrostPuffer: 750,
-  GlacierWhale: 2500,
-  YetiCrab: 5000,
-  IceDragon: 10000
+  ArcticChar: 100 * 10,     // 10x MORE MONEY!
+  SnowTrout: 200 * 10,      // 10x MORE MONEY!
+  IceShark: 500 * 10,       // 10x MORE MONEY!
+  FrostPuffer: 750 * 10,    // 10x MORE MONEY!
+  GlacierWhale: 2500 * 10,  // 10x MORE MONEY!
+  YetiCrab: 5000 * 10,      // 10x MORE MONEY!
+  IceDragon: 10000 * 10     // 10x MORE MONEY!
 };
 
 // Calculate XP needed for next level
@@ -1931,7 +2388,7 @@ function updateStats() {
   document.getElementById("exp").textContent = `XP: ${playerExp}/${expToNextLevel}`;
 }
 
-/* ===== NEW: ROD SELECTOR SYSTEM ===== */
+/* ===== ROD SELECTOR SYSTEM ===== */
 function showRodSelector() {
   const rodSelector = document.getElementById('rodSelector');
   const rodOptions = document.getElementById('rodOptions');
@@ -2124,7 +2581,8 @@ function slotTap(index) {
     vibrate(100);
     
     // Show sale notification
-    showNotification(`Sold ${count}x ${name} for $${totalValue}!`, 'success');
+    const multiplier = currentIsland === 'snowy' ? '10x' : '';
+    showNotification(`Sold ${count}x ${name} for $${totalValue}! ${multiplier}`, 'success');
     
     updateStats();
     inventory[index] = "";
@@ -2143,7 +2601,7 @@ function slotTap(index) {
   }
 }
 
-// Show 3D fish preview
+// Show 3D fish preview with enhanced graphics
 function showFishPreview(fishName, count) {
   const previewCanvas = document.getElementById('fishPreviewCanvas');
   const previewRenderer = new THREE.WebGLRenderer({
@@ -2151,20 +2609,37 @@ function showFishPreview(fishName, count) {
     alpha: true,
     antialias: true
   });
-  previewRenderer.setSize(200, 200);
+  previewRenderer.setSize(300, 300);
   previewRenderer.setClearColor(0x000000, 0);
   
   const previewScene = new THREE.Scene();
-  const previewCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
-  previewCamera.position.z = 5;
+  const previewCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+  previewCamera.position.z = 6;
   
-  // Add lights
+  // Add enhanced lighting
   const previewLight1 = new THREE.DirectionalLight(0xffffff, 1);
   previewLight1.position.set(5, 5, 5);
   previewScene.add(previewLight1);
   
+  const previewLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+  previewLight2.position.set(-5, 3, -5);
+  previewScene.add(previewLight2);
+  
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
   previewScene.add(ambientLight);
+  
+  // Add water background
+  const waterBackground = new THREE.Mesh(
+    new THREE.PlaneGeometry(10, 10),
+    new THREE.MeshStandardMaterial({
+      color: currentIsland === 'tropical' ? 0x1e90ff : 0x87CEEB,
+      roughness: 0.1,
+      metalness: 0.3,
+      side: THREE.DoubleSide
+    })
+  );
+  waterBackground.position.z = -5;
+  previewScene.add(waterBackground);
   
   // Get correct fish model based on current island
   let fishModel;
@@ -2176,12 +2651,18 @@ function showFishPreview(fishName, count) {
   
   if(!fishModel) return;
   
+  // Scale fish appropriately
+  fishModel.scale.set(1.5, 1.5, 1.5);
   previewScene.add(fishModel);
   
-  // Animate preview
-  let rotationSpeed = 0.01;
+  // Animate preview with floating motion
+  let rotationSpeed = 0.005;
+  let floatTime = 0;
   const animatePreview = () => {
+    floatTime += 0.02;
     fishModel.rotation.y += rotationSpeed;
+    fishModel.position.y = Math.sin(floatTime) * 0.2;
+    
     previewRenderer.render(previewScene, previewCamera);
     if(fishPreview.style.display === 'block') {
       requestAnimationFrame(animatePreview);
@@ -2201,23 +2682,51 @@ function showFishPreview(fishName, count) {
   
   // Determine rarity color
   let rarityColor = '#ccc';
+  let rarityText = 'COMMON';
   if(currentIsland === 'tropical') {
-    if(['Kraken', 'Terrorshark', 'Megalodon', 'GreatWhiteShark'].includes(fishName)) rarityColor = '#FF9800';
-    else if(['MantaRay', 'SeaTurtle'].includes(fishName)) rarityColor = '#00a8ff';
-    else if(['Pufferfish'].includes(fishName)) rarityColor = '#4CAF50';
+    if(['Kraken'].includes(fishName)) {
+      rarityColor = '#ff00ff';
+      rarityText = 'MYTHICAL';
+    } else if(['Terrorshark', 'Megalodon', 'GreatWhiteShark'].includes(fishName)) {
+      rarityColor = '#FF9800';
+      rarityText = 'LEGENDARY';
+    } else if(['MantaRay', 'SeaTurtle'].includes(fishName)) {
+      rarityColor = '#00a8ff';
+      rarityText = 'RARE';
+    } else if(['Pufferfish'].includes(fishName)) {
+      rarityColor = '#4CAF50';
+      rarityText = 'UNCOMMON';
+    }
   } else {
-    if(['IceDragon', 'YetiCrab'].includes(fishName)) rarityColor = '#FF9800';
-    else if(['GlacierWhale', 'FrostPuffer'].includes(fishName)) rarityColor = '#00a8ff';
-    else if(['IceShark'].includes(fishName)) rarityColor = '#4CAF50';
+    if(['IceDragon'].includes(fishName)) {
+      rarityColor = '#ff00ff';
+      rarityText = 'MYTHICAL';
+    } else if(['YetiCrab'].includes(fishName)) {
+      rarityColor = '#FF9800';
+      rarityText = 'LEGENDARY';
+    } else if(['GlacierWhale', 'FrostPuffer'].includes(fishName)) {
+      rarityColor = '#00a8ff';
+      rarityText = 'RARE';
+    } else if(['IceShark'].includes(fishName)) {
+      rarityColor = '#4CAF50';
+      rarityText = 'UNCOMMON';
+    }
   }
   
+  // Show 10x multiplier for snowy island
+  const multiplierText = currentIsland === 'snowy' ? '<span style="color:#00ffff">(10x MONEY!)</span>' : '';
+  
   document.getElementById('fishStats').innerHTML = `
-    <div style="margin:10px 0;color:${rarityColor};font-size:16px">
-      <b>${fishName}</b><br>
-      Quantity: ${count}<br>
-      Value: $${price * count}<br>
-      XP Value: ${xpValue} XP<br>
-      <small style="color:#ccc">Double tap to sell all</small>
+    <div style="margin:10px 0;">
+      <div style="color:${rarityColor};font-size:18px;margin-bottom:5px;">
+        <b>${fishName}</b> <small>${rarityText}</small>
+      </div>
+      <div style="color:#ccc;font-size:14px;">
+        Quantity: ${count}<br>
+        Value: <span style="color:gold">$${price * count}</span> ${multiplierText}<br>
+        XP Value: <span style="color:#4CAF50">${xpValue} XP</span><br>
+        <small style="color:#888">Double tap to sell all</small>
+      </div>
     </div>
   `;
   
@@ -2319,22 +2828,23 @@ function updateRod() {
   }
 }
 
-/* PORTAL SYSTEM - ALWAYS VISIBLE BUT NEED OCEAN ROD */
+/* PORTAL SYSTEM - SMALLER PORTAL */
 function activatePortal() {
   // Change portal to active colors
   portal.ring.material.color.set(0x00ffff);
   portal.ring.material.emissive.set(0x00ffff);
-  portal.ring.material.emissiveIntensity = 0.5;
+  portal.ring.material.emissiveIntensity = 0.8;
   portal.ring.material.roughness = 0.1;
   portal.ring.material.metalness = 0.9;
   
   portal.particles.material.color.set(0x00ffff);
-  portal.particles.material.opacity = 0.8;
+  portal.particles.material.opacity = 0.9;
+  portal.particles.material.size = 0.08;
   
   portal.vortex.material.color.set(0x00ffff);
   portal.vortex.material.emissive.set(0x00ffff);
-  portal.vortex.material.emissiveIntensity = 1;
-  portal.vortex.material.opacity = 0.7;
+  portal.vortex.material.emissiveIntensity = 1.5;
+  portal.vortex.material.opacity = 0.8;
   
   portal.isActive = true;
   
@@ -2342,7 +2852,7 @@ function activatePortal() {
   vibrate([200, 100, 200]);
   
   // Show notification
-  showNotification("🌐 PORTAL ACTIVATED! You can now access Snowy Island!", 'success');
+  showNotification("🌐 PORTAL ACTIVATED! Access Snowy Island for 10x MONEY!", 'success');
   
   savePlayerData();
 }
@@ -2354,7 +2864,7 @@ function usePortal() {
     Math.pow(player.position.z - portal.group.position.z, 2)
   );
   
-  if(distance < 5) {
+  if(distance < 4) { // Smaller distance for smaller portal
     if(!hasOceanRod) {
       // Show "not worthy" message
       const portalMessage = document.getElementById("portalMessage");
@@ -2391,7 +2901,7 @@ function usePortal() {
       
       currentIsland = 'snowy';
       
-      showNotification("❄️ Welcome to the Snowy Island!", 'info');
+      showNotification("❄️ Welcome to Snowy Island! Fish give 10x MORE MONEY!", 'info');
     } else {
       // Go back to tropical island
       scene.remove(snowyIsland);
@@ -2406,7 +2916,7 @@ function usePortal() {
       
       currentIsland = 'tropical';
       
-      showNotification("🌴 Welcome back to the Tropical Island!", 'info');
+      showNotification("🌴 Welcome back to Tropical Island!", 'info');
     }
     
     // Update shops
@@ -2462,10 +2972,10 @@ addEventListener("touchstart", e => {
    if(hitSnowyFisherman) {
      snowyShop.style.display = "block";
      const dialogues = [
-       "Brrr... It's cold here! Need special gear?",
+       "Brrr... Cold here! Fish give 10x more money!",
        "Fishing in icy waters requires special rods!",
-       "The fish here are worth more but harder to catch!",
-       "Welcome to the frozen fishing grounds!"
+       "The fish here are worth 10x MORE MONEY!",
+       "Welcome to the frozen fishing grounds - 10x RICHER!"
      ];
      document.getElementById("snowyShopDialogue").textContent = `"${dialogues[Math.floor(Math.random() * dialogues.length)]}"`;
    }
@@ -2502,7 +3012,7 @@ function setupShopButton(buttonId, price, itemName, callback) {
   };
 }
 
-// NEW: Function to purchase a rod (adds to owned rods)
+// Function to purchase a rod (adds to owned rods)
 function purchaseRod(rodName, price) {
   // Add to owned rods set
   ownedRods.add(rodName);
@@ -2851,10 +3361,10 @@ function startFishing() {
    let rarityColor = 'white';
    
    if(currentIsland === 'tropical') {
-     if(['Kraken', 'Terrorshark'].includes(fish)) {
+     if(['Kraken'].includes(fish)) {
        rarity = 'MYTHICAL';
        rarityColor = '#ff00ff';
-     } else if(['Megalodon', 'GreatWhiteShark'].includes(fish)) {
+     } else if(['Terrorshark', 'Megalodon', 'GreatWhiteShark'].includes(fish)) {
        rarity = 'LEGENDARY';
        rarityColor = 'gold';
      } else if(['MantaRay', 'SeaTurtle'].includes(fish)) {
@@ -2880,7 +3390,8 @@ function startFishing() {
      }
    }
    
-   showNotification(`${fish}! ${rarity !== 'common' ? rarity + '! ' : ''}Catch it!`, 'info');
+   const multiplierText = currentIsland === 'snowy' ? ' (10x MONEY!)' : '';
+   showNotification(`${fish}! ${rarity !== 'common' ? rarity + '! ' : ''}Catch it!${multiplierText}`, 'info');
    
    function failFish() {
      showNotification("😢 Fish escaped!", 'error');
@@ -2901,6 +3412,11 @@ function startFishing() {
        if(isMythical) message = "🔥 MYTHICAL! " + message;
        else if(isLegendary) message = "🌟 LEGENDARY! " + message;
        else if(isRare) message = "🎉 RARE! " + message;
+       
+       // Add 10x money bonus text for snowy island
+       if(currentIsland === 'snowy') {
+         message += " (10x MONEY!)";
+       }
        
        // Vibrate based on rarity
        if(isMythical) vibrate([200, 100, 200, 100, 300]);
