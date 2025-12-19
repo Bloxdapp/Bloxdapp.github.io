@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,6 +93,38 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  font-size:16px
 }
 
+/* UPGRADES SHOP */
+#upgradesShop{
+ position:fixed;
+ top:50%;left:50%;
+ transform:translate(-50%,-50%);
+ background:rgba(0,0,0,.9);
+ color:white;
+ padding:20px;
+ border-radius:12px;
+ display:none;
+ z-index:50;
+ text-align:center;
+ width:85%;
+ max-width:450px;
+}
+#upgradesShop button{
+ margin:6px;
+ padding:10px 16px;
+ font-size:16px;
+ width:100%;
+ max-width:350px;
+}
+#upgradesShop h3{
+ color:gold;
+ margin-bottom:20px;
+}
+.upgrade-desc{
+ font-size:14px;
+ color:#ccc;
+ margin:5px 0 15px 0;
+}
+
 /* LOGIN */
 #login{
  position:fixed;
@@ -161,7 +194,11 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
  • Basic Rod – Normal chances<br>
  • Sun Rod – 2x better rare fish<br>
  • Moon Rod – 4x better rare fish<br>
- • Ocean Rod – 8x better rare fish
+ • Ocean Rod – 8x better rare fish<br><br>
+
+ ⚡ <b>Upgrades</b><br>
+ • Bigger Button – Makes fish button 50% larger<br>
+ • Faster Fishing – 1.5s time limit instead of 1s
  </p>
  <button onclick="rules.style.display='none'">CLOSE</button>
 </div>
@@ -173,16 +210,44 @@ html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
 <button id="jump">JUMP</button>
 <div id="inventory"></div>
 
-<!-- SHOP -->
+<!-- FISHERMAN SHOP -->
 <div id="shop">
  <h3>Fisherman's Shop</h3>
  <p style="font-size:14px;color:#ccc;margin-bottom:15px;">"Welcome to my shop! I have the best fishing gear on the island!"</p>
  <button id="buySunRod">Buy Sun Rod ($1000)</button><br>
  <button id="buyMoonRod">Buy Moon Rod ($10,000)</button><br>
  <button id="buyOceanRod">Buy Ocean Rod ($100,000)</button><br>
- <button id="expandInv">Buy 3 Inventory Slots ($500)</button><br>
+ <button id="buyInventory">Buy 3 Inventory Slots ($500)</button><br>
+ <button id="openUpgrades">Upgrades Shop</button><br>
  <br>
  <button onclick="shop.style.display='none'">CLOSE</button>
+</div>
+
+<!-- UPGRADES SHOP -->
+<div id="upgradesShop">
+ <h3>Fishing Upgrades</h3>
+ <p style="font-size:14px;color:#ccc;margin-bottom:15px;">"Make fishing easier with these upgrades!"</p>
+ 
+ <button id="buyBiggerButton">
+   <div style="font-weight:bold;color:white">Bigger Button</div>
+   <div class="upgrade-desc">Fish button appears 50% larger</div>
+   <div style="font-size:12px;color:gold">Price: $5,000</div>
+ </button><br>
+ 
+ <button id="buyFasterFishing">
+   <div style="font-weight:bold;color:white">Faster Fishing</div>
+   <div class="upgrade-desc">1.5 seconds to tap button (instead of 1)</div>
+   <div style="font-size:12px;color:gold">Price: $10,000</div>
+ </button><br>
+ 
+ <button id="buyAutoTap">
+   <div style="font-weight:bold;color:white">Auto-Tap (Coming Soon)</div>
+   <div class="upgrade-desc">Automatically taps some buttons for you</div>
+   <div style="font-size:12px;color:silver">Price: $25,000</div>
+ </button><br>
+ 
+ <br>
+ <button onclick="upgradesShop.style.display='none'">CLOSE</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
@@ -289,6 +354,67 @@ for(let i = 0; i < 4; i++){
 
 scene.add(fisherman);
 
+/* ===== UPGRADES NPC ===== */
+const upgradesNPC = new THREE.Group();
+upgradesNPC.position.set(5, 1, -5);
+
+// Upgrades NPC body
+const upgradesBody = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.5, 0.5, 1.5, 8),
+  new THREE.MeshStandardMaterial({ color: 0x2e8b57 })
+);
+upgradesBody.position.y = 0.75;
+upgradesBody.castShadow = true;
+upgradesNPC.add(upgradesBody);
+
+// Upgrades NPC head
+const upgradesHead = new THREE.Mesh(
+  new THREE.SphereGeometry(0.4, 8, 8),
+  new THREE.MeshStandardMaterial({ color: 0xf0c8a0 })
+);
+upgradesHead.position.y = 1.9;
+upgradesHead.castShadow = true;
+upgradesNPC.add(upgradesHead);
+
+// Wizard hat for upgrades NPC
+const wizardHat = new THREE.Mesh(
+  new THREE.ConeGeometry(0.7, 0.8, 8),
+  new THREE.MeshStandardMaterial({ color: 0x4b0082 })
+);
+wizardHat.position.y = 2.3;
+upgradesNPC.add(wizardHat);
+
+// Magic staff
+const staff = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.03, 0.03, 2.5, 4),
+  new THREE.MeshStandardMaterial({ color: 0x800080 })
+);
+staff.position.set(0.6, 1, 0.3);
+staff.rotation.z = -Math.PI / 8;
+upgradesNPC.add(staff);
+
+// Crystal on staff
+const crystal = new THREE.Mesh(
+  new THREE.SphereGeometry(0.1, 8, 8),
+  new THREE.MeshStandardMaterial({ 
+    color: 0x00ffff,
+    emissive: 0x00ffff,
+    emissiveIntensity: 0.5
+  })
+);
+crystal.position.set(0.8, 2, 0.5);
+upgradesNPC.add(crystal);
+
+// Table for upgrades NPC
+const table = new THREE.Mesh(
+  new THREE.CylinderGeometry(1, 1.2, 0.1, 8),
+  new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+);
+table.position.set(0, 0.3, 0);
+upgradesNPC.add(table);
+
+scene.add(upgradesNPC);
+
 /* ===== DENSE ISLAND VEGETATION ===== */
 const vegetation = new THREE.Group();
 
@@ -341,10 +467,10 @@ function createBush(){
 
 /* ---------- PLACEMENT ---------- */
 function placeVegetation(countTrees, countBushes){
-  // Avoid placing vegetation too close to fisherman
+  // Avoid placing vegetation too close to NPCs
   for(let i=0;i<countTrees;i++){
     const angle = Math.random()*Math.PI*2;
-    const radius = 8 + Math.random()*12; // Start further out
+    const radius = 8 + Math.random()*12;
 
     const tree = createTree(0.9 + Math.random()*0.6);
     tree.position.set(
@@ -353,16 +479,21 @@ function placeVegetation(countTrees, countBushes){
       Math.sin(angle)*radius
     );
     
-    // Check distance from fisherman
-    const distance = Math.sqrt(
+    // Check distance from both NPCs
+    const distFromFisherman = Math.sqrt(
       Math.pow(tree.position.x - fisherman.position.x, 2) +
       Math.pow(tree.position.z - fisherman.position.z, 2)
     );
     
-    if(distance > 3){ // Keep trees at least 3 units away from fisherman
+    const distFromUpgradesNPC = Math.sqrt(
+      Math.pow(tree.position.x - upgradesNPC.position.x, 2) +
+      Math.pow(tree.position.z - upgradesNPC.position.z, 2)
+    );
+    
+    if(distFromFisherman > 3 && distFromUpgradesNPC > 3){
       vegetation.add(tree);
     }else{
-      i--; // Try again
+      i--;
     }
   }
 
@@ -377,21 +508,26 @@ function placeVegetation(countTrees, countBushes){
       Math.sin(angle)*radius
     );
     
-    const distance = Math.sqrt(
+    const distFromFisherman = Math.sqrt(
       Math.pow(bush.position.x - fisherman.position.x, 2) +
       Math.pow(bush.position.z - fisherman.position.z, 2)
     );
     
-    if(distance > 2.5){ // Keep bushes at least 2.5 units away
+    const distFromUpgradesNPC = Math.sqrt(
+      Math.pow(bush.position.x - upgradesNPC.position.x, 2) +
+      Math.pow(bush.position.z - upgradesNPC.position.z, 2)
+    );
+    
+    if(distFromFisherman > 2.5 && distFromUpgradesNPC > 2.5){
       vegetation.add(bush);
     }else{
-      i--; // Try again
+      i--;
     }
   }
 }
 
 /* ---------- DENSITY ---------- */
-placeVegetation(25, 30); // Slightly less vegetation to make room for fisherman
+placeVegetation(22, 28);
 scene.add(vegetation);
 
 /* PLAYER */
@@ -406,7 +542,7 @@ let yaw=0,pitch=0;
 /* CAMERA LOOK */
 let looking=false,lastX=0,lastY=0;
 addEventListener("touchstart",e=>{
- if(e.target.closest(".slot")||e.target.id==="joystick"||e.target.id==="stick"||e.target.id==="jump"||e.target.id==="book"||e.target.closest("#shop")||e.target.closest("#rules")||e.target.closest("#login"))return;
+ if(e.target.closest(".slot")||e.target.id==="joystick"||e.target.id==="stick"||e.target.id==="jump"||e.target.id==="book"||e.target.closest("#shop")||e.target.closest("#upgradesShop")||e.target.closest("#rules")||e.target.closest("#login"))return;
  looking=true;
  lastX=e.touches[0].clientX;
  lastY=e.touches[0].clientY;
@@ -471,6 +607,13 @@ let inventory = ["Rod","","","","","","","",""];
 let selected = 0;
 const inv = document.getElementById("inventory");
 let lastTapTime = 0;
+
+/* ===== UPGRADES SYSTEM ===== */
+let playerUpgrades = {
+  biggerButton: false,      // Makes fish button 50% larger
+  fasterFishing: false,    // 1.5s time limit instead of 1s
+  autoTap: false          // Coming soon
+};
 
 // Parse item stacks
 function parseStack(item){
@@ -580,7 +723,7 @@ function updateRod(){
   }
 }
 
-/* FISHERMAN NPC CLICK → SHOP */
+/* NPC CLICKS → SHOPS */
 const raycaster=new THREE.Raycaster();
 const touchVec=new THREE.Vector2();
 addEventListener("touchstart",e=>{
@@ -588,14 +731,15 @@ addEventListener("touchstart",e=>{
  touchVec.y=-(e.touches[0].clientY/innerHeight)*2+1;
  raycaster.setFromCamera(touchVec,camera);
  
- // Check if clicking on fisherman (check all his parts)
+ // Check if clicking on fisherman
  let hitFisherman = false;
- const intersects = raycaster.intersectObjects(fisherman.children, true);
- if(intersects.length > 0){
+ let hitUpgradesNPC = false;
+ 
+ // Check fisherman
+ const fishermanIntersects = raycaster.intersectObjects(fisherman.children, true);
+ if(fishermanIntersects.length > 0){
    hitFisherman = true;
  }
- 
- // Also check the group itself
  if(!hitFisherman){
    const groupIntersects = raycaster.intersectObject(fisherman);
    if(groupIntersects.length > 0){
@@ -603,9 +747,20 @@ addEventListener("touchstart",e=>{
    }
  }
  
+ // Check upgrades NPC
+ const upgradesIntersects = raycaster.intersectObjects(upgradesNPC.children, true);
+ if(upgradesIntersects.length > 0){
+   hitUpgradesNPC = true;
+ }
+ if(!hitUpgradesNPC){
+   const groupIntersects = raycaster.intersectObject(upgradesNPC);
+   if(groupIntersects.length > 0){
+     hitUpgradesNPC = true;
+   }
+ }
+ 
  if(hitFisherman){
    shop.style.display="block";
-   // Add some shopkeeper dialogue
    const dialogues = [
      "Welcome back! Need some gear?",
      "Ah, a fellow angler! What can I get you?",
@@ -614,6 +769,21 @@ addEventListener("touchstart",e=>{
    ];
    const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
    document.querySelector("#shop p").textContent = `"${randomDialogue}"`;
+ }
+ 
+ if(hitUpgradesNPC){
+   upgradesShop.style.display="block";
+   const dialogues = [
+     "Seeking power? I have just what you need!",
+     "Enhance your fishing with my magical upgrades!",
+     "Make fishing easier with these enchantments!",
+     "Upgrade your abilities for greater catches!"
+   ];
+   const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+   document.querySelector("#upgradesShop p").textContent = `"${randomDialogue}"`;
+   
+   // Update upgrade buttons based on ownership
+   updateUpgradeButtons();
  }
 });
 
@@ -693,11 +863,102 @@ document.getElementById('buyOceanRod').onclick = ()=>{
  alert("Inventory full!");
 };
 
-document.getElementById('expandInv').onclick = ()=>{
+document.getElementById('buyInventory').onclick = ()=>{
   if(money<500) return alert("Not enough money");
   money -= 500;
   document.getElementById("money").textContent = "$"+money;
   expandInventory(3);
+  savePlayerData();
+};
+
+document.getElementById('openUpgrades').onclick = ()=>{
+  shop.style.display = "none";
+  upgradesShop.style.display = "block";
+  updateUpgradeButtons();
+};
+
+/* UPGRADES SHOP BUTTONS */
+function updateUpgradeButtons(){
+  const biggerBtn = document.getElementById('buyBiggerButton');
+  const fasterBtn = document.getElementById('buyFasterFishing');
+  const autoBtn = document.getElementById('buyAutoTap');
+  
+  if(playerUpgrades.biggerButton){
+    biggerBtn.innerHTML = `
+      <div style="font-weight:bold;color:lightgreen">✓ Bigger Button</div>
+      <div class="upgrade-desc">Fish button appears 50% larger</div>
+      <div style="font-size:12px;color:lightgreen">PURCHASED</div>
+    `;
+    biggerBtn.disabled = true;
+    biggerBtn.style.opacity = "0.7";
+  }
+  
+  if(playerUpgrades.fasterFishing){
+    fasterBtn.innerHTML = `
+      <div style="font-weight:bold;color:lightgreen">✓ Faster Fishing</div>
+      <div class="upgrade-desc">1.5 seconds to tap button (instead of 1)</div>
+      <div style="font-size:12px;color:lightgreen">PURCHASED</div>
+    `;
+    fasterBtn.disabled = true;
+    fasterBtn.style.opacity = "0.7";
+  }
+  
+  if(playerUpgrades.autoTap){
+    autoBtn.innerHTML = `
+      <div style="font-weight:bold;color:lightgreen">✓ Auto-Tap</div>
+      <div class="upgrade-desc">Automatically taps some buttons for you</div>
+      <div style="font-size:12px;color:lightgreen">PURCHASED</div>
+    `;
+    autoBtn.disabled = true;
+    autoBtn.style.opacity = "0.7";
+  } else {
+    autoBtn.innerHTML = `
+      <div style="font-weight:bold;color:silver">Auto-Tap (Coming Soon)</div>
+      <div class="upgrade-desc">Automatically taps some buttons for you</div>
+      <div style="font-size:12px;color:silver">Price: $25,000</div>
+    `;
+    autoBtn.disabled = true;
+    autoBtn.style.opacity = "0.5";
+  }
+}
+
+document.getElementById('buyBiggerButton').onclick = ()=>{
+  if(playerUpgrades.biggerButton) return;
+  if(money < 5000) return alert("Not enough money!");
+  
+  money -= 5000;
+  document.getElementById("money").textContent = "$" + money;
+  playerUpgrades.biggerButton = true;
+  
+  msg.style.display = "block";
+  msg.textContent = "✓ Bigger Button Purchased!";
+  msg.style.color = "lightgreen";
+  setTimeout(()=>{
+    msg.style.display = "none";
+    msg.style.color = "white";
+  }, 2000);
+  
+  updateUpgradeButtons();
+  savePlayerData();
+};
+
+document.getElementById('buyFasterFishing').onclick = ()=>{
+  if(playerUpgrades.fasterFishing) return;
+  if(money < 10000) return alert("Not enough money!");
+  
+  money -= 10000;
+  document.getElementById("money").textContent = "$" + money;
+  playerUpgrades.fasterFishing = true;
+  
+  msg.style.display = "block";
+  msg.textContent = "✓ Faster Fishing Purchased!";
+  msg.style.color = "lightgreen";
+  setTimeout(()=>{
+    msg.style.display = "none";
+    msg.style.color = "white";
+  }, 2000);
+  
+  updateUpgradeButtons();
   savePlayerData();
 };
 
@@ -707,7 +968,7 @@ let holding=false, holdTime=0, fishing=false, taps=0, requiredTaps=10, fishButto
 addEventListener("touchstart",(e)=>{
   const currentRod = inventory[selected];
   if(["Rod","Sun Rod","Moon Rod","Ocean Rod"].includes(currentRod)){
-    if(!fishing && !joy && !e.target.closest("#shop") && !e.target.closest("#rules")){
+    if(!fishing && !joy && !e.target.closest("#shop") && !e.target.closest("#upgradesShop") && !e.target.closest("#rules")){
       holding=true; 
       holdTime=0;
     }
@@ -791,16 +1052,43 @@ function createFishButton(){
  fishButton.textContent="PRESS HERE!";
  fishButton.style.position="fixed";
  fishButton.style.zIndex="200";
- fishButton.style.padding="12px 20px";
- fishButton.style.fontSize="18px";
- fishButton.style.borderRadius="8px";
- fishButton.style.background="yellow";
+ fishButton.style.borderRadius="12px";
+ fishButton.style.background="linear-gradient(45deg, #ffd700, #ffed4e)";
  fishButton.style.color="black";
- fishButton.style.border="3px solid red";
- const x=Math.random()*(window.innerWidth-150)+50;
- const y=Math.random()*(window.innerHeight-60)+50;
+ fishButton.style.border="4px solid red";
+ fishButton.style.fontWeight="bold";
+ fishButton.style.boxShadow="0 0 20px rgba(255, 215, 0, 0.7)";
+ 
+ // Apply Bigger Button upgrade
+ if(playerUpgrades.biggerButton){
+   fishButton.style.padding="20px 30px";
+   fishButton.style.fontSize="24px";
+ } else {
+   fishButton.style.padding="12px 20px";
+   fishButton.style.fontSize="18px";
+ }
+ 
+ const x=Math.random()*(window.innerWidth-200)+100;
+ const y=Math.random()*(window.innerHeight-100)+50;
  fishButton.style.left=x+"px";
  fishButton.style.top=y+"px";
+ 
+ // Add animation
+ fishButton.style.animation="pulse 0.5s infinite alternate";
+ 
+ // Add CSS for animation
+ if(!document.querySelector('#button-styles')){
+   const style = document.createElement('style');
+   style.id = 'button-styles';
+   style.textContent = `
+     @keyframes pulse {
+       from { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); }
+       to { transform: scale(1.05); box-shadow: 0 0 30px rgba(255, 215, 0, 0.9); }
+     }
+   `;
+   document.head.appendChild(style);
+ }
+ 
  document.body.appendChild(fishButton);
 }
 
@@ -851,7 +1139,11 @@ function startFishing(){
        return;
      }
      createFishButton();
-     fishTimer=setTimeout(failFish,1000);
+     
+     // Apply Faster Fishing upgrade
+     const timeLimit = playerUpgrades.fasterFishing ? 1500 : 1000;
+     fishTimer=setTimeout(failFish, timeLimit);
+     
      fishButton.onclick=()=>{
        taps++;
        clearTimeout(fishTimer);
@@ -881,14 +1173,21 @@ function loadPlayerData(name){
   money=parsed.money||0;
   inventory.splice(0,inventory.length,...parsed.inventory||inventory);
   selected=parsed.selected||0;
+  if(parsed.upgrades) playerUpgrades = parsed.upgrades;
  }
  document.getElementById("money").textContent="$"+money;
  renderInv();
+ updateUpgradeButtons();
 }
 
 function savePlayerData(){
  if(!username)return;
- localStorage.setItem("fishingGame_"+username,JSON.stringify({money,inventory,selected}));
+ localStorage.setItem("fishingGame_"+username,JSON.stringify({
+   money,
+   inventory,
+   selected,
+   upgrades: playerUpgrades
+ }));
 }
 
 loginBtn.onclick=()=>{
@@ -902,26 +1201,39 @@ loginBtn.onclick=()=>{
 
 setInterval(savePlayerData,5000);
 
-/* ===== FISHERMAN ANIMATION ===== */
+/* ===== NPC ANIMATIONS ===== */
 let fishermanTime = 0;
+let upgradesNPCTime = 0;
+
 function animateFisherman(){
   fishermanTime += 0.01;
-  
-  // Gentle bobbing motion
   fisherman.position.y = 1 + Math.sin(fishermanTime * 0.5) * 0.02;
-  
-  // Slight rotation to look around
   fisherman.rotation.y = Math.sin(fishermanTime * 0.2) * 0.1;
   
-  // Animate fishing rod
   if(npcRod){
     npcRod.rotation.z = Math.PI/6 + Math.sin(fishermanTime * 1.5) * 0.1;
   }
   
-  // Animate fishing line
   if(fishingLine){
     fishingLine.rotation.z = Math.PI/3 + Math.sin(fishermanTime * 1.5) * 0.05;
     fishingLine.scale.y = 1 + Math.sin(fishermanTime * 2) * 0.1;
+  }
+}
+
+function animateUpgradesNPC(){
+  upgradesNPCTime += 0.01;
+  upgradesNPC.position.y = 1 + Math.sin(upgradesNPCTime * 0.5) * 0.02;
+  upgradesNPC.rotation.y = Math.sin(upgradesNPCTime * 0.3) * 0.2;
+  
+  // Animate staff
+  if(staff){
+    staff.rotation.z = -Math.PI/8 + Math.sin(upgradesNPCTime * 1.2) * 0.05;
+  }
+  
+  // Animate crystal
+  if(crystal){
+    crystal.scale.setScalar(1 + Math.sin(upgradesNPCTime * 3) * 0.1);
+    crystal.material.emissiveIntensity = 0.3 + Math.sin(upgradesNPCTime * 4) * 0.2;
   }
 }
 
@@ -948,8 +1260,9 @@ function animate(){
   if(holdTime>=2){startFishing();holding=false;}
  }
 
- // Animate fisherman
+ // Animate NPCs
  animateFisherman();
+ animateUpgradesNPC();
 
  renderer.render(scene,camera);
 }
