@@ -1,3069 +1,884 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>3D Fishing Game - Enhanced</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<style>
-html,body{margin:0;padding:0;overflow:hidden;background:black;touch-action:none}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxel Strike - Free Voxel FPS IO Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-/* UI */
-#stats{
- position:fixed;bottom:10px;right:10px;
- color:white;
- background:rgba(0,0,0,.7);
- padding:8px 15px;border-radius:10px;
- font-family:'Arial',sans-serif;
- border:2px solid gold;
- box-shadow:0 0 15px rgba(255,215,0,0.3);
- text-align:center;
- min-width:120px;
-}
-#stats #money{
- font-size:18px;
- margin-bottom:5px;
- color:gold;
-}
-#stats #level{
- font-size:16px;
- color:#00a8ff;
- margin-bottom:3px;
-}
-#stats #exp{
- font-size:12px;
- color:#4CAF50;
-}
-#levelUp{
- position:fixed;top:50%;left:50%;
- transform:translate(-50%,-50%);
- background:rgba(0,0,0,0.9);
- color:white;
- padding:30px;
- border-radius:15px;
- display:none;
- z-index:60;
- text-align:center;
- border:3px solid gold;
- box-shadow:0 0 40px gold;
- animation:levelUpGlow 1s infinite alternate;
-}
-@keyframes levelUpGlow {
- from { box-shadow:0 0 40px gold; }
- to { box-shadow:0 0 60px #ff00ff, 0 0 80px gold; }
-}
-#levelUp h3{
- color:gold;
- font-size:28px;
- margin-bottom:10px;
-}
-#book{
- position:fixed;top:10px;left:10px;
- font-size:32px;cursor:pointer;
- z-index:10;
- background:rgba(0,0,0,.7);
- border-radius:50%;
- width:50px;height:50px;
- display:flex;align-items:center;justify-content:center;
- border:2px solid white;
- box-shadow:0 0 10px rgba(255,255,255,0.3);
- transition:transform 0.2s;
-}
-#book:hover{transform:scale(1.1);}
-#secretCode{
- position:fixed;top:10px;left:70px;
- font-size:32px;cursor:pointer;
- z-index:10;
- background:rgba(0,0,0,.7);
- border-radius:50%;
- width:50px;height:50px;
- display:flex;align-items:center;justify-content:center;
- border:2px solid #ff00ff;
- box-shadow:0 0 10px rgba(255,0,255,0.3);
- transition:transform 0.2s;
- animation:pulseSecret 2s infinite;
-}
-@keyframes pulseSecret {
- 0% { transform:scale(1); box-shadow:0 0 10px rgba(255,0,255,0.3); }
- 50% { transform:scale(1.1); box-shadow:0 0 20px rgba(255,0,255,0.6); }
- 100% { transform:scale(1); box-shadow:0 0 10px rgba(255,0,255,0.3); }
-}
-#secretCode:hover{transform:scale(1.2);}
-#rules{
- position:fixed;top:50%;left:50%;
- transform:translate(-50%,-50%);
- width:90%;max-width:500px;
- background:linear-gradient(to bottom, rgba(0,20,40,0.95), rgba(0,40,80,0.95));
- color:white;padding:25px;
- border-radius:15px;
- display:none;
- z-index:20;
- border:3px solid #00a8ff;
- box-shadow:0 0 40px rgba(0,168,255,0.5);
- font-family:'Arial',sans-serif;
- max-height:80vh;
- overflow-y:auto;
-}
-#rules h2{
- color:#00a8ff;
- text-align:center;
- margin-bottom:20px;
- font-size:24px;
-}
-#rules button{
- margin-top:20px;padding:10px 20px;
- font-size:16px;
- background:linear-gradient(to right, #00a8ff, #0097e6);
- color:white;
- border:none;
- border-radius:8px;
- cursor:pointer;
- font-weight:bold;
-}
-#msg{
- position:fixed;top:50%;left:50%;
- transform:translate(-50%,-50%);
- color:white;font-size:24px;
- display:none;text-shadow:2px 2px 8px black;
- background:rgba(0,0,0,0.7);
- padding:15px 25px;
- border-radius:10px;
- z-index:30;
- font-weight:bold;
-}
+        body {
+            background: #0a0e17;
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(28, 58, 173, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.15) 0%, transparent 50%);
+        }
 
-/* Controls */
-#joystick{
- position:fixed;bottom:120px;left:20px;
- width:120px;height:120px;
- background:radial-gradient(circle, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
- border-radius:50%;
- border:2px solid rgba(255,255,255,0.3);
- box-shadow:0 0 20px rgba(255,255,255,0.1);
-}
-#stick{
- position:absolute;left:35px;top:35px;
- width:50px;height:50px;
- background:radial-gradient(circle, white, #e0e0e0);
- border-radius:50%;
- border:2px solid rgba(0,0,0,0.2);
- box-shadow:0 0 10px rgba(255,255,255,0.5);
-}
-#jump{
- position:fixed;bottom:120px;right:20px;
- width:90px;height:90px;
- border-radius:50%;
- background:linear-gradient(to bottom, #4CAF50, #388E3C);
- color:white;
- font-size:16px;
- font-weight:bold;
- border:none;
- box-shadow:0 0 20px rgba(76,175,80,0.5);
- border:2px solid #81C784;
- cursor:pointer;
- transition:transform 0.1s;
-}
-#jump:active{transform:scale(0.95);}
+        /* Voxel Background Pattern */
+        .voxel-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(10, 14, 23, 0.9), rgba(10, 14, 23, 0.95)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="50" height="50" fill="%231E3A8A" opacity="0.1"/><rect x="50" y="0" width="50" height="50" fill="%231E3A8A" opacity="0.05"/><rect x="0" y="50" width="50" height="50" fill="%231E3A8A" opacity="0.05"/><rect x="50" y="50" width="50" height="50" fill="%231E3A8A" opacity="0.1"/></svg>');
+            z-index: -1;
+        }
 
-/* INVENTORY */
-#inventory{
-  position: fixed;
-  bottom: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  max-width: 95%;
-  padding: 10px;
-  background: rgba(0,0,0,0.6);
-  border-radius: 12px;
-  border: 2px solid rgba(255,255,255,0.2);
-  backdrop-filter: blur(5px);
-}
-.slot{
-  width: 50px;
-  height: 50px;
-  border: 2px solid rgba(255,255,255,0.3);
-  color: white;
-  font-size: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.8);
-  flex: 0 0 auto;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-}
-.slot.active{
-  border-color: gold;
-  box-shadow:0 0 15px gold;
-  transform:scale(1.1);
-}
-.slot-count{
-  position:absolute;
-  bottom:2px;right:2px;
-  background:rgba(0,0,0,0.8);
-  color:white;
-  font-size:9px;
-  padding:1px 4px;
-  border-radius:3px;
-}
+        /* Header/Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            position: relative;
+            z-index: 100;
+        }
 
-/* SHOPS */
-#shop, #snowyShop{
- position:fixed;
- top:50%;left:50%;
- transform:translate(-50%,-50%);
- background:linear-gradient(to bottom, rgba(0,30,60,0.95), rgba(0,50,100,0.95));
- color:white;
- padding:25px;
- border-radius:15px;
- display:none;
- z-index:50;
- text-align:center;
- width:90%;
- max-width:500px;
- border:3px solid #00a8ff;
- box-shadow:0 0 40px rgba(0,168,255,0.5);
-}
-#snowyShop{
- background:linear-gradient(to bottom, rgba(30,50,70,0.95), rgba(50,80,120,0.95));
- border:3px solid #a0d2ff;
-}
-#shop h3, #snowyShop h3{
- color:#00a8ff;
- margin-bottom:20px;
- font-size:22px;
-}
-#snowyShop h3{
- color:#a0d2ff;
-}
-#shop button, #snowyShop button{
- margin:8px;
- padding:12px 20px;
- font-size:16px;
- background:linear-gradient(to right, #4CAF50, #388E3C);
- color:white;
- border:none;
- border-radius:8px;
- cursor:pointer;
- font-weight:bold;
- min-width:200px;
- transition:transform 0.2s;
-}
-#shop button:hover, #snowyShop button:hover{
- transform:translateY(-2px);
-}
-#shop button:disabled, #snowyShop button:disabled{
- opacity:0.6;
- cursor:not-allowed;
- transform:none;
-}
-.upgrade-desc{
- font-size:14px;
- color:#ccc;
- margin:5px 0 15px 0;
-}
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-/* FISH PREVIEW */
-#fishPreview{
- position:fixed;
- top:50%;left:50%;
- transform:translate(-50%,-50%);
- background:rgba(0,0,0,0.9);
- color:white;
- padding:20px;
- border-radius:15px;
- display:none;
- z-index:40;
- text-align:center;
- border:3px solid gold;
- box-shadow:0 0 30px gold;
-}
-#fishPreview h4{
- color:gold;
- margin-bottom:15px;
-}
-#fishPreviewCanvas{
- width:200px;height:200px;
- margin:10px auto;
- display:block;
-}
+        .logo-icon {
+            font-size: 32px;
+            color: #3b82f6;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
 
-/* LOGIN */
-#login{
- position:fixed;
- top:50%;left:50%;
- transform:translate(-50%,-50%);
- background:linear-gradient(to bottom, rgba(0,30,60,0.95), rgba(0,50,100,0.95));
- color:white;
- padding:30px;
- border-radius:15px;
- z-index:100;
- text-align:center;
- border:3px solid #00a8ff;
- box-shadow:0 0 40px rgba(0,168,255,0.5);
-}
-#login h2{
- color:#00a8ff;
- margin-bottom:20px;
-}
-#login input{
- padding:12px;
- font-size:16px;
- margin-bottom:15px;
- width:250px;
- border-radius:8px;
- border:2px solid #00a8ff;
- background:rgba(0,0,0,0.5);
- color:white;
-}
-#login button{
- padding:12px 30px;
- font-size:16px;
- background:linear-gradient(to right, #00a8ff, #0097e6);
- color:white;
- border:none;
- border-radius:8px;
- cursor:pointer;
- font-weight:bold;
-}
+        .logo-text {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
 
-/* WATER EFFECTS */
-#waterCanvas{
- position:fixed;
- top:0;left:0;
- width:100%;height:100%;
- pointer-events:none;
- z-index:1;
-}
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
 
-/* FISH BUTTON */
-#fishButton {
- position: fixed;
- z-index: 1000 !important;
- border-radius: 15px;
- background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f);
- color: black;
- border: 4px solid #ff4757;
- font-weight: bold;
- box-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
- text-shadow: 1px 1px 2px white;
- font-size: 22px;
- padding: 15px 30px;
- cursor: pointer;
- animation: enhancedPulse 0.6s infinite alternate;
- display: none;
-}
-@keyframes enhancedPulse {
- from { 
-   transform: scale(1) rotate(-1deg); 
-   box-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
- }
- to { 
-   transform: scale(1.08) rotate(1deg); 
-   box-shadow: 0 0 50px rgba(255, 107, 107, 1);
- }
-}
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
 
-/* PROGRESS BAR */
-#castProgress {
- position: fixed;
- top: 50%;
- left: 50%;
- transform: translate(-50%, -50%);
- width: 200px;
- height: 20px;
- background: rgba(0,0,0,0.7);
- border-radius: 10px;
- border: 2px solid white;
- display: none;
- z-index: 35;
- overflow: hidden;
-}
-#castProgressFill {
- height: 100%;
- background: linear-gradient(to right, #4CAF50, #8BC34A);
- width: 0%;
- transition: width 0.1s;
- border-radius: 8px;
-}
+        .nav-links a:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #fff;
+        }
 
-/* PORTAL MESSAGE */
-#portalMessage {
- position: fixed;
- top: 50%;
- left: 50%;
- transform: translate(-50%, -50%);
- background: rgba(0,0,0,0.95);
- color: white;
- padding: 30px;
- border-radius: 15px;
- text-align: center;
- border: 3px solid #00ffff;
- box-shadow: 0 0 50px #00ffff;
- display: none;
- z-index: 70;
- width: 90%;
- max-width: 400px;
-}
-#portalMessage h3 {
- color: #00ffff;
- margin-bottom: 15px;
- font-size: 24px;
-}
+        .nav-links a.active {
+            background: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
 
-/* SECRET CODE INPUT */
-#secretCodeInput {
- position: fixed;
- top: 50%;
- left: 50%;
- transform: translate(-50%, -50%);
- background: linear-gradient(to bottom, rgba(40,0,60,0.95), rgba(80,0,120,0.95));
- color: white;
- padding: 30px;
- border-radius: 15px;
- text-align: center;
- border: 3px solid #ff00ff;
- box-shadow: 0 0 50px #ff00ff;
- display: none;
- z-index: 80;
- width: 90%;
- max-width: 400px;
-}
-#secretCodeInput h3 {
- color: #ff00ff;
- margin-bottom: 15px;
- font-size: 24px;
-}
-#secretCodeInput input {
- padding: 12px;
- font-size: 16px;
- margin-bottom: 15px;
- width: 250px;
- border-radius: 8px;
- border: 2px solid #ff00ff;
- background: rgba(0,0,0,0.5);
- color: white;
- text-align: center;
- font-weight: bold;
-}
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
 
-/* NOTIFICATION TOAST */
-.notification {
- position: fixed;
- top: 20px;
- left: 50%;
- transform: translateX(-50%);
- background: linear-gradient(to right, #00a8ff, #0097e6);
- color: white;
- padding: 12px 24px;
- border-radius: 10px;
- z-index: 1000;
- display: none;
- box-shadow: 0 5px 20px rgba(0,0,0,0.3);
- animation: slideIn 0.3s ease-out;
-}
-@keyframes slideIn {
- from { transform: translateX(-50%) translateY(-50px); opacity: 0; }
- to { transform: translateX(-50%) translateY(0); opacity: 1; }
-}
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+        }
 
-/* FISHING SPOT INDICATOR */
-#fishingSpot {
- position: fixed;
- top: 50%;
- left: 50%;
- transform: translate(-50%, -50%);
- width: 80px;
- height: 80px;
- border-radius: 50%;
- background: radial-gradient(circle, rgba(0,168,255,0.3) 0%, rgba(0,168,255,0) 70%);
- border: 2px dashed #00a8ff;
- pointer-events: none;
- display: none;
- z-index: 5;
- animation: pulseSpot 2s infinite;
-}
-@keyframes pulseSpot {
- 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
- 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-}
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #3b82f6, #ef4444, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            line-height: 1.1;
+        }
 
-/* TUTORIAL OVERLAY */
-#tutorial {
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(0,0,0,0.9);
- z-index: 200;
- display: flex;
- flex-direction: column;
- justify-content: center;
- align-items: center;
- color: white;
- text-align: center;
- padding: 20px;
- display: none;
-}
-#tutorial .slide {
- display: none;
-}
-#tutorial .slide.active {
- display: block;
-}
-.tutorial-controls {
- margin-top: 30px;
- display: flex;
- gap: 20px;
-}
-.tutorial-controls button {
- padding: 10px 20px;
- background: linear-gradient(to right, #00a8ff, #0097e6);
- border: none;
- border-radius: 8px;
- color: white;
- cursor: pointer;
- font-weight: bold;
-}
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-/* ROD SELECTOR */
-#rodSelector {
- position: fixed;
- top: 50%;
- left: 50%;
- transform: translate(-50%, -50%);
- background: linear-gradient(to bottom, rgba(0,30,60,0.95), rgba(0,50,100,0.95));
- color: white;
- padding: 25px;
- border-radius: 15px;
- display: none;
- z-index: 90;
- text-align: center;
- width: 90%;
- max-width: 400px;
- border: 3px solid gold;
- box-shadow: 0 0 40px gold;
-}
-#rodSelector h3 {
- color: gold;
- margin-bottom: 20px;
-}
-.rod-option {
- margin: 10px;
- padding: 15px;
- background: rgba(255,255,255,0.1);
- border-radius: 10px;
- cursor: pointer;
- transition: all 0.2s;
-}
-.rod-option:hover {
- background: rgba(255,255,255,0.2);
- transform: translateY(-2px);
-}
-.rod-option.owned {
- background: rgba(76,175,80,0.3);
- border: 2px solid #4CAF50;
-}
-.rod-option.not-owned {
- background: rgba(244,67,54,0.3);
- border: 2px solid #f44336;
-}
-</style>
+        /* Game Preview */
+        .game-preview {
+            width: 100%;
+            height: 400px;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 12px;
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            overflow: hidden;
+            position: relative;
+            margin: 40px auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-screen {
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .voxel-world {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Voxel blocks for preview */
+        .voxel {
+            position: absolute;
+            background: #1e40af;
+            border: 1px solid #3b82f6;
+            box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.5);
+        }
+
+        .voxel-player {
+            position: absolute;
+            width: 40px;
+            height: 60px;
+            background: #ef4444;
+            border: 2px solid #fca5a5;
+            border-radius: 4px;
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
+        }
+
+        .game-stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        /* Play Button */
+        .play-container {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .play-button {
+            display: inline-block;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 800;
+            padding: 22px 60px;
+            border-radius: 12px;
+            text-decoration: none;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.6);
+        }
+
+        .play-button:active {
+            transform: translateY(0);
+        }
+
+        .play-button i {
+            margin-right: 12px;
+        }
+
+        /* Game Modes */
+        .game-modes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .mode-card {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-10px);
+            border-color: #3b82f6;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        .mode-icon {
+            font-size: 2.5rem;
+            color: #3b82f6;
+            margin-bottom: 20px;
+        }
+
+        .mode-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #f1f5f9;
+        }
+
+        .mode-card p {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .players-online {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 80px;
+            border-top: 1px solid rgba(59, 130, 246, 0.3);
+            color: #94a3b8;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #3b82f6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .game-preview {
+                height: 300px;
+            }
+        }
+
+        /* Game Lobby */
+        .game-lobby {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 23, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lobby-container {
+            background: rgba(15, 23, 42, 0.95);
+            width: 90%;
+            max-width: 800px;
+            border-radius: 16px;
+            border: 2px solid rgba(59, 130, 246, 0.5);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+        }
+
+        .lobby-header {
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lobby-header h2 {
+            font-size: 1.8rem;
+        }
+
+        .close-lobby {
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            color: #fca5a5;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-lobby:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        .lobby-content {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .server-list {
+            grid-column: 1 / -1;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .server-item {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .server-item:hover {
+            background: rgba(30, 58, 138, 0.3);
+            border-color: #3b82f6;
+        }
+
+        .server-players {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #60a5fa;
+        }
+
+        .join-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .join-btn:hover {
+            background: #2563eb;
+        }
+
+        .player-customization {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .color-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .color-option.selected {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0e17;
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .loading-text {
+            font-size: 2rem;
+            margin-top: 30px;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 10px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .blinking {
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
 </head>
 <body>
-
-<!-- WATER CANVAS -->
-<canvas id="waterCanvas"></canvas>
-
-<!-- TUTORIAL -->
-<div id="tutorial">
- <div class="slide active">
-   <h2 style="color:#00a8ff;margin-bottom:20px;">🎣 WELCOME TO FISHING ADVENTURE! 🎣</h2>
-   <p style="font-size:18px;line-height:1.6;max-width:500px;">
-     Welcome, angler! Let me show you how to play:<br><br>
-     1. Use the <b>left joystick</b> to move around<br>
-     2. <b>Swipe anywhere</b> to look around<br>
-     3. Tap the <b>green JUMP button</b> to jump<br>
-     4. <b>Hold anywhere</b> for 2 seconds to cast your line<br>
-   </p>
-   <div class="tutorial-controls">
-     <button onclick="nextSlide()">NEXT</button>
-     <button onclick="skipTutorial()">SKIP</button>
-   </div>
- </div>
- <div class="slide">
-   <h2 style="color:#4CAF50;margin-bottom:20px;">🎮 CATCHING FISH</h2>
-   <p style="font-size:18px;line-height:1.6;max-width:500px;">
-     <b>Step 1:</b> Equip a fishing rod from your inventory<br>
-     <b>Step 2:</b> Hold to cast (2 seconds)<br>
-     <b>Step 3:</b> When fish bites, tap the <b>PRESS HERE</b> button quickly!<br>
-     <b>Step 4:</b> Tap 10 times to catch the fish<br><br>
-     <span style="color:#ffd700">TIP:</span> Better rods = better fish chances!
-   </p>
-   <div class="tutorial-controls">
-     <button onclick="prevSlide()">BACK</button>
-     <button onclick="nextSlide()">NEXT</button>
-   </div>
- </div>
- <div class="slide">
-   <h2 style="color:#FF9800;margin-bottom:20px;">💰 SELLING FISH</h2>
-   <p style="font-size:18px;line-height:1.6;max-width:500px;">
-     <b>Single tap</b> any fish in inventory → See preview<br>
-     <b>Double tap</b> → Sell all of that fish type<br><br>
-     Visit the <b>fisherman</b> to buy better rods!<br>
-     <span style="color:#00ffff">NEW:</span> Once you buy a rod, you own it forever!<br>
-     Find the portal in the center to access <b>Snowy Island</b> (need Ocean Rod)<br><br>
-     Good luck, and happy fishing!
-   </p>
-   <div class="tutorial-controls">
-     <button onclick="prevSlide()">BACK</button>
-     <button onclick="skipTutorial()">START FISHING!</button>
-   </div>
- </div>
-</div>
-
-<!-- LOGIN -->
-<div id="login">
- <h2>🎣 Fishing Adventure</h2>
- <input type="text" id="username" placeholder="Enter your username"><br>
- <button id="loginBtn">Start Fishing!</button>
-</div>
-
-<div id="book">📘</div>
-<div id="secretCode">🐙</div>
-<div id="rules">
- <h2>🎣 FISHING GAME - COMPLETE GUIDE 🎣</h2>
- <div style="text-align:left;line-height:1.6;">
- <h3 style="color:#4CAF50">🎮 CONTROLS</h3>
- <p>
- • <b>Movement:</b> Use the left joystick to move around<br>
- • <b>Camera:</b> Swipe anywhere on screen to look around<br>
- • <b>Jump:</b> Press the green JUMP button<br>
- • <b>Interact:</b> Walk up to NPCs or objects and tap them
- </p>
- 
- <h3 style="color:#00a8ff">🎣 FISHING MECHANICS</h3>
- <p>
- <b>Step 1 - Equip Rod:</b><br>
- • Select a fishing rod from your inventory<br>
- • You start with a Basic Rod<br>
- • Better rods = better fish chances<br><br>
-
- <b>Step 2 - Cast Line:</b><br>
- • Hold your finger anywhere on screen for 2 seconds<br>
- • Progress bar will show casting progress<br>
- • Release when bar is full to cast<br><br>
-
- <b>Step 3 - Catch Fish:</b><br>
- • Wait for fish to bite (1-2.5 seconds)<br>
- • A "PRESS HERE" button will appear randomly<br>
- • Tap it within 1 second<br>
- • Repeat 10 times to catch the fish<br>
- • Rarer fish are harder to catch!
- </p>
- 
- <h3 style="color:#FF9800">🐟 FISH TYPES & VALUES</h3>
- <p>
- <b>🌴 TROPICAL ISLAND FISH:</b><br>
- • <span style="color:#ccc">Clownfish</span> – Common – $5 – 5 XP<br>
- • <span style="color:#ccc">Tuna</span> – Common – $10 – 10 XP<br>
- • <span style="color:#ccc">Shark</span> – Common – $25 – 15 XP<br>
- • <span style="color:#4CAF50">Pufferfish</span> – Uncommon – $25 – 25 XP<br>
- • <span style="color:#4CAF50">Sea Turtle</span> – Uncommon – $50 – 50 XP<br>
- • <span style="color:#00a8ff">Manta Ray</span> – Rare – $500 – 100 XP<br>
- • <span style="color:#FF9800">Great White Shark</span> – Epic – $1,500 – 150 XP<br>
- • <span style="color:#FF9800">Terrorshark</span> – Epic – $2,000 – 200 XP<br>
- • <span style="color:#E91E63">Megalodon</span> – Legendary – $10,000 – 250 XP<br>
- • <span style="color:#FF00FF">Kraken</span> – Mythical – $5,000 – 500 XP<br><br>
-
- <b>❄️ SNOWY ISLAND FISH:</b><br>
- • <span style="color:#ccc">Arctic Char</span> – Common – $100 – 20 XP<br>
- • <span style="color:#ccc">Snow Trout</span> – Common – $200 – 30 XP<br>
- • <span style="color:#4CAF50">Ice Shark</span> – Uncommon – $500 – 75 XP<br>
- • <span style="color:#4CAF50">Frost Puffer</span> – Uncommon – $750 – 100 XP<br>
- • <span style="color:#00a8ff">Glacier Whale</span> – Rare – $2,500 – 300 XP<br>
- • <span style="color:#FF9800">Yeti Crab</span> – Epic – $5,000 – 500 XP<br>
- • <span style="color:#FF00FF">Ice Dragon</span> – Mythical – $10,000 – 1000 XP
- </p>
- 
- <h3 style="color:#9C27B0">🎣 FISHING RODS</h3>
- <p>
- <b>TIER SYSTEM (Each tier is 2x better):</b><br>
- • <span style="color:#8B4513">Basic Rod</span> – Starter rod – Normal chances<br>
- • <span style="color:#ffcc00">Sun Rod</span> – $1,000 – 2x better rare fish<br>
- • <span style="color:#8a2be2">Moon Rod</span> – $10,000 – 4x better rare fish<br>
- • <span style="color:#00bfff">Ocean Rod</span> – $100,000 – 8x better rare fish<br>
- • <span style="color:#87CEEB">Glacier Rod</span> – $500,000 – 16x better<br>
- • <span style="color:#FF6347">Frostfire Rod</span> – $2,000,000 – 32x better<br>
- • <span style="color:#9370DB">Aurora Rod</span> – $10,000,000 – 64x better<br><br>
-
- <b>IMPORTANT:</b> Ocean Rod unlocks portal to Snowy Island!<br>
- <b>NEW FEATURE:</b> Once you buy a rod, you own it forever!
- </p>
- 
- <h3 style="color:#00bcd4">🌐 PORTAL SYSTEM</h3>
- <p>
- • Portal is always visible in the center of the island<br>
- • Appears gray/dark when inactive<br>
- • Glows bright cyan when activated<br>
- • <b>REQUIREMENT:</b> Must have Ocean Rod to access<br>
- • Travel between Tropical and Snowy islands<br>
- • Each island has unique fish and shops
- </p>
- 
- <h3 style="color:#FF5722">💰 ECONOMY & SHOPS</h3>
- <p>
- <b>Tropical Fisherman (Left side of island):</b><br>
- • Sells Sun, Moon, and Ocean rods<br>
- • Sells inventory expansions<br>
- • Gives fishing tips<br><br>
-
- <b>Snowy Fisherman (Left side of snowy island):</b><br>
- • Sells Glacier, Frostfire, and Aurora rods<br>
- • Sells larger inventory expansions<br>
- • Specialized for icy waters<br><br>
-
- <b>INVENTORY MANAGEMENT:</b><br>
- • Start with 9 slots<br>
- • Expand at either shop<br>
- • Fish stack up to 99<br>
- • Tap once to preview fish<br>
- • Double-tap to sell all of that fish type
- </p>
- 
- <h3 style="color:#4CAF50">📈 LEVEL SYSTEM</h3>
- <p>
- • Gain XP by catching fish<br>
- • Rarer fish = more XP<br>
- • Level up increases max XP needed<br>
- • <b>Level Rewards:</b><br>
-   - Level 2: $100 + New fishing spot<br>
-   - Level 5: $500 + Better fish chances<br>
-   - Level 10: $2,000 + Legendary fish unlocked<br>
-   - Every 5 levels: Bonus money!
- </p>
- 
- <h3 style="color:#FF00FF">🎯 PRO TIPS</h3>
- <p>
- 1. Start with Basic Rod to earn initial money<br>
- 2. Buy Sun Rod as soon as possible<br>
- 3. Save fish to sell in bulk for better money management<br>
- 4. Always check fish previews before selling<br>
- 5. Work towards Ocean Rod to unlock Snowy Island<br>
- 6. Snowy Island fish are worth more but harder to catch<br>
- 7. Higher level = better overall fishing chances<br>
- 8. Visit both island shops for best gear options
- </p>
- 
- <div style="text-align:center;margin-top:20px;padding:10px;background:rgba(255,215,0,0.1);border-radius:10px;border:1px solid gold;">
- <small style="color:#ccc">Game saves automatically every 5 seconds</small><br>
- <small style="color:#ccc">Different username = different save file</small><br>
- <small style="color:#ff00ff">Secret: Try tapping the 🐙 button!</small>
- </div>
- </div>
- <button onclick="rules.style.display='none'">CLOSE GUIDE</button>
-</div>
-
-<!-- STATS CONTAINER -->
-<div id="stats">
- <div id="money">$0</div>
- <div id="level">Level: 1</div>
- <div id="exp">XP: 0/100</div>
-</div>
-
-<!-- CASTING PROGRESS -->
-<div id="castProgress">
- <div id="castProgressFill"></div>
-</div>
-
-<!-- LEVEL UP NOTIFICATION -->
-<div id="levelUp">
- <h3>🎉 LEVEL UP! 🎉</h3>
- <div id="newLevel" style="font-size:24px;color:gold;margin:10px 0;"></div>
- <div id="levelReward" style="font-size:18px;color:#4CAF50;margin:10px 0;"></div>
- <button onclick="levelUp.style.display='none'" style="margin-top:20px;padding:10px 20px;background:linear-gradient(to right, #00a8ff, #0097e6);color:white;border:none;border-radius:8px;cursor:pointer;">CONTINUE</button>
-</div>
-
-<!-- PORTAL MESSAGE -->
-<div id="portalMessage">
- <h3 id="portalTitle">🌐 PORTAL</h3>
- <p id="portalText">You need the Ocean Rod to access this portal!</p>
- <button onclick="portalMessage.style.display='none'" style="margin-top:20px;padding:10px 20px;background:linear-gradient(to right, #00a8ff, #0097e6);color:white;border:none;border-radius:8px;cursor:pointer;">CONTINUE</button>
-</div>
-
-<!-- SECRET CODE INPUT -->
-<div id="secretCodeInput">
- <h3>🐙 SECRET CODE 🐙</h3>
- <p>Enter the secret code to receive a reward!</p>
- <input type="text" id="codeInput" placeholder="Enter code..." maxlength="10"><br>
- <button id="submitCode" style="margin-top:10px;padding:10px 20px;background:linear-gradient(to right, #ff00ff, #cc00cc);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">SUBMIT</button>
- <button onclick="secretCodeInput.style.display='none'" style="margin-top:10px;padding:10px 20px;background:linear-gradient(to right, #f44336, #d32f2f);color:white;border:none;border-radius:8px;cursor:pointer;">CANCEL</button>
-</div>
-
-<!-- ROD SELECTOR -->
-<div id="rodSelector">
- <h3>🎣 Select Fishing Rod</h3>
- <div id="rodOptions"></div>
- <br>
- <button onclick="document.getElementById('rodSelector').style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CANCEL</button>
-</div>
-
-<div id="msg"></div>
-<button id="fishButton">🎯 PRESS HERE! 🎯</button>
-
-<!-- FISHING SPOT INDICATOR -->
-<div id="fishingSpot"></div>
-
-<div id="joystick"><div id="stick"></div></div>
-<button id="jump">JUMP</button>
-<div id="inventory"></div>
-
-<!-- FISH PREVIEW -->
-<div id="fishPreview">
- <h4>Fish Preview</h4>
- <canvas id="fishPreviewCanvas"></canvas>
- <div id="fishStats"></div>
- <button onclick="fishPreview.style.display='none'">CLOSE</button>
-</div>
-
-<!-- TROPICAL ISLAND SHOP -->
-<div id="shop">
- <h3>🎣 Fisherman's Shop</h3>
- <p style="font-size:14px;color:#ccc;margin-bottom:20px;" id="shopDialogue">"Welcome! Need fishing gear?"</p>
- <button id="buySunRod">Buy Sun Rod ($1,000)</button><br>
- <button id="buyMoonRod">Buy Moon Rod ($10,000)</button><br>
- <button id="buyOceanRod">Buy Ocean Rod ($100,000)</button><br>
- <button id="buyInventory">Buy 3 Inventory Slots ($500)</button><br>
- <br>
- <button onclick="shop.style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CLOSE</button>
-</div>
-
-<!-- SNOWY ISLAND SHOP -->
-<div id="snowyShop">
- <h3>❄️ Snowy Island Shop</h3>
- <p style="font-size:14px;color:#ccc;margin-bottom:20px;" id="snowyShopDialogue">"Brrr... Cold here! Need special gear for icy waters!"</p>
- <button id="buyGlacierRod">Buy Glacier Rod ($500,000)</button><br>
- <button id="buyFrostfireRod">Buy Frostfire Rod ($2,000,000)</button><br>
- <button id="buyAuroraRod">Buy Aurora Rod ($10,000,000)</button><br>
- <button id="buySnowyInventory">Buy 5 Inventory Slots ($2,000)</button><br>
- <br>
- <button onclick="snowyShop.style.display='none'" style="background:linear-gradient(to right, #f44336, #d32f2f)">CLOSE</button>
-</div>
-
-<!-- NOTIFICATION TOAST -->
-<div id="notification" class="notification"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-<script>
-/* ===== ENHANCED SCENE ===== */
-let currentIsland = 'tropical'; // 'tropical' or 'snowy'
-let portal = null;
-let hasOceanRod = false;
-let tutorialCompleted = false;
-
-// NEW: Track owned rods
-let ownedRods = new Set(["Rod"]); // Start with basic rod
-
-const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x87CEEB, 50, 500);
-
-const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ 
-  antialias: true,
-  alpha: true 
-});
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputEncoding = THREE.sRGBEncoding;
-document.body.appendChild(renderer.domElement);
-
-/* LIGHTING */
-scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-sun.position.set(50, 100, 50);
-sun.castShadow = true;
-sun.shadow.mapSize.width = 2048;
-sun.shadow.mapSize.height = 2048;
-scene.add(sun);
-
-/* ENHANCED OCEAN */
-const oceanGeometry = new THREE.PlaneGeometry(5000, 5000, 128, 128);
-const oceanMaterial = new THREE.MeshStandardMaterial({
-  color: 0x1e90ff,
-  roughness: 0.1,
-  metalness: 0.2,
-  side: THREE.DoubleSide
-});
-const ocean = new THREE.Mesh(oceanGeometry, oceanMaterial);
-ocean.rotation.x = -Math.PI / 2;
-ocean.position.y = -1;
-ocean.receiveShadow = true;
-scene.add(ocean);
-
-/* CREATE TROPICAL ISLAND */
-function createTropicalIsland() {
-  const island = new THREE.Group();
-
-  // Base island shape
-  const baseGeometry = new THREE.CylinderGeometry(20, 25, 3, 64);
-  const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0x2d7a2d,
-    roughness: 0.8,
-    metalness: 0.1
-  });
-  const islandBase = new THREE.Mesh(baseGeometry, baseMaterial);
-  islandBase.position.set(0, 1.5, 0);
-  islandBase.castShadow = true;
-  islandBase.receiveShadow = true;
-  island.add(islandBase);
-
-  // Island details - rocky edges
-  const rockCount = 16;
-  for(let i = 0; i < rockCount; i++) {
-    const angle = (i / rockCount) * Math.PI * 2;
-    const radius = 22 + Math.random() * 2;
-    
-    const rockGeometry = new THREE.SphereGeometry(1.5 + Math.random() * 1, 8, 6);
-    const rockMaterial = new THREE.MeshStandardMaterial({
-      color: 0x5d4037,
-      roughness: 0.9,
-      metalness: 0
-    });
-    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-    
-    rock.position.set(
-      Math.cos(angle) * radius,
-      2 + Math.random() * 1,
-      Math.sin(angle) * radius
-    );
-    rock.castShadow = true;
-    island.add(rock);
-  }
-
-  // Island details - small hills
-  const hillCount = 8;
-  for(let i = 0; i < hillCount; i++) {
-    const angle = (i / hillCount) * Math.PI * 2;
-    const radius = 8 + Math.random() * 10;
-    
-    const hillGeometry = new THREE.ConeGeometry(
-      3 + Math.random() * 2,
-      2 + Math.random() * 1.5,
-      16
-    );
-    const hillMaterial = new THREE.MeshStandardMaterial({
-      color: 0x3a9e3a,
-      roughness: 0.8,
-      metalness: 0
-    });
-    const hill = new THREE.Mesh(hillGeometry, hillMaterial);
-    
-    hill.position.set(
-      Math.cos(angle) * radius,
-      2.5,
-      Math.sin(angle) * radius
-    );
-    hill.castShadow = true;
-    hill.receiveShadow = true;
-    island.add(hill);
-  }
-
-  // Island details - sandy beach patches
-  const sandPatchCount = 6;
-  for(let i = 0; i < sandPatchCount; i++) {
-    const angle = (i / sandPatchCount) * Math.PI * 2;
-    const radius = 18 + Math.random() * 4;
-    
-    const sandGeometry = new THREE.CircleGeometry(3 + Math.random() * 2, 16);
-    const sandMaterial = new THREE.MeshStandardMaterial({
-      color: 0xf4e4a6,
-      roughness: 0.9,
-      metalness: 0,
-      side: THREE.DoubleSide
-    });
-    const sand = new THREE.Mesh(sandGeometry, sandMaterial);
-    
-    sand.position.set(
-      Math.cos(angle) * radius,
-      2.01,
-      Math.sin(angle) * radius
-    );
-    sand.rotation.x = -Math.PI / 2;
-    island.add(sand);
-  }
-
-  return island;
-}
-
-/* CREATE SNOWY ISLAND */
-function createSnowyIsland() {
-  const island = new THREE.Group();
-
-  // Base island shape with snow texture
-  const baseGeometry = new THREE.CylinderGeometry(20, 25, 3, 64);
-  const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0xf0f8ff,
-    roughness: 0.9,
-    metalness: 0.2
-  });
-  const islandBase = new THREE.Mesh(baseGeometry, baseMaterial);
-  islandBase.position.set(0, 1.5, 0);
-  islandBase.castShadow = true;
-  islandBase.receiveShadow = true;
-  island.add(islandBase);
-
-  // Snowy hills
-  const hillCount = 10;
-  for(let i = 0; i < hillCount; i++) {
-    const angle = (i / hillCount) * Math.PI * 2;
-    const radius = 8 + Math.random() * 12;
-    
-    const hillGeometry = new THREE.ConeGeometry(
-      2.5 + Math.random() * 1.5,
-      3 + Math.random() * 2,
-      16
-    );
-    const hillMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.8,
-      metalness: 0.1
-    });
-    const hill = new THREE.Mesh(hillGeometry, hillMaterial);
-    
-    hill.position.set(
-      Math.cos(angle) * radius,
-      2.5,
-      Math.sin(angle) * radius
-    );
-    hill.castShadow = true;
-    hill.receiveShadow = true;
-    island.add(hill);
-  }
-
-  // Ice patches
-  const icePatchCount = 8;
-  for(let i = 0; i < icePatchCount; i++) {
-    const angle = (i / icePatchCount) * Math.PI * 2;
-    const radius = 15 + Math.random() * 8;
-    
-    const iceGeometry = new THREE.CircleGeometry(2 + Math.random() * 2, 16);
-    const iceMaterial = new THREE.MeshStandardMaterial({
-      color: 0xa0d2ff,
-      roughness: 0.2,
-      metalness: 0.8,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.7
-    });
-    const ice = new THREE.Mesh(iceGeometry, iceMaterial);
-    
-    ice.position.set(
-      Math.cos(angle) * radius,
-      2.01,
-      Math.sin(angle) * radius
-    );
-    ice.rotation.x = -Math.PI / 2;
-    island.add(ice);
-  }
-
-  // Snowy rocks
-  const rockCount = 12;
-  for(let i = 0; i < rockCount; i++) {
-    const angle = (i / rockCount) * Math.PI * 2;
-    const radius = 20 + Math.random() * 5;
-    
-    const rockGeometry = new THREE.DodecahedronGeometry(1 + Math.random(), 0);
-    const rockMaterial = new THREE.MeshStandardMaterial({
-      color: 0xcccccc,
-      roughness: 0.7,
-      metalness: 0.3
-    });
-    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-    
-    rock.position.set(
-      Math.cos(angle) * radius,
-      2.5 + Math.random(),
-      Math.sin(angle) * radius
-    );
-    rock.castShadow = true;
-    island.add(rock);
-  }
-
-  return island;
-}
-
-// Create islands
-let tropicalIsland = createTropicalIsland();
-let snowyIsland = createSnowyIsland();
-scene.add(tropicalIsland);
-
-/* PORTAL CREATION - ALWAYS VISIBLE */
-function createPortal() {
-  const portalGroup = new THREE.Group();
-  
-  // Portal ring
-  const ringGeometry = new THREE.TorusGeometry(3, 0.3, 16, 100);
-  const ringMaterial = new THREE.MeshStandardMaterial({
-    color: 0x666666,
-    emissive: 0x333333,
-    emissiveIntensity: 0.2,
-    roughness: 0.8,
-    metalness: 0.3
-  });
-  const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-  ring.rotation.x = Math.PI / 2;
-  portalGroup.add(ring);
-  
-  // Portal particles
-  const particleCount = 150;
-  const particleGeometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(particleCount * 3);
-  
-  for(let i = 0; i < particleCount * 3; i += 3) {
-    const radius = 2.5;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.random() * Math.PI;
-    
-    positions[i] = radius * Math.sin(phi) * Math.cos(theta);
-    positions[i + 1] = radius * Math.cos(phi);
-    positions[i + 2] = radius * Math.sin(phi) * Math.sin(theta);
-  }
-  
-  particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  
-  const particleMaterial = new THREE.PointsMaterial({
-    color: 0x666666,
-    size: 0.08,
-    transparent: true,
-    opacity: 0.5
-  });
-  
-  const particles = new THREE.Points(particleGeometry, particleMaterial);
-  portalGroup.add(particles);
-  
-  // Portal center
-  const vortexGeometry = new THREE.CylinderGeometry(0.5, 2, 0.1, 32);
-  const vortexMaterial = new THREE.MeshStandardMaterial({
-    color: 0x333333,
-    emissive: 0x222222,
-    emissiveIntensity: 0.1,
-    transparent: true,
-    opacity: 0.3,
-    side: THREE.DoubleSide
-  });
-  const vortex = new THREE.Mesh(vortexGeometry, vortexMaterial);
-  vortex.rotation.x = Math.PI / 2;
-  portalGroup.add(vortex);
-  
-  portalGroup.position.set(0, 3, 0);
-  
-  return {
-    group: portalGroup,
-    particles: particles,
-    vortex: vortex,
-    ring: ring,
-    isActive: false
-  };
-}
-
-// Create portal immediately (always visible)
-portal = createPortal();
-scene.add(portal.group);
-
-/* FISHERMAN NPC */
-const fisherman = new THREE.Group();
-fisherman.position.set(-8, 2, 8);
-
-const body = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.6, 0.6, 1.8, 12),
-  new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 })
-);
-body.position.y = 0.9;
-body.castShadow = true;
-fisherman.add(body);
-
-const head = new THREE.Mesh(
-  new THREE.SphereGeometry(0.5, 16, 16),
-  new THREE.MeshStandardMaterial({ color: 0xf0c8a0, roughness: 0.7 })
-);
-head.position.y = 2.2;
-head.castShadow = true;
-fisherman.add(head);
-
-const hat = new THREE.Mesh(
-  new THREE.ConeGeometry(0.8, 0.4, 12),
-  new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.6 })
-);
-hat.position.y = 2.6;
-fisherman.add(hat);
-
-const npcRod = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.04, 0.04, 2.5, 8),
-  new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.5 })
-);
-npcRod.position.set(0.7, 1.5, -0.6);
-npcRod.rotation.z = Math.PI / 6;
-fisherman.add(npcRod);
-
-scene.add(fisherman);
-
-/* SNOWY ISLAND FISHERMAN */
-let snowyFisherman = null;
-
-function createSnowyFisherman() {
-  const npc = new THREE.Group();
-  npc.position.set(-8, 2, 8);
-  
-  const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.6, 0.6, 1.8, 12),
-    new THREE.MeshStandardMaterial({ color: 0x4a708b, roughness: 0.8 })
-  );
-  body.position.y = 0.9;
-  body.castShadow = true;
-  npc.add(body);
-  
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5, 16, 16),
-    new THREE.MeshStandardMaterial({ color: 0xf0c8a0, roughness: 0.7 })
-  );
-  head.position.y = 2.2;
-  head.castShadow = true;
-  npc.add(head);
-  
-  const furHat = new THREE.Mesh(
-    new THREE.SphereGeometry(0.7, 16, 16),
-    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
-  );
-  furHat.position.y = 2.7;
-  furHat.scale.y = 0.5;
-  npc.add(furHat);
-  
-  const coat = new THREE.Mesh(
-    new THREE.ConeGeometry(0.8, 1.2, 12),
-    new THREE.MeshStandardMaterial({ color: 0x2f4f4f, roughness: 0.8 })
-  );
-  coat.position.y = 0.4;
-  npc.add(coat);
-  
-  return npc;
-}
-
-/* FISH MODELS - TROPICAL */
-const tropicalFishModels = {};
-
-// Clownfish
-const clownfishGeometry = new THREE.ConeGeometry(0.5, 1.5, 8);
-clownfishGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Clownfish = new THREE.Mesh(clownfishGeometry, new THREE.MeshStandardMaterial({color: 0xFF6B35, roughness: 0.4}));
-
-// Tuna
-const tunaGeometry = new THREE.CapsuleGeometry(0.3, 1.2, 4, 8);
-tunaGeometry.rotateZ(Math.PI / 2);
-tropicalFishModels.Tuna = new THREE.Mesh(tunaGeometry, new THREE.MeshStandardMaterial({color: 0x4682B4, roughness: 0.3}));
-
-// Shark
-const sharkGeometry = new THREE.ConeGeometry(0.4, 2.0, 8);
-sharkGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Shark = new THREE.Mesh(sharkGeometry, new THREE.MeshStandardMaterial({color: 0x708090, roughness: 0.5}));
-
-// Pufferfish
-const pufferfishGeometry = new THREE.SphereGeometry(0.6, 16, 16);
-tropicalFishModels.Pufferfish = new THREE.Mesh(pufferfishGeometry, new THREE.MeshStandardMaterial({color: 0x32CD32, roughness: 0.7}));
-
-// Sea Turtle
-const turtleGeometry = new THREE.BoxGeometry(1.2, 0.4, 1.5);
-tropicalFishModels.SeaTurtle = new THREE.Mesh(turtleGeometry, new THREE.MeshStandardMaterial({color: 0x228B22, roughness: 0.6}));
-
-// Manta Ray
-const mantaGeometry = new THREE.ConeGeometry(1.5, 0.3, 4);
-mantaGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.MantaRay = new THREE.Mesh(mantaGeometry, new THREE.MeshStandardMaterial({color: 0x483D8B, roughness: 0.4}));
-
-// Great White Shark
-const greatWhiteGeometry = new THREE.ConeGeometry(0.6, 3.0, 12);
-greatWhiteGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.GreatWhiteShark = new THREE.Mesh(greatWhiteGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.3}));
-
-// Terrorshark
-const terrorsharkGeometry = new THREE.ConeGeometry(0.8, 3.5, 12);
-terrorsharkGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Terrorshark = new THREE.Mesh(terrorsharkGeometry, new THREE.MeshStandardMaterial({color: 0xFF0000, roughness: 0.2}));
-
-// Megalodon
-const megalodonGeometry = new THREE.ConeGeometry(1.2, 5.0, 16);
-megalodonGeometry.rotateX(Math.PI / 2);
-tropicalFishModels.Megalodon = new THREE.Mesh(megalodonGeometry, new THREE.MeshStandardMaterial({color: 0x2F4F4F, roughness: 0.4}));
-
-// Kraken
-const krakenGeometry = new THREE.SphereGeometry(1.0, 32, 32);
-tropicalFishModels.Kraken = new THREE.Mesh(krakenGeometry, new THREE.MeshStandardMaterial({color: 0x8B0000, roughness: 0.6}));
-
-/* FISH MODELS - SNOWY */
-const snowyFishModels = {};
-
-// Arctic Char
-const arcticCharGeometry = new THREE.ConeGeometry(0.4, 1.2, 8);
-arcticCharGeometry.rotateX(Math.PI / 2);
-snowyFishModels.ArcticChar = new THREE.Mesh(arcticCharGeometry, new THREE.MeshStandardMaterial({color: 0x87CEEB, roughness: 0.3}));
-
-// Snow Trout
-const snowTroutGeometry = new THREE.CapsuleGeometry(0.25, 1.0, 4, 8);
-snowTroutGeometry.rotateZ(Math.PI / 2);
-snowyFishModels.SnowTrout = new THREE.Mesh(snowTroutGeometry, new THREE.MeshStandardMaterial({color: 0xB0E0E6, roughness: 0.4}));
-
-// Ice Shark
-const iceSharkGeometry = new THREE.ConeGeometry(0.5, 2.2, 8);
-iceSharkGeometry.rotateX(Math.PI / 2);
-snowyFishModels.IceShark = new THREE.Mesh(iceSharkGeometry, new THREE.MeshStandardMaterial({color: 0xADD8E6, roughness: 0.2}));
-
-// Frost Puffer
-const frostPufferGeometry = new THREE.SphereGeometry(0.7, 16, 16);
-snowyFishModels.FrostPuffer = new THREE.Mesh(frostPufferGeometry, new THREE.MeshStandardMaterial({color: 0xE0FFFF, roughness: 0.6}));
-
-// Glacier Whale
-const glacierWhaleGeometry = new THREE.CapsuleGeometry(0.8, 3.5, 8, 16);
-glacierWhaleGeometry.rotateZ(Math.PI / 2);
-snowyFishModels.GlacierWhale = new THREE.Mesh(glacierWhaleGeometry, new THREE.MeshStandardMaterial({color: 0xF0F8FF, roughness: 0.5}));
-
-// Yeti Crab
-const yetiCrabGeometry = new THREE.BoxGeometry(1.0, 0.5, 1.2);
-snowyFishModels.YetiCrab = new THREE.Mesh(yetiCrabGeometry, new THREE.MeshStandardMaterial({color: 0xFFFFFF, roughness: 0.8}));
-
-// Ice Dragon
-const iceDragonGeometry = new THREE.ConeGeometry(0.7, 4.0, 12);
-iceDragonGeometry.rotateX(Math.PI / 2);
-snowyFishModels.IceDragon = new THREE.Mesh(iceDragonGeometry, new THREE.MeshStandardMaterial({
-  color: 0x00FFFF,
-  emissive: 0x00FFFF,
-  emissiveIntensity: 0.3,
-  roughness: 0.1,
-  metalness: 0.8
-}));
-
-// Make all fish cast shadows
-Object.values(tropicalFishModels).forEach(fish => {
-  fish.castShadow = true;
-  fish.receiveShadow = true;
-});
-
-Object.values(snowyFishModels).forEach(fish => {
-  fish.castShadow = true;
-  fish.receiveShadow = true;
-});
-
-/* ENHANCED TREES */
-const vegetation = new THREE.Group();
-
-function createTree(x, z, isSnowy = false) {
-  const tree = new THREE.Group();
-  
-  // Trunk
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.5, 0.7, 9, 12),
-    new THREE.MeshStandardMaterial({ 
-      color: isSnowy ? 0x8B7355 : 0x8b5a2b,
-      roughness: 0.9,
-      metalness: 0
-    })
-  );
-  trunk.position.y = 4.5;
-  trunk.castShadow = true;
-  tree.add(trunk);
-  
-  if(isSnowy) {
-    // Snowy tree - pine style
-    const pineLayers = 4;
-    for(let i = 0; i < pineLayers; i++) {
-      const size = 3.5 - (i * 0.7);
-      const height = 2.5 - (i * 0.4);
-      const yPos = 6 + (i * 1.8);
-      
-      const pineGeometry = new THREE.ConeGeometry(size, height, 8);
-      const pineMaterial = new THREE.MeshStandardMaterial({
-        color: 0x2E8B57,
-        roughness: 0.8,
-        metalness: 0
-      });
-      const pineLayer = new THREE.Mesh(pineGeometry, pineMaterial);
-      pineLayer.position.y = yPos;
-      pineLayer.castShadow = true;
-      tree.add(pineLayer);
-      
-      // Snow on branches
-      const snowGeometry = new THREE.SphereGeometry(size * 0.3, 8, 6);
-      const snowMaterial = new THREE.MeshStandardMaterial({
-        color: 0xFFFFFF,
-        roughness: 0.9,
-        metalness: 0
-      });
-      for(let j = 0; j < 4; j++) {
-        const snow = new THREE.Mesh(snowGeometry, snowMaterial);
-        const angle = (j / 4) * Math.PI * 2;
-        snow.position.set(
-          Math.cos(angle) * size * 0.7,
-          yPos - 0.5,
-          Math.sin(angle) * size * 0.7
-        );
-        tree.add(snow);
-      }
-    }
-  } else {
-    // Tropical tree
-    const leafColors = [0x1e7a1e, 0x2d9e2d, 0x3cb371];
-    
-    const leaves1 = new THREE.Mesh(
-      new THREE.ConeGeometry(4.0, 3.5, 12),
-      new THREE.MeshStandardMaterial({ 
-        color: leafColors[0],
-        roughness: 0.8,
-        metalness: 0
-      })
-    );
-    leaves1.position.y = 8;
-    leaves1.castShadow = true;
-    tree.add(leaves1);
-    
-    const leaves2 = new THREE.Mesh(
-      new THREE.ConeGeometry(3.2, 3.0, 12),
-      new THREE.MeshStandardMaterial({ 
-        color: leafColors[1],
-        roughness: 0.8,
-        metalness: 0
-      })
-    );
-    leaves2.position.y = 10;
-    leaves2.castShadow = true;
-    tree.add(leaves2);
-    
-    const leaves3 = new THREE.Mesh(
-      new THREE.ConeGeometry(2.4, 2.5, 12),
-      new THREE.MeshStandardMaterial({ 
-        color: leafColors[2],
-        roughness: 0.8,
-        metalness: 0
-      })
-    );
-    leaves3.position.y = 11.5;
-    leaves3.castShadow = true;
-    tree.add(leaves3);
-  }
-  
-  tree.position.set(x, 1.5, z);
-  tree.rotation.y = Math.random() * Math.PI * 2;
-  return tree;
-}
-
-// Place tropical trees
-for(let i = 0; i < 15; i++) {
-  const angle = Math.random() * Math.PI * 2;
-  const radius = 10 + Math.random() * 12;
-  const tree = createTree(Math.cos(angle) * radius, Math.sin(angle) * radius, false);
-  
-  const distFromFisherman = Math.sqrt(
-    Math.pow(tree.position.x - fisherman.position.x, 2) +
-    Math.pow(tree.position.z - fisherman.position.z, 2)
-  );
-  
-  if(distFromFisherman > 6) {
-    vegetation.add(tree);
-  }
-}
-
-scene.add(vegetation);
-
-/* ENHANCED WATER EFFECTS */
-const waterCanvas = document.getElementById('waterCanvas');
-const waterCtx = waterCanvas.getContext('2d');
-waterCanvas.width = window.innerWidth;
-waterCanvas.height = window.innerHeight;
-
-const waterDrops = [];
-const oceanBubbles = [];
-
-class WaterDrop {
-  constructor() {
-    this.x = Math.random() * waterCanvas.width;
-    this.y = Math.random() * waterCanvas.height;
-    this.size = Math.random() * 4 + 1;
-    this.speed = Math.random() * 3 + 1;
-    this.opacity = Math.random() * 0.6 + 0.3;
-    this.wiggle = Math.random() * 2;
-  }
-  
-  update() {
-    this.y += this.speed;
-    this.x += Math.sin(Date.now() * 0.001 + this.y * 0.01) * this.wiggle;
-    if(this.y > waterCanvas.height) {
-      this.y = 0;
-      this.x = Math.random() * waterCanvas.width;
-    }
-  }
-  
-  draw() {
-    waterCtx.beginPath();
-    waterCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    waterCtx.fillStyle = `rgba(135, 206, 250, ${this.opacity})`;
-    waterCtx.fill();
-  }
-}
-
-class OceanBubble {
-  constructor() {
-    this.x = Math.random() * waterCanvas.width;
-    this.y = waterCanvas.height + Math.random() * 100;
-    this.size = Math.random() * 5 + 2;
-    this.speed = Math.random() * 0.5 + 0.3;
-    this.opacity = Math.random() * 0.4 + 0.2;
-    this.wobble = Math.random() * 1;
-  }
-  
-  update() {
-    this.y -= this.speed;
-    this.x += Math.sin(Date.now() * 0.001 + this.y * 0.02) * this.wobble;
-    if(this.y < -50) {
-      this.y = waterCanvas.height + Math.random() * 100;
-      this.x = Math.random() * waterCanvas.width;
-    }
-  }
-  
-  draw() {
-    waterCtx.beginPath();
-    waterCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    waterCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-    waterCtx.fill();
-  }
-}
-
-for(let i = 0; i < 150; i++) {
-  waterDrops.push(new WaterDrop());
-}
-
-for(let i = 0; i < 50; i++) {
-  oceanBubbles.push(new OceanBubble());
-}
-
-function animateWater() {
-  waterCtx.clearRect(0, 0, waterCanvas.width, waterCanvas.height);
-  
-  // Draw water surface effect
-  waterCtx.fillStyle = currentIsland === 'tropical' ? 'rgba(30, 144, 255, 0.05)' : 'rgba(135, 206, 250, 0.05)';
-  waterCtx.fillRect(0, 0, waterCanvas.width, waterCanvas.height);
-  
-  // Draw ocean ripples
-  const time = Date.now() * 0.001;
-  for(let i = 0; i < 20; i++) {
-    const x = Math.sin(time + i * 0.5) * 100 + waterCanvas.width / 2;
-    const y = Math.cos(time * 0.7 + i) * 50 + waterCanvas.height / 3;
-    const radius = 20 + Math.sin(time + i) * 10;
-    
-    waterCtx.beginPath();
-    waterCtx.arc(x, y, radius, 0, Math.PI * 2);
-    waterCtx.strokeStyle = `rgba(255, 255, 255, 0.1)`;
-    waterCtx.lineWidth = 1;
-    waterCtx.stroke();
-  }
-  
-  waterDrops.forEach(drop => {
-    drop.update();
-    drop.draw();
-  });
-  
-  oceanBubbles.forEach(bubble => {
-    bubble.update();
-    bubble.draw();
-  });
-  
-  requestAnimationFrame(animateWater);
-}
-animateWater();
-
-/* PLAYER */
-const player = new THREE.Object3D();
-scene.add(player);
-player.position.set(0, 4, 0);
-player.add(camera);
-
-let velocityY = 0, grounded = true;
-let yaw = 0, pitch = 0;
-
-/* CAMERA LOOK */
-let looking = false, lastX = 0, lastY = 0;
-addEventListener("touchstart", e => {
- if(e.target.closest(".slot") || e.target.id === "joystick" || 
-    e.target.id === "stick" || e.target.id === "jump" || 
-    e.target.id === "book" || e.target.closest("#shop") || 
-    e.target.closest("#rules") || e.target.closest("#login") || 
-    e.target.closest("#fishPreview") || e.target.closest("#snowyShop") ||
-    e.target.id === "fishButton" || e.target.id === "secretCode" ||
-    e.target.closest("#tutorial") || e.target.closest("#secretCodeInput") ||
-    e.target.closest("#rodSelector")) return;
- looking = true;
- lastX = e.touches[0].clientX;
- lastY = e.touches[0].clientY;
-});
-addEventListener("touchmove", e => {
- if(!looking) return;
- yaw -= (e.touches[0].clientX - lastX) * 0.003;
- pitch -= (e.touches[0].clientY - lastY) * 0.003;
- pitch = Math.max(-1.4, Math.min(1.4, pitch));
- lastX = e.touches[0].clientX;
- lastY = e.touches[0].clientY;
-});
-addEventListener("touchend", () => looking = false);
-
-/* MOVE */
-let moveX = 0, moveZ = 0, joy = false, center = {};
-joystick.addEventListener("touchstart", (e) => {
- e.preventDefault();
- joy = true;
- const r = joystick.getBoundingClientRect();
- center = {x: r.left + r.width/2, y: r.top + r.height/2};
-});
-addEventListener("touchmove", e => {
- if(!joy) return;
- e.preventDefault();
- let dx = e.touches[0].clientX - center.x;
- let dy = e.touches[0].clientY - center.y;
- dx = Math.max(-45, Math.min(45, dx));
- dy = Math.max(-45, Math.min(45, dy));
- stick.style.left = (35 + dx) + "px";
- stick.style.top = (35 + dy) + "px";
- moveX = dx / 45;
- moveZ = dy / 45;
-});
-addEventListener("touchend", () => {
- joy = false;
- stick.style.left = "35px";
- stick.style.top = "35px";
- moveX = moveZ = 0;
-});
-
-/* JUMP */
-jump.addEventListener("touchstart", () => {
- if(grounded) {
-   velocityY = 0.2;
-   grounded = false;
-   vibrate(50); // Haptic feedback
- }
-});
-
-/* ===== NOTIFICATION SYSTEM ===== */
-function showNotification(message, type = 'info') {
-  const notification = document.getElementById('notification');
-  notification.textContent = message;
-  
-  // Set color based on type
-  if(type === 'success') {
-    notification.style.background = 'linear-gradient(to right, #4CAF50, #388E3C)';
-  } else if(type === 'error') {
-    notification.style.background = 'linear-gradient(to right, #f44336, #d32f2f)';
-  } else if(type === 'warning') {
-    notification.style.background = 'linear-gradient(to right, #FF9800, #F57C00)';
-  } else {
-    notification.style.background = 'linear-gradient(to right, #00a8ff, #0097e6)';
-  }
-  
-  notification.style.display = 'block';
-  
-  // Auto-hide after 3 seconds
-  setTimeout(() => {
-    notification.style.display = 'none';
-  }, 3000);
-}
-
-/* ===== TUTORIAL SYSTEM ===== */
-let tutorialSlide = 0;
-
-function showTutorial() {
-  if(tutorialCompleted) return;
-  document.getElementById('tutorial').style.display = 'flex';
-  showSlide(0);
-}
-
-function showSlide(index) {
-  tutorialSlide = index;
-  const slides = document.querySelectorAll('#tutorial .slide');
-  slides.forEach((slide, i) => {
-    slide.classList.toggle('active', i === index);
-  });
-}
-
-function nextSlide() {
-  const slides = document.querySelectorAll('#tutorial .slide');
-  if(tutorialSlide < slides.length - 1) {
-    showSlide(tutorialSlide + 1);
-  }
-}
-
-function prevSlide() {
-  if(tutorialSlide > 0) {
-    showSlide(tutorialSlide - 1);
-  }
-}
-
-function skipTutorial() {
-  tutorialCompleted = true;
-  document.getElementById('tutorial').style.display = 'none';
-  localStorage.setItem('fishingGame_tutorial_completed', 'true');
-  showNotification('🎣 Welcome to Fishing Adventure!', 'success');
-}
-
-/* ===== HAPTIC FEEDBACK ===== */
-function vibrate(duration = 100) {
-  if('vibrate' in navigator) {
-    navigator.vibrate(duration);
-  }
-}
-
-/* ===== SECRET CODE SYSTEM ===== */
-const secretCodeButton = document.getElementById("secretCode");
-const secretCodeInput = document.getElementById("secretCodeInput");
-const codeInput = document.getElementById("codeInput");
-const submitCodeButton = document.getElementById("submitCode");
-
-// Secret code click handler
-secretCodeButton.onclick = () => {
-  secretCodeInput.style.display = "block";
-  codeInput.value = "";
-  codeInput.focus();
-};
-
-// Submit code handler
-submitCodeButton.onclick = () => {
-  const enteredCode = codeInput.value.trim().toUpperCase();
-  
-  if(enteredCode === "KYAN") {
-    // Give $100,000 reward
-    money += 100000;
-    updateStats();
-    
-    // Vibrate for reward
-    vibrate([100, 50, 100, 50, 200]);
-    
-    // Show success notification
-    showNotification("🎉 SECRET CODE ACCEPTED! +$100,000!", 'success');
-    
-    // Special effects
-    secretCodeButton.style.animation = "none";
-    setTimeout(() => {
-      secretCodeButton.style.animation = "pulseSecret 2s infinite";
-    }, 100);
-    
-    // Close input
-    secretCodeInput.style.display = "none";
-    
-    // Save game
-    savePlayerData();
-  } else {
-    // Show error
-    showNotification("❌ Invalid code! Try again.", 'error');
-    vibrate([100, 100, 100]);
-    
-    // Shake animation
-    codeInput.style.animation = "none";
-    setTimeout(() => {
-      codeInput.style.animation = "shake 0.5s";
-    }, 10);
-    
-    // Clear input
-    codeInput.value = "";
-    codeInput.focus();
-  }
-};
-
-// Add shake animation for invalid code
-const style = document.createElement('style');
-style.textContent = `
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-`;
-document.head.appendChild(style);
-
-// Enter key support for code input
-codeInput.addEventListener("keypress", (e) => {
-  if(e.key === "Enter") {
-    submitCodeButton.click();
-  }
-});
-
-/* ===== LEVELING SYSTEM ===== */
-let money = 0;
-let playerLevel = 1;
-let playerExp = 0;
-let expToNextLevel = 100;
-
-// Fish XP values - FIXED
-const tropicalFishXP = {
-  Clownfish: 5,
-  Tuna: 10,
-  Shark: 15,
-  Pufferfish: 25,
-  SeaTurtle: 50,
-  MantaRay: 100,
-  GreatWhiteShark: 150,
-  Terrorshark: 200,
-  Megalodon: 250,
-  Kraken: 500
-};
-
-const snowyFishXP = {
-  ArcticChar: 20,
-  SnowTrout: 30,
-  IceShark: 75,
-  FrostPuffer: 100,
-  GlacierWhale: 300,
-  YetiCrab: 500,
-  IceDragon: 1000
-};
-
-// FIXED: Corrected prices to match guide
-const tropicalPrices = {
-  Clownfish: 5, 
-  Tuna: 10, 
-  Shark: 25, 
-  Pufferfish: 25, 
-  SeaTurtle: 50, 
-  MantaRay: 500, 
-  GreatWhiteShark: 1500,
-  Terrorshark: 2000,
-  Megalodon: 10000, // FIXED: Was 1000, now 10000 to match guide
-  Kraken: 5000
-};
-
-const snowyPrices = {
-  ArcticChar: 100,
-  SnowTrout: 200,
-  IceShark: 500,
-  FrostPuffer: 750,
-  GlacierWhale: 2500,
-  YetiCrab: 5000,
-  IceDragon: 10000
-};
-
-// Calculate XP needed for next level
-function getExpForLevel(level) {
-  return Math.floor(100 * Math.pow(1.2, level - 1));
-}
-
-// Add XP and check for level up
-function addXP(fishName) {
-  const xpGained = currentIsland === 'tropical' ? 
-    (tropicalFishXP[fishName] || 0) : 
-    (snowyFishXP[fishName] || 0);
-  
-  playerExp += xpGained;
-  
-  // Show XP gain message
-  showNotification(`+${xpGained} XP from ${fishName}!`, 'success');
-  
-  // Check for level up
-  while(playerExp >= expToNextLevel) {
-    playerExp -= expToNextLevel;
-    playerLevel++;
-    expToNextLevel = getExpForLevel(playerLevel);
-    
-    // Show level up notification
-    showLevelUp();
-  }
-  
-  updateStats();
-  savePlayerData();
-}
-
-// Show level up animation and rewards
-function showLevelUp() {
-  const levelUpDiv = document.getElementById("levelUp");
-  const newLevelSpan = document.getElementById("newLevel");
-  const rewardSpan = document.getElementById("levelReward");
-  
-  newLevelSpan.textContent = `You reached Level ${playerLevel}!`;
-  
-  // Give rewards based on level
-  let rewardText = "";
-  let rewardMoney = 0;
-  
-  if(playerLevel === 2) {
-    rewardMoney = 100;
-    rewardText = "Reward: $100 + New fishing spot unlocked!";
-  } else if(playerLevel === 5) {
-    rewardMoney = 500;
-    rewardText = "Reward: $500 + Better fish chances!";
-  } else if(playerLevel === 10) {
-    rewardMoney = 2000;
-    rewardText = "Reward: $2000 + Legendary fish unlocked!";
-  } else if(playerLevel % 5 === 0) {
-    rewardMoney = playerLevel * 50;
-    rewardText = `Reward: $${rewardMoney} + Level bonus!`;
-  } else {
-    rewardMoney = playerLevel * 10;
-    rewardText = `Reward: $${rewardMoney}`;
-  }
-  
-  // Add money reward
-  if(rewardMoney > 0) {
-    money += rewardMoney;
-    rewardSpan.textContent = rewardText;
-  } else {
-    rewardSpan.textContent = "Keep fishing!";
-  }
-  
-  // Vibrate for level up
-  vibrate([100, 50, 100, 50, 200]);
-  
-  levelUpDiv.style.display = "block";
-  updateStats();
-  savePlayerData();
-}
-
-// Update stats display
-function updateStats() {
-  document.getElementById("money").textContent = `$${money}`;
-  document.getElementById("level").textContent = `Level: ${playerLevel}`;
-  document.getElementById("exp").textContent = `XP: ${playerExp}/${expToNextLevel}`;
-}
-
-/* ===== NEW: ROD SELECTOR SYSTEM ===== */
-function showRodSelector() {
-  const rodSelector = document.getElementById('rodSelector');
-  const rodOptions = document.getElementById('rodOptions');
-  
-  // Clear previous options
-  rodOptions.innerHTML = '';
-  
-  // Define all rods in order
-  const allRods = [
-    { name: "Rod", price: 0, color: "#8B4513" },
-    { name: "Sun Rod", price: 1000, color: "#ffcc00" },
-    { name: "Moon Rod", price: 10000, color: "#8a2be2" },
-    { name: "Ocean Rod", price: 100000, color: "#00bfff" },
-    { name: "Glacier Rod", price: 500000, color: "#87CEEB" },
-    { name: "Frostfire Rod", price: 2000000, color: "#FF6347" },
-    { name: "Aurora Rod", price: 10000000, color: "#9370DB" }
-  ];
-  
-  // Create rod options
-  allRods.forEach(rod => {
-    const rodDiv = document.createElement('div');
-    rodDiv.className = `rod-option ${ownedRods.has(rod.name) ? 'owned' : 'not-owned'}`;
-    
-    const isOwned = ownedRods.has(rod.name);
-    const isCurrent = inventory[selected] === rod.name;
-    
-    rodDiv.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <strong style="color:${rod.color}">${rod.name}</strong><br>
-          <small>${isOwned ? '✓ OWNED' : `$${rod.price.toLocaleString()}`}</small>
+    <!-- Voxel Background -->
+    <div class="voxel-bg"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-cube"></i></div>
+            <div class="logo-text">VOXEL STRIKE</div>
         </div>
-        ${isCurrent ? '<span style="color:gold">✓ EQUIPPED</span>' : 
-          isOwned ? '<button style="padding:5px 10px;background:#4CAF50;border:none;border-radius:5px;color:white;cursor:pointer">Equip</button>' :
-          '<span style="color:#ccc">Not Purchased</span>'}
-      </div>
-    `;
-    
-    // Add click handler
-    if(isOwned && !isCurrent) {
-      const equipBtn = rodDiv.querySelector('button');
-      equipBtn.onclick = () => {
-        equipRod(rod.name);
-        rodSelector.style.display = 'none';
-      };
-    }
-    
-    rodOptions.appendChild(rodDiv);
-  });
-  
-  rodSelector.style.display = 'block';
-}
+        <div class="nav-links">
+            <a href="#" class="active">Home</a>
+            <a href="#">Play</a>
+            <a href="#">Leaderboards</a>
+            <a href="#">Community</a>
+            <a href="#">Wiki</a>
+        </div>
+    </nav>
 
-function equipRod(rodName) {
-  if(!ownedRods.has(rodName)) {
-    showNotification(`You don't own the ${rodName}!`, 'error');
-    return;
-  }
-  
-  // Find or create slot for the rod
-  let rodSlotIndex = -1;
-  for(let i = 0; i < inventory.length; i++) {
-    if(inventory[i] === rodName) {
-      rodSlotIndex = i;
-      break;
-    }
-  }
-  
-  if(rodSlotIndex === -1) {
-    // Find empty slot or create one
-    for(let i = 0; i < inventory.length; i++) {
-      if(inventory[i] === "") {
-        rodSlotIndex = i;
-        break;
-      }
-    }
-    
-    if(rodSlotIndex === -1) {
-      // No empty slots, replace current selected slot if it's a fish
-      if(!inventory[selected].includes("Rod")) {
-        rodSlotIndex = selected;
-      } else {
-        // Find first non-rod slot
-        for(let i = 0; i < inventory.length; i++) {
-          if(!inventory[i].includes("Rod") && inventory[i] !== "") {
-            rodSlotIndex = i;
-            break;
-          }
-        }
-      }
-    }
-  }
-  
-  if(rodSlotIndex !== -1) {
-    inventory[rodSlotIndex] = rodName;
-    selected = rodSlotIndex;
-    renderInv();
-    updateRod();
-    
-    showNotification(`Equipped ${rodName}!`, 'success');
-    vibrate(100);
-    
-    // Special handling for Ocean Rod
-    if(rodName === "Ocean Rod" && !hasOceanRod) {
-      hasOceanRod = true;
-      activatePortal();
-    }
-    
-    savePlayerData();
-  }
-}
+    <!-- Main Content -->
+    <div class="container">
+        <div class="hero">
+            <h1>FREE VOXEL FPS SHOOTER</h1>
+            <p class="hero-subtitle">Join millions of players in the ultimate voxel battle arena. Build, destroy, and dominate in fast-paced blocky combat!</p>
+            
+            <!-- Game Preview -->
+            <div class="game-preview">
+                <div class="game-screen" id="gamePreview">
+                    <!-- Voxel elements will be generated by JS -->
+                </div>
+            </div>
+            
+            <!-- Play Button -->
+            <div class="play-container">
+                <button class="play-button" id="playButton">
+                    <i class="fas fa-play"></i> PLAY FREE NOW
+                </button>
+                <p style="margin-top: 20px; color: #94a3b8;">No download required • Works in any browser</p>
+            </div>
+        </div>
 
-/* ENHANCED INVENTORY SYSTEM */
-let inventory = ["Rod", "", "", "", "", "", "", "", ""];
-let selected = 0;
-const inv = document.getElementById("inventory");
-let lastTapTime = 0;
-let lastTapIndex = -1;
-
-// Check if player has Ocean Rod
-function checkOceanRod() {
-  for(let i = 0; i < inventory.length; i++) {
-    if(inventory[i] === "Ocean Rod") {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Parse item stacks
-function parseStack(item) {
-  if(!item) return {name: "", count: 0};
-  const match = item.match(/^(.+)x(\d+)$/);
-  if(match) return {name: match[1], count: parseInt(match[2])};
-  return {name: item, count: 1};
-}
-
-// Add item with stacking logic
-function addItem(fishName) {
-  const maxStack = 99;
-  // Try to stack first
-  for(let i = 0; i < inventory.length; i++) {
-    const {name, count} = parseStack(inventory[i]);
-    if(name === fishName && count < maxStack) {
-      const newCount = Math.min(count + 1, maxStack);
-      inventory[i] = fishName + (newCount > 1 ? "x" + newCount : "");
-      renderInv();
-      return;
-    }
-  }
-  // Find empty slot
-  for(let i = 0; i < inventory.length; i++) {
-    if(inventory[i] === "") {
-      inventory[i] = fishName;
-      renderInv();
-      return;
-    }
-  }
-  showNotification("Inventory full! Buy more slots.", 'warning');
-}
-
-// Enhanced tap handling with better double-tap detection
-function slotTap(index) {
-  const {name, count} = parseStack(inventory[index]);
-  selected = index;
-  renderInv();
-  updateRod();
-
-  if(!name) return;
-  
-  // Check if it's a rod - show rod selector instead
-  if(name.includes("Rod")) {
-    showRodSelector();
-    return;
-  }
-
-  const now = Date.now();
-  
-  // Improved double-tap detection
-  if(lastTapIndex === index && now - lastTapTime < 500) {
-    // Double tap → sell
-    const price = currentIsland === 'tropical' ? 
-      (tropicalPrices[name] || 0) : 
-      (snowyPrices[name] || 0);
-    
-    const totalValue = price * count;
-    money += totalValue;
-    
-    // Vibrate for sale
-    vibrate(100);
-    
-    // Show sale notification
-    showNotification(`Sold ${count}x ${name} for $${totalValue}!`, 'success');
-    
-    updateStats();
-    inventory[index] = "";
-    renderInv();
-    
-    // Reset tap tracking
-    lastTapTime = 0;
-    lastTapIndex = -1;
-    
-    savePlayerData();
-  } else {
-    // Single tap → show 3D preview
-    showFishPreview(name, count);
-    lastTapTime = now;
-    lastTapIndex = index;
-  }
-}
-
-// Show 3D fish preview
-function showFishPreview(fishName, count) {
-  const previewCanvas = document.getElementById('fishPreviewCanvas');
-  const previewRenderer = new THREE.WebGLRenderer({
-    canvas: previewCanvas,
-    alpha: true,
-    antialias: true
-  });
-  previewRenderer.setSize(200, 200);
-  previewRenderer.setClearColor(0x000000, 0);
-  
-  const previewScene = new THREE.Scene();
-  const previewCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
-  previewCamera.position.z = 5;
-  
-  // Add lights
-  const previewLight1 = new THREE.DirectionalLight(0xffffff, 1);
-  previewLight1.position.set(5, 5, 5);
-  previewScene.add(previewLight1);
-  
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-  previewScene.add(ambientLight);
-  
-  // Get correct fish model based on current island
-  let fishModel;
-  if(currentIsland === 'tropical') {
-    fishModel = tropicalFishModels[fishName] ? tropicalFishModels[fishName].clone() : null;
-  } else {
-    fishModel = snowyFishModels[fishName] ? snowyFishModels[fishName].clone() : null;
-  }
-  
-  if(!fishModel) return;
-  
-  previewScene.add(fishModel);
-  
-  // Animate preview
-  let rotationSpeed = 0.01;
-  const animatePreview = () => {
-    fishModel.rotation.y += rotationSpeed;
-    previewRenderer.render(previewScene, previewCamera);
-    if(fishPreview.style.display === 'block') {
-      requestAnimationFrame(animatePreview);
-    }
-  };
-  
-  // Show preview
-  fishPreview.style.display = 'block';
-  
-  const price = currentIsland === 'tropical' ? 
-    (tropicalPrices[fishName] || 0) : 
-    (snowyPrices[fishName] || 0);
-  
-  const xpValue = currentIsland === 'tropical' ? 
-    (tropicalFishXP[fishName] || 0) : 
-    (snowyFishXP[fishName] || 0);
-  
-  // Determine rarity color
-  let rarityColor = '#ccc';
-  if(currentIsland === 'tropical') {
-    if(['Kraken', 'Terrorshark', 'Megalodon', 'GreatWhiteShark'].includes(fishName)) rarityColor = '#FF9800';
-    else if(['MantaRay', 'SeaTurtle'].includes(fishName)) rarityColor = '#00a8ff';
-    else if(['Pufferfish'].includes(fishName)) rarityColor = '#4CAF50';
-  } else {
-    if(['IceDragon', 'YetiCrab'].includes(fishName)) rarityColor = '#FF9800';
-    else if(['GlacierWhale', 'FrostPuffer'].includes(fishName)) rarityColor = '#00a8ff';
-    else if(['IceShark'].includes(fishName)) rarityColor = '#4CAF50';
-  }
-  
-  document.getElementById('fishStats').innerHTML = `
-    <div style="margin:10px 0;color:${rarityColor};font-size:16px">
-      <b>${fishName}</b><br>
-      Quantity: ${count}<br>
-      Value: $${price * count}<br>
-      XP Value: ${xpValue} XP<br>
-      <small style="color:#ccc">Double tap to sell all</small>
+        <!-- Game Modes -->
+        <div class="game-modes">
+            <div class="mode-card">
+                <div class="mode-icon"><i class="fas fa-crosshairs"></i></div>
+                <h3>Team Deathmatch</h3>
+                <p>Battle in teams of 4 in destructible voxel arenas. The first team to reach 50 kills wins!</p>
+                <div class="players-online">
+                    <i class="fas fa-users"></i> 12,845 playing now
+                </div>
+            </div>
+            
+            <div class="mode-card">
+                <div class="mode-icon"><i class="fas fa-flag"></i></div>
+                <h3>Capture the Block</h3>
+                <p>Capture the enemy's voxel flag while defending your own. Build defenses and plan attacks.</p>
+                <div class="players-online">
+                    <i class="fas fa-users"></i> 8,342 playing now
+                </div>
+            </div>
+            
+            <div class="mode-card">
+                <div class="mode-icon"><i class="fas fa-crown"></i></div>
+                <h3>Battle Royale</h3>
+                <p>100 players drop into a massive voxel island. The last player standing wins the match.</p>
+                <div class="players-online">
+                    <i class="fas fa-users"></i> 24,109 playing now
+                </div>
+            </div>
+        </div>
     </div>
-  `;
-  
-  animatePreview();
-}
 
-// Render enhanced inventory
-function renderInv() {
-  inv.innerHTML = "";
-  inventory.forEach((it, i) => {
-    const d = document.createElement("div");
-    d.className = "slot" + (i === selected ? " active" : "");
-    
-    const {name, count} = parseStack(it);
-    
-    // Display first few letters for better readability
-    const displayName = name.length > 8 ? name.substring(0, 8) + "..." : name;
-    d.textContent = displayName;
-    
-    if(count > 1) {
-      const countSpan = document.createElement("span");
-      countSpan.className = "slot-count";
-      countSpan.textContent = count;
-      d.appendChild(countSpan);
-    }
-    
-    d.onclick = () => slotTap(i);
-    inv.appendChild(d);
-  });
-}
-renderInv();
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-links">
+            <a href="#">Terms of Service</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Community Guidelines</a>
+            <a href="#">Support</a>
+            <a href="#">Blog</a>
+        </div>
+        <p>© 2023 Voxel Strike. All rights reserved. This is a fan-made concept page.</p>
+        <p style="margin-top: 10px; font-size: 0.9rem;">Not affiliated with Mojang, Roblox, or poxel.io. For demonstration purposes only.</p>
+    </div>
 
-// Inventory expansion
-function expandInventory(slots = 3) {
-  for(let i = 0; i < slots; i++) inventory.push("");
-  renderInv();
-  savePlayerData();
-}
+    <!-- Game Lobby -->
+    <div class="game-lobby" id="gameLobby">
+        <div class="lobby-container">
+            <div class="lobby-header">
+                <h2><i class="fas fa-gamepad"></i> JOIN A SERVER</h2>
+                <button class="close-lobby" id="closeLobby"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="lobby-content">
+                <div class="server-list">
+                    <h3><i class="fas fa-server"></i> AVAILABLE SERVERS</h3>
+                    <div id="serverList">
+                        <!-- Servers will be populated by JS -->
+                    </div>
+                </div>
+                
+                <div class="player-customization">
+                    <h3><i class="fas fa-user-edit"></i> CUSTOMIZE PLAYER</h3>
+                    <p>Choose your player color:</p>
+                    <div class="color-options" id="colorOptions">
+                        <!-- Color options will be populated by JS -->
+                    </div>
+                    <p style="margin-top: 20px; color: #94a3b8;">More customization available in-game</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-/* ENHANCED ROD */
-let rod = null;
-function updateRod() {
-  const currentRod = inventory[selected];
-  
-  if(currentRod && currentRod.includes("Rod")) {
-    if(!rod) {
-      rod = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8),
-        new THREE.MeshStandardMaterial({color: 0x8b4513, roughness: 0.5})
-      );
-      rod.position.set(0.4, -0.3, -1.2);
-      rod.rotation.z = Math.PI / 3.5;
-      camera.add(rod);
-    }
-    
-    let color, emissive;
-    switch(currentRod) {
-      case "Sun Rod": 
-        color = 0xffcc00; 
-        emissive = 0xff9900;
-        break;
-      case "Moon Rod": 
-        color = 0x8a2be2; 
-        emissive = 0x4b0082;
-        break;
-      case "Ocean Rod": 
-        color = 0x00bfff; 
-        emissive = 0x0088cc;
-        break;
-      case "Glacier Rod":
-        color = 0x87CEEB;
-        emissive = 0x00BFFF;
-        break;
-      case "Frostfire Rod":
-        color = 0xFF6347;
-        emissive = 0xFF4500;
-        break;
-      case "Aurora Rod":
-        color = 0x9370DB;
-        emissive = 0xBA55D3;
-        break;
-      default: 
-        color = 0x8b4513; 
-        emissive = 0x000000;
-    }
-    
-    rod.material.color.set(color);
-    rod.material.emissive = new THREE.Color(emissive);
-    rod.material.emissiveIntensity = currentRod !== "Rod" ? 0.5 : 0;
-    
-    // Update portal activation if player gets Ocean Rod
-    if(currentRod === "Ocean Rod" && !hasOceanRod) {
-      hasOceanRod = true;
-      activatePortal();
-    }
-  } else if(rod) {
-    camera.remove(rod);
-    rod = null;
-  }
-}
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div style="font-size: 5rem; color: #3b82f6;">
+            <i class="fas fa-cube blinking"></i>
+        </div>
+        <div class="loading-text" id="loadingText">Loading Voxel World...</div>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+    </div>
 
-/* PORTAL SYSTEM - ALWAYS VISIBLE BUT NEED OCEAN ROD */
-function activatePortal() {
-  // Change portal to active colors
-  portal.ring.material.color.set(0x00ffff);
-  portal.ring.material.emissive.set(0x00ffff);
-  portal.ring.material.emissiveIntensity = 0.5;
-  portal.ring.material.roughness = 0.1;
-  portal.ring.material.metalness = 0.9;
-  
-  portal.particles.material.color.set(0x00ffff);
-  portal.particles.material.opacity = 0.8;
-  
-  portal.vortex.material.color.set(0x00ffff);
-  portal.vortex.material.emissive.set(0x00ffff);
-  portal.vortex.material.emissiveIntensity = 1;
-  portal.vortex.material.opacity = 0.7;
-  
-  portal.isActive = true;
-  
-  // Vibrate for portal activation
-  vibrate([200, 100, 200]);
-  
-  // Show notification
-  showNotification("🌐 PORTAL ACTIVATED! You can now access Snowy Island!", 'success');
-  
-  savePlayerData();
-}
-
-function usePortal() {
-  // Calculate distance to portal
-  const distance = Math.sqrt(
-    Math.pow(player.position.x - portal.group.position.x, 2) +
-    Math.pow(player.position.z - portal.group.position.z, 2)
-  );
-  
-  if(distance < 5) {
-    if(!hasOceanRod) {
-      // Show "not worthy" message
-      const portalMessage = document.getElementById("portalMessage");
-      const portalTitle = document.getElementById("portalTitle");
-      const portalText = document.getElementById("portalText");
-      
-      portalTitle.textContent = "🌐 PORTAL LOCKED";
-      portalText.textContent = "You are not worthy enough! You need the Ocean Rod to access this portal.";
-      portalMessage.style.display = "block";
-      return;
-    }
-    
-    // Vibrate for portal travel
-    vibrate([100, 50, 100]);
-    
-    // Switch islands
-    if(currentIsland === 'tropical') {
-      // Go to snowy island
-      scene.remove(tropicalIsland);
-      scene.remove(fisherman);
-      scene.remove(vegetation);
-      
-      scene.add(snowyIsland);
-      
-      // Create snowy fisherman if not already created
-      if(!snowyFisherman) {
-        snowyFisherman = createSnowyFisherman();
-      }
-      
-      scene.add(snowyFisherman);
-      
-      // Update ocean color
-      ocean.material.color.set(0x87CEEB);
-      
-      currentIsland = 'snowy';
-      
-      showNotification("❄️ Welcome to the Snowy Island!", 'info');
-    } else {
-      // Go back to tropical island
-      scene.remove(snowyIsland);
-      scene.remove(snowyFisherman);
-      
-      scene.add(tropicalIsland);
-      scene.add(fisherman);
-      scene.add(vegetation);
-      
-      // Update ocean color
-      ocean.material.color.set(0x1e90ff);
-      
-      currentIsland = 'tropical';
-      
-      showNotification("🌴 Welcome back to the Tropical Island!", 'info');
-    }
-    
-    // Update shops
-    shop.style.display = "none";
-    snowyShop.style.display = "none";
-    
-    savePlayerData();
-  }
-}
-
-/* NPC CLICKS → SHOPS */
-const raycaster = new THREE.Raycaster();
-const touchVec = new THREE.Vector2();
-addEventListener("touchstart", e => {
- touchVec.x = (e.touches[0].clientX / innerWidth) * 2 - 1;
- touchVec.y = -(e.touches[0].clientY / innerHeight) * 2 + 1;
- raycaster.setFromCamera(touchVec, camera);
- 
- if(currentIsland === 'tropical') {
-   // Check tropical fisherman
-   let hitFisherman = false;
-   
-   const intersects = raycaster.intersectObjects([fisherman], true);
-   intersects.forEach(intersect => {
-     if(fisherman.children.includes(intersect.object) || intersect.object === fisherman) {
-       hitFisherman = true;
-     }
-   });
-   
-   if(hitFisherman) {
-     shop.style.display = "block";
-     const dialogues = [
-       "Welcome back! Need some gear?",
-       "Ah, a fellow angler! What can I get you?",
-       "The fish are biting today!",
-       "I've got the best rods on the island!"
-     ];
-     document.getElementById("shopDialogue").textContent = `"${dialogues[Math.floor(Math.random() * dialogues.length)]}"`;
-   }
- } else {
-   // Check snowy fisherman
-   if(!snowyFisherman) return;
-   
-   let hitSnowyFisherman = false;
-   
-   const intersects = raycaster.intersectObjects([snowyFisherman], true);
-   intersects.forEach(intersect => {
-     if(snowyFisherman.children.includes(intersect.object) || intersect.object === snowyFisherman) {
-       hitSnowyFisherman = true;
-     }
-   });
-   
-   if(hitSnowyFisherman) {
-     snowyShop.style.display = "block";
-     const dialogues = [
-       "Brrr... It's cold here! Need special gear?",
-       "Fishing in icy waters requires special rods!",
-       "The fish here are worth more but harder to catch!",
-       "Welcome to the frozen fishing grounds!"
-     ];
-     document.getElementById("snowyShopDialogue").textContent = `"${dialogues[Math.floor(Math.random() * dialogues.length)]}"`;
-   }
- }
- 
- // Check portal click
- if(portal) {
-   const portalIntersects = raycaster.intersectObject(portal.group, true);
-   if(portalIntersects.length > 0) {
-     usePortal();
-   }
- }
-});
-
-/* SHOP BUTTONS WITH IMPROVED FEEDBACK */
-function setupShopButton(buttonId, price, itemName, callback) {
-  const button = document.getElementById(buttonId);
-  if(!button) return;
-  
-  button.onclick = () => {
-    if(money < price) {
-      showNotification(`Not enough money! Need $${price}`, 'error');
-      vibrate([100, 100, 100]);
-      return;
-    }
-    
-    if(callback()) {
-      money -= price;
-      updateStats();
-      showNotification(`Purchased ${itemName}!`, 'success');
-      vibrate(100);
-      savePlayerData();
-    }
-  };
-}
-
-// NEW: Function to purchase a rod (adds to owned rods)
-function purchaseRod(rodName, price) {
-  // Add to owned rods set
-  ownedRods.add(rodName);
-  
-  // Find a slot for the rod
-  for(let i = 0; i < inventory.length; i++) {
-    if(inventory[i] === "" || inventory[i] === "Rod" || inventory[i].includes("Rod")) {
-      inventory[i] = rodName;
-      selected = i;
-      renderInv();
-      updateRod();
-      
-      // Special handling for Ocean Rod
-      if(rodName === "Ocean Rod") {
-        hasOceanRod = true;
-        activatePortal();
-      }
-      
-      return true;
-    }
-  }
-  
-  // No suitable slot found, just mark as owned
-  showNotification(`${rodName} purchased! Use Rod Selector to equip it.`, 'success');
-  return true;
-}
-
-// Tropical shop buttons
-setupShopButton('buySunRod', 1000, 'Sun Rod', () => purchaseRod("Sun Rod", 1000));
-setupShopButton('buyMoonRod', 10000, 'Moon Rod', () => purchaseRod("Moon Rod", 10000));
-setupShopButton('buyOceanRod', 100000, 'Ocean Rod', () => purchaseRod("Ocean Rod", 100000));
-
-setupShopButton('buyInventory', 500, '3 Inventory Slots', () => {
-  expandInventory(3);
-  return true;
-});
-
-// Snowy shop buttons
-setupShopButton('buyGlacierRod', 500000, 'Glacier Rod', () => purchaseRod("Glacier Rod", 500000));
-setupShopButton('buyFrostfireRod', 2000000, 'Frostfire Rod', () => purchaseRod("Frostfire Rod", 2000000));
-setupShopButton('buyAuroraRod', 10000000, 'Aurora Rod', () => purchaseRod("Aurora Rod", 10000000));
-
-setupShopButton('buySnowyInventory', 2000, '5 Inventory Slots', () => {
-  expandInventory(5);
-  return true;
-});
-
-/* BOOK */
-book.onclick = () => rules.style.display = "block";
-
-/* ===== LOGIN FEATURE ===== */
-const loginDiv = document.getElementById("login");
-const usernameInput = document.getElementById("username");
-const loginBtn = document.getElementById("loginBtn");
-let username = null;
-
-function loadPlayerData(name) {
- const data = localStorage.getItem("fishingGame_" + name);
- if(data) {
-  const parsed = JSON.parse(data);
-  money = parsed.money || 0;
-  playerLevel = parsed.level || 1;
-  playerExp = parsed.exp || 0;
-  inventory.splice(0, inventory.length, ...(parsed.inventory || inventory));
-  selected = parsed.selected || 0;
-  if(parsed.currentIsland) currentIsland = parsed.currentIsland;
-  
-  // Load owned rods
-  if(parsed.ownedRods) {
-    ownedRods = new Set(parsed.ownedRods);
-  } else {
-    // Legacy support: check inventory for owned rods
-    ownedRods = new Set(["Rod"]);
-    inventory.forEach(item => {
-      if(item && item.includes("Rod")) {
-        ownedRods.add(item);
-      }
-    });
-  }
-  
-  // Calculate XP needed for current level
-  expToNextLevel = getExpForLevel(playerLevel);
-  
-  // Check if player has Ocean Rod
-  hasOceanRod = checkOceanRod();
-  
-  // If portal was active, activate it
-  if(hasOceanRod && portal) {
-    activatePortal();
-  }
-  
-  // If player was on snowy island, load it
-  if(currentIsland === 'snowy') {
-    scene.remove(tropicalIsland);
-    scene.remove(fisherman);
-    scene.remove(vegetation);
-    
-    scene.add(snowyIsland);
-    
-    if(!snowyFisherman) snowyFisherman = createSnowyFisherman();
-    
-    scene.add(snowyFisherman);
-    
-    ocean.material.color.set(0x87CEEB);
-  }
- }
- 
- // Check tutorial completion
- tutorialCompleted = localStorage.getItem('fishingGame_tutorial_completed') === 'true';
- 
- updateStats();
- renderInv();
-}
-
-function savePlayerData() {
- if(!username) return;
- localStorage.setItem("fishingGame_" + username, JSON.stringify({
-   money,
-   level: playerLevel,
-   exp: playerExp,
-   inventory,
-   selected,
-   currentIsland,
-   ownedRods: Array.from(ownedRods)
- }));
-}
-
-loginBtn.onclick = () => {
- const name = usernameInput.value.trim();
- if(!name) {
-   showNotification("Please enter a username!", 'error');
-   return;
- }
- username = name;
- loadPlayerData(username);
- loginDiv.style.display = "none";
- 
- // Show tutorial for new players
- if(!tutorialCompleted) {
-   showTutorial();
- } else {
-   showNotification(`Welcome back, ${username}!`, 'success');
- }
- 
- savePlayerData();
-};
-
-setInterval(savePlayerData, 5000);
-
-/* ===== ENHANCED NPC ANIMATIONS ===== */
-let fishermanTime = 0;
-let snowyFishermanTime = 0;
-
-function animateFisherman() {
-  fishermanTime += 0.01;
-  fisherman.position.y = 2 + Math.sin(fishermanTime * 0.5) * 0.03;
-  fisherman.rotation.y = Math.sin(fishermanTime * 0.15) * 0.2;
-  
-  if(npcRod) {
-    npcRod.rotation.z = Math.PI/6 + Math.sin(fishermanTime * 1.3) * 0.15;
-  }
-}
-
-function animateSnowyFisherman() {
-  if(!snowyFisherman) return;
-  snowyFishermanTime += 0.01;
-  snowyFisherman.position.y = 2 + Math.sin(snowyFishermanTime * 0.5) * 0.03;
-  snowyFisherman.rotation.y = Math.sin(snowyFishermanTime * 0.2) * 0.15;
-}
-
-/* ===== PORTAL ANIMATION ===== */
-let portalTime = 0;
-function animatePortal() {
-  if(!portal) return;
-  
-  portalTime += 0.02;
-  
-  // Rotate ring
-  portal.ring.rotation.y = portalTime * 0.5;
-  
-  // Animate particles
-  const positions = portal.particles.geometry.attributes.position.array;
-  for(let i = 0; i < positions.length; i += 3) {
-    const x = positions[i];
-    const y = positions[i + 1];
-    const z = positions[i + 2];
-    
-    // Spiral motion
-    const radius = Math.sqrt(x*x + z*z);
-    const angle = Math.atan2(z, x) + portalTime * 2;
-    
-    positions[i] = radius * Math.cos(angle);
-    positions[i + 2] = radius * Math.sin(angle);
-    
-    // Bob up and down
-    positions[i + 1] = y + Math.sin(portalTime * 3 + i) * 0.05;
-  }
-  portal.particles.geometry.attributes.position.needsUpdate = true;
-  
-  // Pulse vortex
-  portal.vortex.scale.y = 1 + Math.sin(portalTime * 3) * 0.2;
-  
-  // If portal is active, add color cycling
-  if(portal.isActive) {
-    const hue = (portalTime * 20) % 360;
-    const color = new THREE.Color(`hsl(${hue}, 100%, 50%)`);
-    portal.ring.material.emissive = color;
-    portal.particles.material.color = color;
-    portal.vortex.material.emissive = color;
-  }
-}
-
-/* ===== ENHANCED FISHING SYSTEM ===== */
-let holding = false, holdTime = 0, fishing = false, taps = 0, requiredTaps = 10, fishTimer = null;
-let progressInterval = null;
-
-// FIXED: Correct probability distributions
-const tropicalBaseProbabilities = {
-  Kraken: 0.01,
-  Terrorshark: 0.02,
-  Megalodon: 0.02,
-  GreatWhiteShark: 0.02,
-  MantaRay: 0.05,
-  SeaTurtle: 0.10,
-  Pufferfish: 0.15,
-  Shark: 0.15,
-  Tuna: 0.25,
-  Clownfish: 0.25
-};
-
-const snowyBaseProbabilities = {
-  IceDragon: 0.005,
-  YetiCrab: 0.01,
-  GlacierWhale: 0.02,
-  FrostPuffer: 0.05,
-  IceShark: 0.10,
-  SnowTrout: 0.25,
-  ArcticChar: 0.564
-};
-
-// Rod multiplier system
-const rodMultipliers = {
-  "Rod": 1,
-  "Sun Rod": 2,
-  "Moon Rod": 4,
-  "Ocean Rod": 8,
-  "Glacier Rod": 16,
-  "Frostfire Rod": 32,
-  "Aurora Rod": 64
-};
-
-function randomFish(currentRod) {
-  const multiplier = rodMultipliers[currentRod] || 1;
-  
-  let probabilities, fishList;
-  
-  if(currentIsland === 'tropical') {
-    probabilities = tropicalBaseProbabilities;
-    fishList = Object.keys(tropicalBaseProbabilities);
-  } else {
-    probabilities = snowyBaseProbabilities;
-    fishList = Object.keys(snowyBaseProbabilities);
-  }
-  
-  // Adjust probabilities based on rod multiplier and player level
-  let adjustedProbabilities = {};
-  let total = 0;
-  
-  for(const fish in probabilities) {
-    let prob = probabilities[fish];
-    
-    // Apply multiplier to rare fish
-    const isVeryRare = currentIsland === 'tropical' ? 
-      ["Kraken", "Terrorshark", "Megalodon", "GreatWhiteShark", "MantaRay"].includes(fish) :
-      ["IceDragon", "YetiCrab", "GlacierWhale", "FrostPuffer"].includes(fish);
-    
-    if(isVeryRare) {
-      // Rare fish get bonus from rod AND level
-      prob = prob * Math.sqrt(multiplier) * (1 + (playerLevel * 0.01));
-      if(prob > 0.3) prob = 0.3;
-    } else {
-      // Common fish get reduced chance with better rods
-      prob = prob / Math.pow(multiplier, 0.3);
-    }
-    
-    adjustedProbabilities[fish] = Math.max(0.001, prob);
-    total += prob;
-  }
-  
-  // Normalize probabilities
-  let cumulative = 0;
-  const rand = Math.random();
-  
-  for(const fish in adjustedProbabilities) {
-    const prob = adjustedProbabilities[fish] / total;
-    cumulative += prob;
-    if(rand <= cumulative) {
-      return fish;
-    }
-  }
-  
-  return currentIsland === 'tropical' ? "Clownfish" : "ArcticChar";
-}
-
-// Enhanced fish button
-function createFishButton() {
- const fishButton = document.getElementById("fishButton");
- 
- const x = Math.random() * (window.innerWidth - 300) + 150;
- const y = Math.random() * (window.innerHeight - 150) + 75;
- fishButton.style.left = x + "px";
- fishButton.style.top = y + "px";
- fishButton.style.display = "block";
- 
- // Show fishing spot indicator
- document.getElementById('fishingSpot').style.display = 'block';
- document.getElementById('fishingSpot').style.left = x + 'px';
- document.getElementById('fishingSpot').style.top = y + 'px';
-}
-
-function startFishing() {
- const currentRod = inventory[selected];
- const tropicalRods = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
- const snowyRods = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
- const allRods = tropicalRods.concat(snowyRods);
- 
- if(!currentRod || !allRods.includes(currentRod)) {
-   showNotification("Equip a fishing rod first!", 'warning');
-   return;
- }
- 
- fishing = true;
- holding = false;
- holdTime = 0;
- taps = 0;
- 
- showNotification("🎣 Casting line...", 'info');
- const castDelay = 1000 + Math.random() * 1500;
-
- setTimeout(() => {
-   const fish = randomFish(currentRod);
-   const multiplier = rodMultipliers[currentRod] || 1;
-   
-   // Determine fish rarity for color coding
-   let rarity = 'common';
-   let rarityColor = 'white';
-   
-   if(currentIsland === 'tropical') {
-     if(['Kraken', 'Terrorshark'].includes(fish)) {
-       rarity = 'MYTHICAL';
-       rarityColor = '#ff00ff';
-     } else if(['Megalodon', 'GreatWhiteShark'].includes(fish)) {
-       rarity = 'LEGENDARY';
-       rarityColor = 'gold';
-     } else if(['MantaRay', 'SeaTurtle'].includes(fish)) {
-       rarity = 'RARE';
-       rarityColor = '#00ffff';
-     } else if(['Pufferfish'].includes(fish)) {
-       rarity = 'UNCOMMON';
-       rarityColor = '#4CAF50';
-     }
-   } else {
-     if(['IceDragon'].includes(fish)) {
-       rarity = 'MYTHICAL';
-       rarityColor = '#ff00ff';
-     } else if(['YetiCrab'].includes(fish)) {
-       rarity = 'LEGENDARY';
-       rarityColor = 'gold';
-     } else if(['GlacierWhale', 'FrostPuffer'].includes(fish)) {
-       rarity = 'RARE';
-       rarityColor = '#00ffff';
-     } else if(['IceShark'].includes(fish)) {
-       rarity = 'UNCOMMON';
-       rarityColor = '#4CAF50';
-     }
-   }
-   
-   showNotification(`${fish}! ${rarity !== 'common' ? rarity + '! ' : ''}Catch it!`, 'info');
-   
-   function failFish() {
-     showNotification("😢 Fish escaped!", 'error');
-     fishing = false;
-     document.getElementById("fishButton").style.display = "none";
-     document.getElementById('fishingSpot').style.display = 'none';
-     clearTimeout(fishTimer);
-   }
-
-   function nextTap() {
-     if(taps >= requiredTaps) {
-       // Success!
-       const isMythical = fish === "IceDragon" || fish === "Kraken";
-       const isLegendary = fish === "YetiCrab" || fish === "Terrorshark" || fish === "Megalodon" || fish === "GreatWhiteShark";
-       const isRare = ["GlacierWhale", "FrostPuffer", "MantaRay", "SeaTurtle"].includes(fish);
-       
-       let message = "Caught " + fish + "! 🎣";
-       if(isMythical) message = "🔥 MYTHICAL! " + message;
-       else if(isLegendary) message = "🌟 LEGENDARY! " + message;
-       else if(isRare) message = "🎉 RARE! " + message;
-       
-       // Vibrate based on rarity
-       if(isMythical) vibrate([200, 100, 200, 100, 300]);
-       else if(isLegendary) vibrate([200, 100, 200]);
-       else if(isRare) vibrate([100, 50, 100]);
-       else vibrate(100);
-       
-       showNotification(message, 'success');
-       
-       // Add XP for catching fish
-       addXP(fish);
-       
-       // Show fish model briefly
-       showFishPreview(fish, 1);
-       setTimeout(() => {
-         fishPreview.style.display = "none";
-       }, 1500);
-       
-       addItem(fish);
-       fishing = false;
-       document.getElementById("fishButton").style.display = "none";
-       document.getElementById('fishingSpot').style.display = 'none';
-       clearTimeout(fishTimer);
-       savePlayerData();
-       return;
-     }
-     createFishButton();
-     
-     const timeLimit = 1000 - (playerLevel * 10); // Time limit decreases with level
-     fishTimer = setTimeout(failFish, Math.max(500, timeLimit));
-     
-     document.getElementById("fishButton").onclick = () => {
-       taps++;
-       clearTimeout(fishTimer);
-       document.getElementById("fishButton").style.display = "none";
-       document.getElementById('fishingSpot').style.display = 'none';
-       vibrate(50); // Haptic feedback for tap
-       nextTap();
-     }
-   }
-
-   nextTap();
- }, castDelay);
-}
-
-// Enhanced touch handling for fishing
-addEventListener("touchstart", (e) => {
-  const currentRod = inventory[selected];
-  const tropicalRods = ["Rod", "Sun Rod", "Moon Rod", "Ocean Rod"];
-  const snowyRods = ["Glacier Rod", "Frostfire Rod", "Aurora Rod"];
-  const allRods = tropicalRods.concat(snowyRods);
-  
-  if(currentRod && allRods.includes(currentRod)) {
-    if(!fishing && !joy && !e.target.closest("#shop") && !e.target.closest("#snowyShop") && 
-       !e.target.closest("#rules") && !e.target.closest("#fishPreview") && 
-       !e.target.closest("#secretCodeInput") && !e.target.closest("#tutorial") &&
-       !e.target.closest("#rodSelector") &&
-       e.target.id !== "fishButton" && e.target.id !== "joystick" && 
-       e.target.id !== "stick" && e.target.id !== "jump" &&
-       !e.target.closest(".slot")) {
-      
-      holding = true; 
-      holdTime = 0;
-      
-      // Show casting progress bar
-      document.getElementById("castProgress").style.display = "block";
-      document.getElementById("castProgressFill").style.width = "0%";
-      
-      // Update progress bar
-      progressInterval = setInterval(() => {
-        holdTime += 0.1;
-        const progress = (holdTime / 2) * 100;
-        document.getElementById("castProgressFill").style.width = progress + "%";
-        
-        if(holdTime >= 2) {
-          clearInterval(progressInterval);
-          document.getElementById("castProgress").style.display = "none";
-          startFishing();
-          holding = false;
-          vibrate(100); // Haptic feedback for successful cast
+    <script>
+        // Game Preview Animation
+        function initGamePreview() {
+            const preview = document.getElementById('gamePreview');
+            
+            // Create voxel floor
+            for (let x = 0; x < 8; x++) {
+                for (let z = 0; z < 8; z++) {
+                    const voxel = document.createElement('div');
+                    voxel.className = 'voxel';
+                    voxel.style.width = '50px';
+                    voxel.style.height = '50px';
+                    voxel.style.left = `${20 + x * 52}px`;
+                    voxel.style.top = `${280 - z * 52}px`;
+                    voxel.style.background = x % 2 === z % 2 ? '#1e40af' : '#1d4ed8';
+                    preview.appendChild(voxel);
+                }
+            }
+            
+            // Create voxel walls
+            for (let i = 0; i < 5; i++) {
+                const wall = document.createElement('div');
+                wall.className = 'voxel';
+                wall.style.width = '40px';
+                wall.style.height = '80px';
+                wall.style.left = `${100 + i * 42}px`;
+                wall.style.top = '180px';
+                wall.style.background = i % 2 === 0 ? '#374151' : '#4b5563';
+                preview.appendChild(wall);
+            }
+            
+            // Create player
+            const player = document.createElement('div');
+            player.className = 'voxel-player';
+            player.style.left = '200px';
+            player.style.top = '150px';
+            player.id = 'previewPlayer';
+            preview.appendChild(player);
+            
+            // Create enemy
+            const enemy = document.createElement('div');
+            enemy.className = 'voxel-player';
+            enemy.style.width = '40px';
+            enemy.style.height = '60px';
+            enemy.style.left = '400px';
+            enemy.style.top = '150px';
+            enemy.style.background = '#10b981';
+            enemy.style.borderColor = '#34d399';
+            preview.appendChild(enemy);
+            
+            // Add game stats
+            const stats = document.createElement('div');
+            stats.className = 'game-stats';
+            stats.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 5px;">TEAM DEATHMATCH</div>
+                <div style="display: flex; gap: 15px;">
+                    <div>Kills: <span style="color: #60a5fa;">12</span></div>
+                    <div>Deaths: <span style="color: #f87171;">3</span></div>
+                    <div>Score: <span style="color: #fbbf24;">1850</span></div>
+                </div>
+            `;
+            preview.appendChild(stats);
+            
+            // Animate player
+            let playerX = 200;
+            let direction = 1;
+            
+            function animatePlayer() {
+                playerX += direction * 2;
+                
+                if (playerX > 350) direction = -1;
+                if (playerX < 200) direction = 1;
+                
+                document.getElementById('previewPlayer').style.left = `${playerX}px`;
+                
+                // Randomly change player color
+                if (Math.random() < 0.02) {
+                    const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+                    document.getElementById('previewPlayer').style.background = colors[Math.floor(Math.random() * colors.length)];
+                }
+                
+                requestAnimationFrame(animatePlayer);
+            }
+            
+            animatePlayer();
         }
-      }, 100);
-    }
-  }
-});
-
-addEventListener("touchend", () => { 
-  holding = false; 
-  holdTime = 0;
-  if(progressInterval) {
-    clearInterval(progressInterval);
-    document.getElementById("castProgress").style.display = "none";
-  }
-});
-
-/* ===== ENHANCED MAIN LOOP ===== */
-let oceanTime = 0;
-function animate() {
- requestAnimationFrame(animate);
- 
- // Enhanced ocean waves with multiple frequencies
- oceanTime += 0.02;
- const oceanPosition = ocean.geometry.attributes.position;
- for(let i = 0; i < oceanPosition.count; i++) {
-   const x = oceanPosition.getX(i);
-   const y = oceanPosition.getY(i);
-   const wave1 = Math.sin(x * 0.02 + oceanTime * 1.2) * 0.5;
-   const wave2 = Math.cos(y * 0.03 + oceanTime * 0.8) * 0.3;
-   const wave3 = Math.sin(x * 0.05 + y * 0.05 + oceanTime * 0.5) * 0.2;
-   oceanPosition.setZ(i, (wave1 + wave2 + wave3) * 0.5);
- }
- oceanPosition.needsUpdate = true;
- 
- updateRod();
-
- camera.rotation.order = "YXZ";
- camera.rotation.y = yaw;
- camera.rotation.x = pitch;
-
- const f = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
- const r = new THREE.Vector3(f.z, 0, -f.x);
- player.position.add(f.multiplyScalar(moveZ * 0.18));
- player.position.add(r.multiplyScalar(moveX * 0.18));
-
- velocityY -= 0.015;
- player.position.y += velocityY;
- if(player.position.y <= 4) {
-   player.position.y = 4;
-   velocityY = 0;
-   grounded = true;
- }
-
- // Animate NPCs
- if(currentIsland === 'tropical') {
-   animateFisherman();
- } else {
-   animateSnowyFisherman();
- }
- 
- // Animate portal
- animatePortal();
-
- renderer.render(scene, camera);
-}
-animate();
-
-// Handle window resize
-window.addEventListener('resize', () => {
- camera.aspect = window.innerWidth / window.innerHeight;
- camera.updateProjectionMatrix();
- renderer.setSize(window.innerWidth, window.innerHeight);
- waterCanvas.width = window.innerWidth;
- waterCanvas.height = window.innerHeight;
-});
-
-// Initialize tutorial check
-if(localStorage.getItem('fishingGame_tutorial_completed') !== 'true') {
-  setTimeout(() => {
-    if(!tutorialCompleted && !username) {
-      showTutorial();
-    }
-  }, 1000);
-}
-</script>
+        
+        // Initialize lobby
+        function initLobby() {
+            const colorOptions = document.getElementById('colorOptions');
+            const colors = [
+                {name: 'Red', value: '#ef4444'},
+                {name: 'Blue', value: '#3b82f6'},
+                {name: 'Green', value: '#10b981'},
+                {name: 'Yellow', value: '#f59e0b'},
+                {name: 'Purple', value: '#8b5cf6'},
+                {name: 'Pink', value: '#ec4899'},
+                {name: 'Cyan', value: '#06b6d4'},
+                {name: 'Orange', value: '#f97316'}
+            ];
+            
+            colors.forEach((color, index) => {
+                const colorOption = document.createElement('div');
+                colorOption.className = `color-option ${index === 0 ? 'selected' : ''}`;
+                colorOption.style.background = color.value;
+                colorOption.title = color.name;
+                colorOption.addEventListener('click', () => {
+                    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                    colorOption.classList.add('selected');
+                    localStorage.setItem('playerColor', color.value);
+                });
+                colorOptions.appendChild(colorOption);
+            });
+            
+            // Populate server list
+            const serverList = document.getElementById('serverList');
+            const servers = [
+                {name: 'US East #1', mode: 'Team Deathmatch', players: '24/32', ping: '18ms'},
+                {name: 'EU Central #3', mode: 'Capture the Block', players: '18/24', ping: '42ms'},
+                {name: 'Asia #2', mode: 'Battle Royale', players: '87/100', ping: '120ms'},
+                {name: 'US West #5', mode: 'Team Deathmatch', players: '31/32', ping: '32ms'},
+                {name: 'EU West #7', mode: 'Free Build', players: '12/20', ping: '38ms'},
+                {name: 'Oceania #1', mode: 'Capture the Block', players: '16/24', ping: '210ms'}
+            ];
+            
+            servers.forEach(server => {
+                const serverItem = document.createElement('div');
+                serverItem.className = 'server-item';
+                serverItem.innerHTML = `
+                    <div>
+                        <div style="font-weight: 600;">${server.name}</div>
+                        <div style="font-size: 0.9rem; color: #94a3b8;">${server.mode}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div class="server-players">
+                            <i class="fas fa-user"></i> ${server.players}
+                        </div>
+                        <div style="color: ${parseInt(server.ping) < 50 ? '#10b981' : parseInt(server.ping) < 100 ? '#f59e0b' : '#ef4444'}">
+                            ${server.ping}
+                        </div>
+                        <button class="join-btn">JOIN</button>
+                    </div>
+                `;
+                
+                serverItem.querySelector('.join-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    joinGame(server.name);
+                });
+                
+                serverList.appendChild(serverItem);
+            });
+        }
+        
+        // Join game function
+        function joinGame(serverName) {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const loadingProgress = document.getElementById('loadingProgress');
+            const loadingText = document.getElementById('loadingText');
+            
+            // Show loading screen
+            loadingScreen.style.display = 'flex';
+            
+            // Simulate loading
+            let progress = 0;
+            const loadingInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+                
+                loadingProgress.style.width = `${progress}%`;
+                
+                // Update loading text
+                if (progress < 30) {
+                    loadingText.textContent = 'Loading Voxel World...';
+                } else if (progress < 60) {
+                    loadingText.textContent = 'Loading Textures...';
+                } else if (progress < 90) {
+                    loadingText.textContent = 'Connecting to Server...';
+                } else {
+                    loadingText.textContent = 'Almost Ready...';
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(loadingInterval);
+                    
+                    // Show "play" message
+                    setTimeout(() => {
+                        loadingText.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px;"></i> Connected to ${serverName}!`;
+                        
+                        // In a real game, this would redirect to the actual game
+                        setTimeout(() => {
+                            alert(`In a real implementation, you would now be playing on ${serverName}!\n\nThis is a frontend demo only. For a full game, you would need a backend server with WebSocket connections.`);
+                            loadingScreen.style.display = 'none';
+                            document.getElementById('gameLobby').style.display = 'none';
+                        }, 1500);
+                    }, 500);
+                }
+            }, 200);
+        }
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize preview
+            initGamePreview();
+            
+            // Initialize lobby
+            initLobby();
+            
+            // Play button click
+            document.getElementById('playButton').addEventListener('click', () => {
+                document.getElementById('gameLobby').style.display = 'flex';
+            });
+            
+            // Close lobby
+            document.getElementById('closeLobby').addEventListener('click', () => {
+                document.getElementById('gameLobby').style.display = 'none';
+            });
+            
+            // Close lobby when clicking outside
+            document.getElementById('gameLobby').addEventListener('click', (e) => {
+                if (e.target.id === 'gameLobby') {
+                    document.getElementById('gameLobby').style.display = 'none';
+                }
+            });
+            
+            // Update player count periodically
+            function updatePlayerCounts() {
+                const counts = document.querySelectorAll('.players-online');
+                counts.forEach(count => {
+                    const current = parseInt(count.textContent.replace(/,/g, '').match(/\d+/)[0]);
+                    const change = Math.floor(Math.random() * 200) - 100;
+                    const newCount = Math.max(5000, current + change);
+                    count.innerHTML = `<i class="fas fa-users"></i> ${newCount.toLocaleString()} playing now`;
+                });
+            }
+            
+            setInterval(updatePlayerCounts, 10000);
+        });
+    </script>
 </body>
 </html>
